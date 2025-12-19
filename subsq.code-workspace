@@ -1,16 +1,16 @@
 {
 	"folders": [
 		{
+			"path": ".",
+			"name": "🌍 Root"
+		},
+		{
 			"path": "./docs",
 			"name": "📚 Docs"
 		},
 		{
 			"path": "./frontend/",
 			"name": "💻 Frontend"
-		},
-		{
-			"path": ".",
-			"name": "🌍 Root"
-		},
+		}
 	]
 }
