@@ -1,4 +1,4 @@
-# SubsQ API設計書（MVP）
+# API設計書（MVP）
 
 ## 概要
 
