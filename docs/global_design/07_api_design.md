@@ -4,6 +4,24 @@
 
 このドキュメントは、システムが提供するAPIの仕様を定義します。
 
+### MVP段階とAPI設計の関係
+
+| フェーズ | データアクセス方式 | 本ドキュメントの役割 |
+|---------|------------------|-------------------|
+| **MVP（現在）** | Server Functions / Server Actions → Service → DB直接 | DTOスキーマの定義として使用 |
+| **将来** | Server Functions / Server Actions → 外部API | REST APIエンドポイント仕様として使用 |
+
+MVP段階では、以下の方式でデータアクセスを行います：
+
+| 呼び出し元 | 使用する関数 | ファイル |
+|-----------|------------|---------|
+| Server Component (RSC) | Server Functions | `external/handler/*.server.ts` |
+| Client Component | Server Actions | `external/handler/*.action.ts` |
+
+リクエスト/レスポンスの型定義（DTO）は本ドキュメントと同一のスキーマを使用します。
+
+詳細は [External Layer設計](../frontend/docs/05_external_layer.md) を参照してください。
+
 ## API構成
 
 ### ベースURL
@@ -31,11 +49,8 @@
 ---
 
 ## 認証アーキテクチャ
-```mermaid
-flowchart LR
-    Google[Google OAuth] --> Auth[Better Auth] --> Cookie[Cookie]
-    Auth --> Users[(users)]
-```
+
+Better Auth を使用した認証システム。Google OAuth 2.0 による認証と、stateless セッション管理を採用しています。
 
 | 特徴 | 説明 |
 |------|------|
@@ -43,6 +58,8 @@ flowchart LR
 | 独自usersテーブル | accountテーブル不要（usersに統合） |
 | cookieCache | 5分間キャッシュでDB負荷軽減 |
 | customSession | ユーザー情報をセッションに追加 |
+
+詳細は [認証システム実装ガイド](../frontend/docs/08_authentication.md) を参照してください。
 
 ---
 
@@ -86,22 +103,13 @@ ErrorResponse {
 
 ## Users（ユーザー）API
 
-### OAuth連携時のユーザー作成または取得
+### 現在のユーザー取得
 
-**URL**: `POST /api/v1/users/auth`（内部処理）
+**URL**: `GET /api/v1/users/me`
 
-**説明**: Better Authのコールバックから呼び出される内部API
+**説明**: ログイン中のユーザー情報を取得
 
-**Request**:
-```typescript
-CreateOrGetUserRequest {
-  email: string
-  name: string
-  provider: string            // "google"
-  providerAccountId: string
-  thumbnail?: string
-}
-```
+**Request**: なし
 
 **Response**:
 ```typescript
@@ -115,25 +123,6 @@ UserResponse {
   createdAt: string    // ISO 8601形式
   updatedAt: string    // ISO 8601形式
 }
-```
-
-**ビジネスルール**:
-- 既存ユーザーが存在する場合は取得、存在しない場合は新規作成
-- `provider` + `providerAccountId` の組み合わせで一意性を判定
-
----
-
-### 現在のユーザー取得
-
-**URL**: `GET /api/v1/users/me`
-
-**説明**: ログイン中のユーザー情報を取得
-
-**Request**: なし
-
-**Response**:
-```typescript
-GetCurrentUserResponse = UserResponse
 ```
 
 **ビジネスルール**:
@@ -474,7 +463,7 @@ erDiagram
 
 - **Google OAuth 2.0** による認証（Better Auth）
 - **Stateless Mode**: セッション情報はCookieに保存
-- すべてのAPIは認証必須（`/api/v1/users/auth` を除く）
+- すべてのAPIは認証必須
 
 ### 認可（権限チェック）
 
