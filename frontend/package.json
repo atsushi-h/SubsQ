@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "lint:fix": "biome check --fix --unsafe"
+    "lint:fix": "biome check --fix --unsafe",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "better-auth": "1.4.10",
