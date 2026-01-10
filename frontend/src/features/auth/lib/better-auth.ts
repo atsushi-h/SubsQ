@@ -1,4 +1,5 @@
 import 'server-only'
+// @ts-expect-error - betterAuth is exported but TypeScript has issues with .d.mts files in pnpm structure
 import { betterAuth } from 'better-auth'
 import { customSession } from 'better-auth/plugins'
 import { unstable_cache, updateTag } from 'next/cache'
