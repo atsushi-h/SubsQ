@@ -6,6 +6,7 @@ import { unstable_cache, updateTag } from 'next/cache'
 import type { UserResponse } from '@/external/dto/user.dto'
 import { createOrGetUserCommand } from '@/external/handler/user/user.command.server'
 import { getUserByEmailQuery } from '@/external/handler/user/user.query.server'
+import { env } from '@/shared/lib/env'
 
 /**
  * better-auth 認証フロー
@@ -44,6 +45,7 @@ const getCachedUser = unstable_cache(
 )
 
 export const auth = betterAuth({
+  secret: env.BETTER_AUTH_SECRET,
   // データベース設定なし = stateless mode
   session: {
     cookieCache: {
@@ -53,8 +55,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
       /**
        * OAuth認証成功時に1回だけ呼ばれるコールバック
        * ctx.user: Googleから取得したユーザー情報
@@ -85,7 +87,7 @@ export const auth = betterAuth({
     },
   },
   // ベースURLの設定
-  baseURL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  baseURL: env.BETTER_AUTH_URL,
   // セッション設定 - statelessモードではデフォルトでクッキーベース
   plugins: [
     /**

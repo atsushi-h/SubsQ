@@ -1,10 +1,7 @@
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
+import { env } from '@/shared/lib/env'
 import * as schema from './schema'
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is not set')
-}
 
 // Singleton pattern for database connection
 const globalForDb = globalThis as unknown as {
@@ -14,7 +11,7 @@ const globalForDb = globalThis as unknown as {
 
 if (!globalForDb.pool) {
   globalForDb.pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: env.DATABASE_URL,
   })
 }
 

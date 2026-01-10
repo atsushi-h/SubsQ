@@ -6,13 +6,12 @@ import { Pool } from 'pg'
 // Load environment variables
 dotenv.config({ path: '.env.local' })
 
-async function runMigrations() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set')
-  }
+// Import env AFTER dotenv loads variables
+import { env } from '@/shared/lib/env'
 
+async function runMigrations() {
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: env.DATABASE_URL,
   })
 
   const db = drizzle(pool)
