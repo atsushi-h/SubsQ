@@ -240,7 +240,7 @@ GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 
 # Better Auth
-NEXTAUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=your-secret-key
 ```
 
@@ -326,7 +326,7 @@ external/handler/
 
 1. Cookieが正しく設定されているか確認
 2. `BETTER_AUTH_SECRET` が設定されているか確認
-3. `NEXTAUTH_URL` が正しいか確認
+3. `BETTER_AUTH_URL` が正しいか確認
 
 ### ユーザーが作成されない
 
