@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
-import { generateMetadata } from '@/shared/lib/metadata'
+import { generateMetadata, generateViewport } from '@/shared/lib/metadata'
 import { QueryProvider } from '@/shared/providers/QueryProvider'
 
 const geistSans = Geist({
@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   // 相対 URL の基準
   metadataBase: new URL(METADATA_CONSTANTS.APP_URL),
 }
+
+export const viewport = generateViewport()
 
 export default function RootLayout({
   children,

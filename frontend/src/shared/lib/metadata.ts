@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
 
 export type MetadataOptions = {
@@ -75,8 +75,19 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
     alternates: {
       canonical: url,
     },
+  }
+}
 
-    // モバイルブラウザのテーマカラー
+/**
+ * ビューポート設定を生成
+ *
+ * @example
+ * ```ts
+ * export const viewport = generateViewport()
+ * ```
+ */
+export function generateViewport(): Viewport {
+  return {
     themeColor: METADATA_CONSTANTS.THEME_COLOR,
   }
 }
