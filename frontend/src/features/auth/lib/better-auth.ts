@@ -1,8 +1,9 @@
 import 'server-only'
 // @ts-expect-error - betterAuth is exported but TypeScript has issues with .d.mts files in pnpm structure
-import { betterAuth } from 'better-auth'
+import { betterAuth, type HookEndpointContext } from 'better-auth'
+import { createAuthMiddleware } from 'better-auth/api'
 import { customSession } from 'better-auth/plugins'
-import { unstable_cache, updateTag } from 'next/cache'
+import { revalidateTag, unstable_cache } from 'next/cache'
 import type { UserResponse } from '@/external/dto/user.dto'
 import { createOrGetUserCommand } from '@/external/handler/user/user.command.server'
 import { getUserByEmailQuery } from '@/external/handler/user/user.query.server'
@@ -46,7 +47,7 @@ const getCachedUser = unstable_cache(
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
-  // データベース設定なし = stateless mode
+  // データベース設定なし = stateless mode (sessionsテーブル不要)
   session: {
     cookieCache: {
       enabled: true,
@@ -57,34 +58,32 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
-      /**
-       * OAuth認証成功時に1回だけ呼ばれるコールバック
-       * ctx.user: Googleから取得したユーザー情報
-       */
-      async onSuccess(ctx: {
-        user: {
-          id: string
-          email: string
-          name: string
-          image?: string
-        }
-      }) {
-        try {
-          await createOrGetUserCommand({
-            email: ctx.user.email,
-            name: ctx.user.name || ctx.user.email,
-            provider: 'google',
-            providerAccountId: ctx.user.id,
-            thumbnail: ctx.user.image || undefined,
-          })
-          // ユーザー更新後にキャッシュを無効化して、customSessionで最新データを取得
-          updateTag('user')
-        } catch (error) {
-          console.error('[better-auth] Failed to save user in onSuccess:', error)
-          throw error // エラーを再スローして認証を失敗させる
-        }
-      },
     },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx: HookEndpointContext) => {
+      // Google OAuth コールバック時のみ実行
+      if (ctx.path === '/callback/:id') {
+        const newSession = ctx.context.newSession
+        if (newSession) {
+          const { id, email, name, image } = newSession.user
+
+          try {
+            await createOrGetUserCommand({
+              email,
+              name: name || email,
+              provider: 'google',
+              providerAccountId: id,
+              thumbnail: image || undefined,
+            })
+            // ユーザー更新後にキャッシュを無効化して、customSessionで最新データを取得
+            revalidateTag('user', { expire: 0 })
+          } catch (error) {
+            console.error('[better-auth] Failed to save user:', error)
+          }
+        }
+      }
+    }),
   },
   // ベースURLの設定
   baseURL: env.BETTER_AUTH_URL,
@@ -109,7 +108,7 @@ export const auth = betterAuth({
         return { user: { ...user, id: dbUser.id }, session }
       }
 
-      // dbUserが存在しない場合は、DB保存を試みる（初回ログイン時）
+      // dbUserが存在しない場合は、DB保存を試みる（初回ログイン時のフォールバック）
       try {
         await createOrGetUserCommand({
           email: user.email,
@@ -118,12 +117,10 @@ export const auth = betterAuth({
           providerAccountId: user.id,
           thumbnail: user.image || undefined,
         })
-        console.log('[better-auth] User created successfully')
 
         // DB保存後、再度取得（キャッシュを経由せずに）
         dbUser = await getUserByEmailQuery({ email: user.email })
         if (!dbUser) {
-          console.error('[better-auth] User still not found after creation')
           throw new Error('Failed to create user')
         }
 

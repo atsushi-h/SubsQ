@@ -81,11 +81,12 @@ export class UserRepository implements IUserRepository {
         updatedAt: now,
       })
       .onConflictDoUpdate({
-        target: [users.provider, users.providerAccountId],
+        target: users.email,
         set: {
-          email: data.email,
           name: data.name,
-          thumbnail: data.thumbnail,
+          provider: data.provider,
+          providerAccountId: data.providerAccountId,
+          thumbnail: data.thumbnail ?? null,
           updatedAt: now,
         },
       })
