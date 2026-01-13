@@ -1,29 +1,14 @@
 import 'server-only'
 
-import type { User } from '../../domain/entities/user'
 import {
   type GetUserByEmailRequest,
   GetUserByEmailRequestSchema,
   type GetUserByIdRequest,
   GetUserByIdRequestSchema,
   type UserResponse,
-  UserResponseSchema,
 } from '../../dto/user.dto'
 import { userService } from '../../service/user/user.service'
-
-function toUserResponse(user: User): UserResponse {
-  const plainUser = user.toPlainObject()
-  const response = {
-    id: plainUser.id,
-    email: plainUser.email,
-    name: plainUser.name,
-    thumbnail: plainUser.thumbnail,
-    createdAt: plainUser.createdAt.toISOString(),
-    updatedAt: plainUser.updatedAt.toISOString(),
-  }
-
-  return UserResponseSchema.parse(response)
-}
+import { toUserResponse } from './user.converter'
 
 export async function getUserByIdQuery(request: GetUserByIdRequest): Promise<UserResponse | null> {
   const validated = GetUserByIdRequestSchema.parse(request)

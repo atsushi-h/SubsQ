@@ -1,6 +1,5 @@
 import 'server-only'
 
-import type { User } from '../../domain/entities/user'
 import {
   type CreateOrGetUserRequest,
   CreateOrGetUserRequestSchema,
@@ -8,23 +7,9 @@ import {
   type UpdateUserRequest,
   UpdateUserRequestSchema,
   type UpdateUserResponse,
-  UserResponseSchema,
 } from '../../dto/user.dto'
 import { userService } from '../../service/user/user.service'
-
-function toUserResponse(user: User): CreateOrGetUserResponse {
-  const plainUser = user.toPlainObject()
-  const response = {
-    id: plainUser.id,
-    email: plainUser.email,
-    name: plainUser.name,
-    thumbnail: plainUser.thumbnail,
-    createdAt: plainUser.createdAt.toISOString(),
-    updatedAt: plainUser.updatedAt.toISOString(),
-  }
-
-  return UserResponseSchema.parse(response)
-}
+import { toUserResponse } from './user.converter'
 
 /**
  * OAuth認証時に呼ばれるため、認証チェックなし
