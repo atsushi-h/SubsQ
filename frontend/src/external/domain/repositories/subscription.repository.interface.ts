@@ -73,4 +73,14 @@ export interface ISubscriptionRepository {
    * @returns サブスクリプションの配列
    */
   findByPaymentMethodId(paymentMethodId: string): Promise<Subscription[]>
+
+  /**
+   * 支払い方法の情報を取得
+   *
+   * @param paymentMethodId 支払い方法ID
+   * @returns 支払い方法のIDと名前（存在しない場合はnull）
+   */
+  getPaymentMethodForSubscription(
+    paymentMethodId: string | null,
+  ): Promise<{ id: string; name: string } | null>
 }
