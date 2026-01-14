@@ -24,7 +24,7 @@ jobs:
         with:
           install: true
           cache: true
-          working-directory: frontend
+          working_directory: frontend
 
       - name: Get pnpm store directory
         id: pnpm-cache
