@@ -1,6 +1,7 @@
 import { User } from '../../domain/entities/user'
+import type { IUserRepository } from '../../domain/repositories/user.repository.interface'
 import { Email } from '../../domain/value-objects/email'
-import { UserRepository } from '../../repository/user.repository'
+import { userRepository } from '../../repository/user.repository'
 
 export interface CreateUserInput {
   email: string
@@ -16,11 +17,7 @@ export interface UpdateUserInput {
 }
 
 export class UserService {
-  private userRepository: UserRepository
-
-  constructor() {
-    this.userRepository = new UserRepository()
-  }
+  constructor(private userRepository: IUserRepository) {}
 
   async findByProvider(provider: string, providerAccountId: string): Promise<User | null> {
     return this.userRepository.findByProviderAccount(provider, providerAccountId)
@@ -112,4 +109,4 @@ export class UserService {
 }
 
 // シングルトンインスタンスをエクスポート
-export const userService = new UserService()
+export const userService = new UserService(userRepository)
