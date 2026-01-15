@@ -22,6 +22,16 @@
     {
       "matchDepTypes": ["devDependencies"],
       "addLabels": ["devDependencies"]
+    },
+    {
+      "matchPackageNames": ["@biomejs/biome"],
+      "postUpgradeTasks": {
+        "commands": [
+          "sed -i.bak 's|\"https://biomejs.dev/schemas/[0-9.]*/schema.json\"|\"https://biomejs.dev/schemas/{{{newVersion}}}/schema.json\"|g' frontend/biome.json && rm -f frontend/biome.json.bak"
+        ],
+        "fileFilters": ["frontend/biome.json"],
+        "executionMode": "update"
+      }
     }
   ],
   "prConcurrentLimit": 30,
