@@ -2,7 +2,9 @@ import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '../client/database'
 import { paymentMethods } from '../client/database/schema'
 import { PaymentMethod, type PaymentMethodId, type UserId } from '../domain/entities/payment-method'
+import type { Subscription } from '../domain/entities/subscription'
 import type { IPaymentMethodRepository } from '../domain/repositories/payment-method.repository.interface'
+import { subscriptionRepository } from './subscription.repository'
 
 export class PaymentMethodRepository implements IPaymentMethodRepository {
   async findById(id: PaymentMethodId): Promise<PaymentMethod | null> {
@@ -111,6 +113,12 @@ export class PaymentMethodRepository implements IPaymentMethodRepository {
       createdAt: new Date(result.createdAt * 1000),
       updatedAt: new Date(result.updatedAt * 1000),
     })
+  }
+
+  async getSubscriptionsForPaymentMethod(
+    paymentMethodId: PaymentMethodId,
+  ): Promise<Subscription[]> {
+    return subscriptionRepository.findByPaymentMethodId(paymentMethodId)
   }
 }
 

@@ -1,6 +1,7 @@
 import type { PaymentMethodId, UserId } from '../../domain/entities/payment-method'
 import { PaymentMethod } from '../../domain/entities/payment-method'
 import type { IPaymentMethodRepository } from '../../domain/repositories/payment-method.repository.interface'
+import { paymentMethodUsageChecker } from '../../domain/services'
 import { paymentMethodRepository } from '../../repository/payment-method.repository'
 
 export interface CreatePaymentMethodInput {
@@ -98,8 +99,10 @@ export class PaymentMethodService {
       throw new Error('Unauthorized')
     }
 
-    // Note: データベース制約により、この支払い方法を使用している
-    // サブスクリプションが存在する場合は削除が失敗します (onDelete: 'restrict')
+    // ドメインサービスで使用中チェック
+    const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(id)
+    paymentMethodUsageChecker.validateDeletion(id, subscriptions)
+
     await this.paymentMethodRepository.delete(id)
   }
 
@@ -114,6 +117,12 @@ export class PaymentMethodService {
       if (!paymentMethod.belongsTo(userId)) {
         throw new Error('Unauthorized')
       }
+    }
+
+    // ドメインサービスで使用中チェック
+    for (const id of ids) {
+      const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(id)
+      paymentMethodUsageChecker.validateDeletion(id, subscriptions)
     }
 
     await this.paymentMethodRepository.deleteMany(ids)
