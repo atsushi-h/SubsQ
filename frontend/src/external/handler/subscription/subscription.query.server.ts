@@ -1,8 +1,10 @@
 import 'server-only'
 
+import { subscriptionTotalCalculator } from '../../domain/services'
 import {
   type GetSubscriptionByIdRequest,
   GetSubscriptionByIdRequestSchema,
+  type ListSubscriptionsResponse,
   type SubscriptionResponse,
 } from '../../dto/subscription.dto'
 import { subscriptionService } from '../../service/subscription/subscription.service'
@@ -31,7 +33,7 @@ export async function getSubscriptionByIdQuery(
 
 export async function listSubscriptionsByUserIdQuery(
   userId: string,
-): Promise<SubscriptionResponse[]> {
+): Promise<ListSubscriptionsResponse> {
   const subscriptions = await subscriptionService.getSubscriptionsByUserId(userId)
 
   // 各subscriptionのpaymentMethodを並列取得
@@ -44,7 +46,15 @@ export async function listSubscriptionsByUserIdQuery(
     }),
   )
 
-  return subscriptionsWithPaymentMethods.map(({ subscription, paymentMethod }) =>
-    toSubscriptionResponse(subscription, paymentMethod),
+  const subscriptionResponses = subscriptionsWithPaymentMethods.map(
+    ({ subscription, paymentMethod }) => toSubscriptionResponse(subscription, paymentMethod),
   )
+
+  // SubscriptionTotalCalculatorを使って合計を計算
+  const totals = subscriptionTotalCalculator.calculate(subscriptions)
+
+  return {
+    subscriptions: subscriptionResponses,
+    totals,
+  }
 }
