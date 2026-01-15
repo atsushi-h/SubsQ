@@ -1,8 +1,10 @@
 import type { PaymentMethodId, UserId } from '../../domain/entities/payment-method'
 import { PaymentMethod } from '../../domain/entities/payment-method'
 import type { IPaymentMethodRepository } from '../../domain/repositories/payment-method.repository.interface'
+import type { ITransactionRepository } from '../../domain/repositories/transaction-manager.interface'
 import { paymentMethodUsageChecker } from '../../domain/services'
 import { paymentMethodRepository } from '../../repository/payment-method.repository'
+import { type DbClient, transactionRepository } from '../../repository/transaction.repository'
 
 export interface CreatePaymentMethodInput {
   userId: UserId
@@ -14,7 +16,10 @@ export interface UpdatePaymentMethodInput {
 }
 
 export class PaymentMethodService {
-  constructor(private paymentMethodRepository: IPaymentMethodRepository) {}
+  constructor(
+    private paymentMethodRepository: IPaymentMethodRepository,
+    private transactionManager: ITransactionRepository<DbClient>,
+  ) {}
 
   async getPaymentMethodById(id: PaymentMethodId): Promise<PaymentMethod | null> {
     return this.paymentMethodRepository.findById(id)
@@ -89,45 +94,60 @@ export class PaymentMethodService {
   }
 
   async delete(id: PaymentMethodId, userId: UserId): Promise<void> {
-    const paymentMethod = await this.getPaymentMethodById(id)
-    if (!paymentMethod) {
-      throw new Error('Payment method not found')
-    }
-
-    // 認可チェック
-    if (!paymentMethod.belongsTo(userId)) {
-      throw new Error('Unauthorized')
-    }
-
-    // ドメインサービスで使用中チェック
-    const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(id)
-    paymentMethodUsageChecker.validateDeletion(id, subscriptions)
-
-    await this.paymentMethodRepository.delete(id)
-  }
-
-  async deleteMany(ids: PaymentMethodId[], userId: UserId): Promise<void> {
-    // 全ての支払い方法がこのユーザーのものか確認
-    const paymentMethods = await Promise.all(ids.map((id) => this.getPaymentMethodById(id)))
-
-    for (const paymentMethod of paymentMethods) {
+    return this.transactionManager.execute(async (tx) => {
+      const paymentMethod = await this.paymentMethodRepository.findById(id, tx)
       if (!paymentMethod) {
         throw new Error('Payment method not found')
       }
+
+      // 認可チェック
       if (!paymentMethod.belongsTo(userId)) {
         throw new Error('Unauthorized')
       }
-    }
 
-    // ドメインサービスで使用中チェック
-    for (const id of ids) {
-      const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(id)
+      // ドメインサービスで使用中チェック
+      const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(
+        id,
+        tx,
+      )
       paymentMethodUsageChecker.validateDeletion(id, subscriptions)
-    }
 
-    await this.paymentMethodRepository.deleteMany(ids)
+      await this.paymentMethodRepository.delete(id, tx)
+    })
+  }
+
+  async deleteMany(ids: PaymentMethodId[], userId: UserId): Promise<void> {
+    return this.transactionManager.execute(async (tx) => {
+      // 全ての支払い方法がこのユーザーのものか確認
+      const paymentMethods = await Promise.all(
+        ids.map((id) => this.paymentMethodRepository.findById(id, tx)),
+      )
+
+      for (const paymentMethod of paymentMethods) {
+        if (!paymentMethod) {
+          throw new Error('Payment method not found')
+        }
+        if (!paymentMethod.belongsTo(userId)) {
+          throw new Error('Unauthorized')
+        }
+      }
+
+      // ドメインサービスで使用中チェック
+      for (const id of ids) {
+        const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(
+          id,
+          tx,
+        )
+        paymentMethodUsageChecker.validateDeletion(id, subscriptions)
+      }
+
+      await this.paymentMethodRepository.deleteMany(ids, tx)
+    })
   }
 }
 
 // シングルトンインスタンスをエクスポート
-export const paymentMethodService = new PaymentMethodService(paymentMethodRepository)
+export const paymentMethodService = new PaymentMethodService(
+  paymentMethodRepository,
+  transactionRepository,
+)

@@ -1,3 +1,4 @@
+import type { DbClient } from '../../repository/transaction.repository'
 import type { Subscription, SubscriptionId, UserId } from '../entities/subscription'
 
 /**
@@ -15,9 +16,10 @@ export interface ISubscriptionRepository {
    * IDでサブスクリプションを取得
    *
    * @param id サブスクリプションID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns サブスクリプション（存在しない場合はnull）
    */
-  findById(id: SubscriptionId): Promise<Subscription | null>
+  findById(id: SubscriptionId, client?: DbClient): Promise<Subscription | null>
 
   /**
    * ユーザーIDで全サブスクリプションを取得
@@ -48,15 +50,17 @@ export interface ISubscriptionRepository {
    * サブスクリプションを削除
    *
    * @param id 削除するサブスクリプションID
+   * @param client DBクライアントまたはトランザクション（オプション）
    */
-  delete(id: SubscriptionId): Promise<void>
+  delete(id: SubscriptionId, client?: DbClient): Promise<void>
 
   /**
    * 複数のサブスクリプションを一括削除
    *
    * @param ids 削除するサブスクリプションIDの配列
+   * @param client DBクライアントまたはトランザクション（オプション）
    */
-  deleteMany(ids: SubscriptionId[]): Promise<void>
+  deleteMany(ids: SubscriptionId[], client?: DbClient): Promise<void>
 
   /**
    * サブスクリプションの存在確認
@@ -70,9 +74,10 @@ export interface ISubscriptionRepository {
    * 特定の支払い方法を使用しているサブスクリプションを取得
    *
    * @param paymentMethodId 支払い方法ID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns サブスクリプションの配列
    */
-  findByPaymentMethodId(paymentMethodId: string): Promise<Subscription[]>
+  findByPaymentMethodId(paymentMethodId: string, client?: DbClient): Promise<Subscription[]>
 
   /**
    * 支払い方法の情報を取得

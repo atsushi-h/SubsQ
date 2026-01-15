@@ -1,8 +1,10 @@
 import type { PaymentMethodId, SubscriptionId, UserId } from '../../domain/entities/subscription'
 import { Subscription } from '../../domain/entities/subscription'
 import type { ISubscriptionRepository } from '../../domain/repositories/subscription.repository.interface'
+import type { ITransactionRepository } from '../../domain/repositories/transaction-manager.interface'
 import { Amount, BaseDate, BillingCycle, type BillingCycleType } from '../../domain/value-objects'
 import { subscriptionRepository } from '../../repository/subscription.repository'
+import { type DbClient, transactionRepository } from '../../repository/transaction.repository'
 
 export interface CreateSubscriptionInput {
   userId: UserId
@@ -24,7 +26,10 @@ export interface UpdateSubscriptionInput {
 }
 
 export class SubscriptionService {
-  constructor(private subscriptionRepository: ISubscriptionRepository) {}
+  constructor(
+    private subscriptionRepository: ISubscriptionRepository,
+    private transactionManager: ITransactionRepository<DbClient>,
+  ) {}
 
   async getSubscriptionById(id: SubscriptionId): Promise<Subscription | null> {
     return this.subscriptionRepository.findById(id)
@@ -156,19 +161,23 @@ export class SubscriptionService {
   }
 
   async deleteMany(ids: SubscriptionId[], userId: UserId): Promise<void> {
-    // 全てのサブスクリプションがこのユーザーのものか確認
-    const subscriptions = await Promise.all(ids.map((id) => this.getSubscriptionById(id)))
+    return this.transactionManager.execute(async (tx) => {
+      // 全てのサブスクリプションがこのユーザーのものか確認
+      const subscriptions = await Promise.all(
+        ids.map((id) => this.subscriptionRepository.findById(id, tx)),
+      )
 
-    for (const subscription of subscriptions) {
-      if (!subscription) {
-        throw new Error('Subscription not found')
+      for (const subscription of subscriptions) {
+        if (!subscription) {
+          throw new Error('Subscription not found')
+        }
+        if (!subscription.belongsTo(userId)) {
+          throw new Error('Unauthorized')
+        }
       }
-      if (!subscription.belongsTo(userId)) {
-        throw new Error('Unauthorized')
-      }
-    }
 
-    await this.subscriptionRepository.deleteMany(ids)
+      await this.subscriptionRepository.deleteMany(ids, tx)
+    })
   }
 
   async getPaymentMethodForSubscription(
@@ -179,4 +188,7 @@ export class SubscriptionService {
 }
 
 // シングルトンインスタンスをエクスポート
-export const subscriptionService = new SubscriptionService(subscriptionRepository)
+export const subscriptionService = new SubscriptionService(
+  subscriptionRepository,
+  transactionRepository,
+)

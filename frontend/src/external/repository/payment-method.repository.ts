@@ -5,10 +5,15 @@ import { PaymentMethod, type PaymentMethodId, type UserId } from '../domain/enti
 import type { Subscription } from '../domain/entities/subscription'
 import type { IPaymentMethodRepository } from '../domain/repositories/payment-method.repository.interface'
 import { subscriptionRepository } from './subscription.repository'
+import type { DbClient } from './transaction.repository'
 
 export class PaymentMethodRepository implements IPaymentMethodRepository {
-  async findById(id: PaymentMethodId): Promise<PaymentMethod | null> {
-    const results = await db.select().from(paymentMethods).where(eq(paymentMethods.id, id)).limit(1)
+  async findById(id: PaymentMethodId, client: DbClient = db): Promise<PaymentMethod | null> {
+    const results = await client
+      .select()
+      .from(paymentMethods)
+      .where(eq(paymentMethods.id, id))
+      .limit(1)
 
     const result = results[0]
     if (!result) return null
@@ -76,14 +81,14 @@ export class PaymentMethodRepository implements IPaymentMethodRepository {
     })
   }
 
-  async delete(id: PaymentMethodId): Promise<void> {
-    await db.delete(paymentMethods).where(eq(paymentMethods.id, id))
+  async delete(id: PaymentMethodId, client: DbClient = db): Promise<void> {
+    await client.delete(paymentMethods).where(eq(paymentMethods.id, id))
   }
 
-  async deleteMany(ids: PaymentMethodId[]): Promise<void> {
+  async deleteMany(ids: PaymentMethodId[], client: DbClient = db): Promise<void> {
     if (ids.length === 0) return
 
-    await db.delete(paymentMethods).where(inArray(paymentMethods.id, ids))
+    await client.delete(paymentMethods).where(inArray(paymentMethods.id, ids))
   }
 
   async exists(id: PaymentMethodId): Promise<boolean> {
@@ -117,8 +122,9 @@ export class PaymentMethodRepository implements IPaymentMethodRepository {
 
   async getSubscriptionsForPaymentMethod(
     paymentMethodId: PaymentMethodId,
+    client: DbClient = db,
   ): Promise<Subscription[]> {
-    return subscriptionRepository.findByPaymentMethodId(paymentMethodId)
+    return subscriptionRepository.findByPaymentMethodId(paymentMethodId, client)
   }
 }
 
