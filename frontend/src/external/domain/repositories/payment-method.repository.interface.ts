@@ -1,3 +1,4 @@
+import type { Subscription } from '../entities'
 import type { PaymentMethod, PaymentMethodId, UserId } from '../entities/payment-method'
 
 /**
@@ -75,4 +76,12 @@ export interface IPaymentMethodRepository {
    * @returns 存在する場合の支払い方法（存在しない場合はnull）
    */
   findByUserIdAndName(userId: UserId, name: string): Promise<PaymentMethod | null>
+
+  /**
+   * 支払い方法IDでサブスクリプションを取得
+   *
+   * @param paymentMethodId 支払い方法ID
+   * @returns サブスクリプションの配列
+   */
+  getSubscriptionsForPaymentMethod(paymentMethodId: PaymentMethodId): Promise<Subscription[]>
 }
