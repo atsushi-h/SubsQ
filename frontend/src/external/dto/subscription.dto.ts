@@ -48,11 +48,20 @@ export const SubscriptionResponseSchema = z.object({
   updatedAt: z.iso.datetime(),
 })
 
+export const ListSubscriptionsResponseSchema = z.object({
+  subscriptions: z.array(SubscriptionResponseSchema),
+  totals: z.object({
+    monthlyTotal: z.number(),
+    yearlyTotal: z.number(),
+  }),
+})
+
 // Type exports
 export type CreateSubscriptionRequest = z.infer<typeof CreateSubscriptionRequestSchema>
 export type UpdateSubscriptionRequest = z.infer<typeof UpdateSubscriptionRequestSchema>
 export type GetSubscriptionByIdRequest = z.infer<typeof GetSubscriptionByIdRequestSchema>
 export type GetSubscriptionsByUserIdRequest = z.infer<typeof GetSubscriptionsByUserIdRequestSchema>
 export type SubscriptionResponse = z.infer<typeof SubscriptionResponseSchema>
+export type ListSubscriptionsResponse = z.infer<typeof ListSubscriptionsResponseSchema>
 export type CreateSubscriptionResponse = SubscriptionResponse
 export type UpdateSubscriptionResponse = SubscriptionResponse
