@@ -48,5 +48,8 @@
   "postUpdateOptions": ["pnpmDedupe"],
   "npm": {
     "minimumReleaseAge": "3 days"
-  }
+  },
+  "allowedPostUpgradeCommands": [
+    "^sed -i\\.bak 's\\|.*\\|.*\\|g' .* && rm -f .*\\.bak$"
+  ]
 }
