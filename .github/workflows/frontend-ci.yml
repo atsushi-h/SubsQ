@@ -46,6 +46,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Type Check
+        run: pnpm type:check
+
       - name: Build
         run: pnpm build
         env:
