@@ -76,12 +76,12 @@ export class SubscriptionService {
   ): Promise<Subscription> {
     const subscription = await this.getSubscriptionById(id)
     if (!subscription) {
-      throw new Error('Subscription not found')
+      throw new Error(`Subscription not found: ${id}`)
     }
 
     // 認可チェック：このユーザーのサブスクリプションか確認
     if (!subscription.belongsTo(userId)) {
-      throw new Error('Unauthorized')
+      throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
     }
 
     // サービス名が指定されている場合はバリデーション
@@ -132,12 +132,12 @@ export class SubscriptionService {
   ): Promise<Subscription> {
     const subscription = await this.getSubscriptionById(id)
     if (!subscription) {
-      throw new Error('Subscription not found')
+      throw new Error(`Subscription not found: ${id}`)
     }
 
     // 認可チェック
     if (!subscription.belongsTo(userId)) {
-      throw new Error('Unauthorized')
+      throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
     }
 
     // 支払い方法を変更
@@ -149,12 +149,12 @@ export class SubscriptionService {
   async delete(id: SubscriptionId, userId: UserId): Promise<void> {
     const subscription = await this.getSubscriptionById(id)
     if (!subscription) {
-      throw new Error('Subscription not found')
+      throw new Error(`Subscription not found: ${id}`)
     }
 
     // 認可チェック
     if (!subscription.belongsTo(userId)) {
-      throw new Error('Unauthorized')
+      throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
     }
 
     await this.subscriptionRepository.delete(id)
@@ -167,12 +167,14 @@ export class SubscriptionService {
         ids.map((id) => this.subscriptionRepository.findById(id, tx)),
       )
 
-      for (const subscription of subscriptions) {
+      for (let i = 0; i < subscriptions.length; i++) {
+        const subscription = subscriptions[i]
+        const id = ids[i]
         if (!subscription) {
-          throw new Error('Subscription not found')
+          throw new Error(`Subscription not found: ${id}`)
         }
         if (!subscription.belongsTo(userId)) {
-          throw new Error('Unauthorized')
+          throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
         }
       }
 

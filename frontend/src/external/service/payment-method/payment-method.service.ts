@@ -63,12 +63,12 @@ export class PaymentMethodService {
   ): Promise<PaymentMethod> {
     const paymentMethod = await this.getPaymentMethodById(id)
     if (!paymentMethod) {
-      throw new Error('Payment method not found')
+      throw new Error(`Payment method not found: ${id}`)
     }
 
     // 認可チェック：このユーザーの支払い方法か確認
     if (!paymentMethod.belongsTo(userId)) {
-      throw new Error('Unauthorized')
+      throw new Error(`Unauthorized: User ${userId} cannot access payment method ${id}`)
     }
 
     // 名前のバリデーション
@@ -97,12 +97,12 @@ export class PaymentMethodService {
     return this.transactionManager.execute(async (tx) => {
       const paymentMethod = await this.paymentMethodRepository.findById(id, tx)
       if (!paymentMethod) {
-        throw new Error('Payment method not found')
+        throw new Error(`Payment method not found: ${id}`)
       }
 
       // 認可チェック
       if (!paymentMethod.belongsTo(userId)) {
-        throw new Error('Unauthorized')
+        throw new Error(`Unauthorized: User ${userId} cannot access payment method ${id}`)
       }
 
       // ドメインサービスで使用中チェック
@@ -123,12 +123,14 @@ export class PaymentMethodService {
         ids.map((id) => this.paymentMethodRepository.findById(id, tx)),
       )
 
-      for (const paymentMethod of paymentMethods) {
+      for (let i = 0; i < paymentMethods.length; i++) {
+        const paymentMethod = paymentMethods[i]
+        const id = ids[i]
         if (!paymentMethod) {
-          throw new Error('Payment method not found')
+          throw new Error(`Payment method not found: ${id}`)
         }
         if (!paymentMethod.belongsTo(userId)) {
-          throw new Error('Unauthorized')
+          throw new Error(`Unauthorized: User ${userId} cannot access payment method ${id}`)
         }
       }
 
