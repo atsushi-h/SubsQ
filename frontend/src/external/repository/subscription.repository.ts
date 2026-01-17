@@ -5,7 +5,7 @@ import { Subscription, type SubscriptionId, type UserId } from '../domain/entiti
 import type { ISubscriptionRepository } from '../domain/repositories/subscription.repository.interface'
 import { Amount, BaseDate, BillingCycle } from '../domain/value-objects'
 import { paymentMethodRepository } from './payment-method.repository'
-import type { DbClient } from './transaction.repository'
+import type { DbClient } from './transaction-manager'
 
 export class SubscriptionRepository implements ISubscriptionRepository {
   async findById(id: SubscriptionId, client: DbClient = db): Promise<Subscription | null> {
@@ -126,7 +126,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
     return results.length > 0
   }
 
-  async findByPaymentMethodId(paymentMethodId: string, client: DbClient = db): Promise<Subscription[]> {
+  async findByPaymentMethodId(
+    paymentMethodId: string,
+    client: DbClient = db,
+  ): Promise<Subscription[]> {
     const results = await client
       .select()
       .from(subscriptions)

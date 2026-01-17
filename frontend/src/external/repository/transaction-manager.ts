@@ -3,7 +3,7 @@ import type { NodePgQueryResultHKT } from 'drizzle-orm/node-postgres'
 import type { PgTransaction } from 'drizzle-orm/pg-core'
 import { db } from '../client/database/client'
 import type * as schema from '../client/database/schema'
-import type { ITransactionRepository } from '../domain/repositories/transaction-manager.interface'
+import type { ITransactionManager } from '../domain/repositories/transaction-manager.interface'
 
 // Drizzleのトランザクション型を定義
 export type DbTransaction = PgTransaction<
@@ -26,11 +26,11 @@ export type DbTransaction = PgTransaction<
 export type DbClient = typeof db | DbTransaction
 
 /**
- * TransactionRepository
+ * TransactionManager
  * トランザクション管理の実装クラス
- * ITransactionRepositoryインターフェースを実装し、Service層に提供
+ * ITransactionManagerインターフェースを実装し、Service層に提供
  */
-class TransactionRepository implements ITransactionRepository<DbClient> {
+class TransactionManager implements ITransactionManager<DbClient> {
   /**
    * トランザクション内でコールバック関数を実行
    * @param callback トランザクション内で実行する処理
@@ -43,4 +43,4 @@ class TransactionRepository implements ITransactionRepository<DbClient> {
   }
 }
 
-export const transactionRepository = new TransactionRepository()
+export const transactionManager = new TransactionManager()

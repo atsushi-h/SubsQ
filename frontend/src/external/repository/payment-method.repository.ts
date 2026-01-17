@@ -5,7 +5,7 @@ import { PaymentMethod, type PaymentMethodId, type UserId } from '../domain/enti
 import type { Subscription } from '../domain/entities/subscription'
 import type { IPaymentMethodRepository } from '../domain/repositories/payment-method.repository.interface'
 import { subscriptionRepository } from './subscription.repository'
-import type { DbClient } from './transaction.repository'
+import type { DbClient } from './transaction-manager'
 
 export class PaymentMethodRepository implements IPaymentMethodRepository {
   async findById(id: PaymentMethodId, client: DbClient = db): Promise<PaymentMethod | null> {

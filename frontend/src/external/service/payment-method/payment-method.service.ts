@@ -1,10 +1,10 @@
 import type { PaymentMethodId, UserId } from '../../domain/entities/payment-method'
 import { PaymentMethod } from '../../domain/entities/payment-method'
 import type { IPaymentMethodRepository } from '../../domain/repositories/payment-method.repository.interface'
-import type { ITransactionRepository } from '../../domain/repositories/transaction-manager.interface'
+import type { ITransactionManager } from '../../domain/repositories/transaction-manager.interface'
 import { paymentMethodUsageChecker } from '../../domain/services'
 import { paymentMethodRepository } from '../../repository/payment-method.repository'
-import { type DbClient, transactionRepository } from '../../repository/transaction.repository'
+import { type DbClient, transactionManager } from '../../repository/transaction-manager'
 
 export interface CreatePaymentMethodInput {
   userId: UserId
@@ -18,7 +18,7 @@ export interface UpdatePaymentMethodInput {
 export class PaymentMethodService {
   constructor(
     private paymentMethodRepository: IPaymentMethodRepository,
-    private transactionManager: ITransactionRepository<DbClient>,
+    private transactionManager: ITransactionManager<DbClient>,
   ) {}
 
   async getPaymentMethodById(id: PaymentMethodId): Promise<PaymentMethod | null> {
@@ -151,5 +151,5 @@ export class PaymentMethodService {
 // シングルトンインスタンスをエクスポート
 export const paymentMethodService = new PaymentMethodService(
   paymentMethodRepository,
-  transactionRepository,
+  transactionManager,
 )

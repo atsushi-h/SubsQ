@@ -1,4 +1,4 @@
-import type { DbClient } from '../../repository/transaction.repository'
+import type { DbClient } from '../../repository/transaction-manager'
 import type { Subscription } from '../entities'
 import type { PaymentMethod, PaymentMethodId, UserId } from '../entities/payment-method'
 

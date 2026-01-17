@@ -1,9 +1,9 @@
 /**
- * ITransactionRepository
+ * ITransactionManager
  * トランザクション管理のインターフェース
  * Service層がDB実装に依存しないようにするための抽象化
  */
-export interface ITransactionRepository<TxType = unknown> {
+export interface ITransactionManager<TxType = unknown> {
   /**
    * トランザクション内でコールバック関数を実行
    * @param callback トランザクション内で実行する処理

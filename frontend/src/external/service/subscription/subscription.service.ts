@@ -1,10 +1,10 @@
 import type { PaymentMethodId, SubscriptionId, UserId } from '../../domain/entities/subscription'
 import { Subscription } from '../../domain/entities/subscription'
 import type { ISubscriptionRepository } from '../../domain/repositories/subscription.repository.interface'
-import type { ITransactionRepository } from '../../domain/repositories/transaction-manager.interface'
+import type { ITransactionManager } from '../../domain/repositories/transaction-manager.interface'
 import { Amount, BaseDate, BillingCycle, type BillingCycleType } from '../../domain/value-objects'
 import { subscriptionRepository } from '../../repository/subscription.repository'
-import { type DbClient, transactionRepository } from '../../repository/transaction.repository'
+import { type DbClient, transactionManager } from '../../repository/transaction-manager'
 
 export interface CreateSubscriptionInput {
   userId: UserId
@@ -28,7 +28,7 @@ export interface UpdateSubscriptionInput {
 export class SubscriptionService {
   constructor(
     private subscriptionRepository: ISubscriptionRepository,
-    private transactionManager: ITransactionRepository<DbClient>,
+    private transactionManager: ITransactionManager<DbClient>,
   ) {}
 
   async getSubscriptionById(id: SubscriptionId): Promise<Subscription | null> {
@@ -192,5 +192,5 @@ export class SubscriptionService {
 // シングルトンインスタンスをエクスポート
 export const subscriptionService = new SubscriptionService(
   subscriptionRepository,
-  transactionRepository,
+  transactionManager,
 )
