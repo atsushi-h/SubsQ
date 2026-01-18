@@ -163,6 +163,9 @@ export class SubscriptionService {
   }
 
   async deleteMany(ids: SubscriptionId[], userId: UserId): Promise<void> {
+    // 空配列の場合は早期リターン（トランザクション開始前）
+    if (ids.length === 0) return
+
     return this.transactionManager.execute(async (tx) => {
       // 全てのサブスクリプションを一括取得
       const subscriptions = await this.subscriptionRepository.findByIds(ids, tx)

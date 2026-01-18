@@ -117,6 +117,9 @@ export class PaymentMethodService {
   }
 
   async deleteMany(ids: PaymentMethodId[], userId: UserId): Promise<void> {
+    // 空配列の場合は早期リターン（トランザクション開始前）
+    if (ids.length === 0) return
+
     return this.transactionManager.execute(async (tx) => {
       // 全ての支払い方法を一括取得
       const paymentMethods = await this.paymentMethodRepository.findByIds(ids, tx)
