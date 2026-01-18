@@ -4,6 +4,7 @@ import { users } from '../client/database/schema'
 import { User, type UserId } from '../domain/entities/user'
 import type { IUserRepository } from '../domain/repositories/user.repository.interface'
 import type { Email } from '../domain/value-objects/email'
+import type { DbClient } from './transaction-manager'
 
 export class UserRepository implements IUserRepository {
   async findById(id: UserId): Promise<User | null> {
@@ -104,8 +105,8 @@ export class UserRepository implements IUserRepository {
     })
   }
 
-  async delete(id: UserId): Promise<void> {
-    await db.delete(users).where(eq(users.id, id))
+  async delete(id: UserId, client: DbClient = db): Promise<void> {
+    await client.delete(users).where(eq(users.id, id))
   }
 
   async exists(id: UserId): Promise<boolean> {

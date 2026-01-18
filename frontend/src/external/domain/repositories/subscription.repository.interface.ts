@@ -43,9 +43,10 @@ export interface ISubscriptionRepository {
    * （削除処理などで使用）
    *
    * @param userId ユーザーID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns サブスクリプションIDの配列
    */
-  findIdsByUserId(userId: UserId): Promise<SubscriptionId[]>
+  findIdsByUserId(userId: UserId, client?: DbClient): Promise<SubscriptionId[]>
 
   /**
    * サブスクリプションを保存（作成または更新）
