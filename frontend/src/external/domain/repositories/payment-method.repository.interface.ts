@@ -44,9 +44,10 @@ export interface IPaymentMethodRepository {
    * （削除処理などで使用）
    *
    * @param userId ユーザーID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns 支払い方法IDの配列
    */
-  findIdsByUserId(userId: UserId): Promise<PaymentMethodId[]>
+  findIdsByUserId(userId: UserId, client?: DbClient): Promise<PaymentMethodId[]>
 
   /**
    * 支払い方法を保存（作成または更新）

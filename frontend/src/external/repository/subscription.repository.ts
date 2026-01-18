@@ -72,8 +72,8 @@ export class SubscriptionRepository implements ISubscriptionRepository {
     )
   }
 
-  async findIdsByUserId(userId: UserId): Promise<SubscriptionId[]> {
-    const results = await db
+  async findIdsByUserId(userId: UserId, client: DbClient = db): Promise<SubscriptionId[]> {
+    const results = await client
       .select({ id: subscriptions.id })
       .from(subscriptions)
       .where(eq(subscriptions.userId, userId))

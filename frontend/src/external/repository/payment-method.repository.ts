@@ -60,8 +60,8 @@ export class PaymentMethodRepository implements IPaymentMethodRepository {
     )
   }
 
-  async findIdsByUserId(userId: UserId): Promise<PaymentMethodId[]> {
-    const results = await db
+  async findIdsByUserId(userId: UserId, client: DbClient = db): Promise<PaymentMethodId[]> {
+    const results = await client
       .select({ id: paymentMethods.id })
       .from(paymentMethods)
       .where(eq(paymentMethods.userId, userId))
