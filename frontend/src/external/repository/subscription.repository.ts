@@ -5,10 +5,15 @@ import { Subscription, type SubscriptionId, type UserId } from '../domain/entiti
 import type { ISubscriptionRepository } from '../domain/repositories/subscription.repository.interface'
 import { Amount, BaseDate, BillingCycle } from '../domain/value-objects'
 import { paymentMethodRepository } from './payment-method.repository'
+import type { DbClient } from './transaction-manager'
 
 export class SubscriptionRepository implements ISubscriptionRepository {
-  async findById(id: SubscriptionId): Promise<Subscription | null> {
-    const results = await db.select().from(subscriptions).where(eq(subscriptions.id, id)).limit(1)
+  async findById(id: SubscriptionId, client: DbClient = db): Promise<Subscription | null> {
+    const results = await client
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.id, id))
+      .limit(1)
 
     const result = results[0]
     if (!result) return null
@@ -25,6 +30,27 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       createdAt: new Date(result.createdAt * 1000),
       updatedAt: new Date(result.updatedAt * 1000),
     })
+  }
+
+  async findByIds(ids: SubscriptionId[], client: DbClient = db): Promise<Subscription[]> {
+    if (ids.length === 0) return []
+
+    const results = await client.select().from(subscriptions).where(inArray(subscriptions.id, ids))
+
+    return results.map((result) =>
+      Subscription.reconstruct({
+        id: result.id,
+        userId: result.userId,
+        serviceName: result.serviceName,
+        amount: Amount.fromValue(result.amount),
+        billingCycle: BillingCycle.fromValue(result.billingCycle),
+        baseDate: BaseDate.fromValue(result.baseDate),
+        paymentMethodId: result.paymentMethodId,
+        memo: result.memo ?? '',
+        createdAt: new Date(result.createdAt * 1000),
+        updatedAt: new Date(result.updatedAt * 1000),
+      }),
+    )
   }
 
   async findByUserId(userId: UserId): Promise<Subscription[]> {
@@ -101,14 +127,14 @@ export class SubscriptionRepository implements ISubscriptionRepository {
     })
   }
 
-  async delete(id: SubscriptionId): Promise<void> {
-    await db.delete(subscriptions).where(eq(subscriptions.id, id))
+  async delete(id: SubscriptionId, client: DbClient = db): Promise<void> {
+    await client.delete(subscriptions).where(eq(subscriptions.id, id))
   }
 
-  async deleteMany(ids: SubscriptionId[]): Promise<void> {
+  async deleteMany(ids: SubscriptionId[], client: DbClient = db): Promise<void> {
     if (ids.length === 0) return
 
-    await db.delete(subscriptions).where(inArray(subscriptions.id, ids))
+    await client.delete(subscriptions).where(inArray(subscriptions.id, ids))
   }
 
   async exists(id: SubscriptionId): Promise<boolean> {
@@ -121,11 +147,41 @@ export class SubscriptionRepository implements ISubscriptionRepository {
     return results.length > 0
   }
 
-  async findByPaymentMethodId(paymentMethodId: string): Promise<Subscription[]> {
-    const results = await db
+  async findByPaymentMethodId(
+    paymentMethodId: string,
+    client: DbClient = db,
+  ): Promise<Subscription[]> {
+    const results = await client
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.paymentMethodId, paymentMethodId))
+
+    return results.map((result) =>
+      Subscription.reconstruct({
+        id: result.id,
+        userId: result.userId,
+        serviceName: result.serviceName,
+        amount: Amount.fromValue(result.amount),
+        billingCycle: BillingCycle.fromValue(result.billingCycle),
+        baseDate: BaseDate.fromValue(result.baseDate),
+        paymentMethodId: result.paymentMethodId,
+        memo: result.memo ?? '',
+        createdAt: new Date(result.createdAt * 1000),
+        updatedAt: new Date(result.updatedAt * 1000),
+      }),
+    )
+  }
+
+  async findByPaymentMethodIds(
+    paymentMethodIds: string[],
+    client: DbClient = db,
+  ): Promise<Subscription[]> {
+    if (paymentMethodIds.length === 0) return []
+
+    const results = await client
+      .select()
+      .from(subscriptions)
+      .where(inArray(subscriptions.paymentMethodId, paymentMethodIds))
 
     return results.map((result) =>
       Subscription.reconstruct({

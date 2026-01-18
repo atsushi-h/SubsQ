@@ -1,8 +1,10 @@
 import type { PaymentMethodId, UserId } from '../../domain/entities/payment-method'
 import { PaymentMethod } from '../../domain/entities/payment-method'
 import type { IPaymentMethodRepository } from '../../domain/repositories/payment-method.repository.interface'
+import type { ITransactionManager } from '../../domain/repositories/transaction-manager.interface'
 import { paymentMethodUsageChecker } from '../../domain/services'
 import { paymentMethodRepository } from '../../repository/payment-method.repository'
+import { type DbClient, transactionManager } from '../../repository/transaction-manager'
 
 export interface CreatePaymentMethodInput {
   userId: UserId
@@ -14,7 +16,10 @@ export interface UpdatePaymentMethodInput {
 }
 
 export class PaymentMethodService {
-  constructor(private paymentMethodRepository: IPaymentMethodRepository) {}
+  constructor(
+    private paymentMethodRepository: IPaymentMethodRepository,
+    private transactionManager: ITransactionManager<DbClient>,
+  ) {}
 
   async getPaymentMethodById(id: PaymentMethodId): Promise<PaymentMethod | null> {
     return this.paymentMethodRepository.findById(id)
@@ -58,12 +63,12 @@ export class PaymentMethodService {
   ): Promise<PaymentMethod> {
     const paymentMethod = await this.getPaymentMethodById(id)
     if (!paymentMethod) {
-      throw new Error('Payment method not found')
+      throw new Error(`Payment method not found: ${id}`)
     }
 
     // 認可チェック：このユーザーの支払い方法か確認
     if (!paymentMethod.belongsTo(userId)) {
-      throw new Error('Unauthorized')
+      throw new Error(`Unauthorized: User ${userId} cannot access payment method ${id}`)
     }
 
     // 名前のバリデーション
@@ -89,45 +94,71 @@ export class PaymentMethodService {
   }
 
   async delete(id: PaymentMethodId, userId: UserId): Promise<void> {
-    const paymentMethod = await this.getPaymentMethodById(id)
-    if (!paymentMethod) {
-      throw new Error('Payment method not found')
-    }
+    return this.transactionManager.execute(async (tx) => {
+      const paymentMethod = await this.paymentMethodRepository.findById(id, tx)
+      if (!paymentMethod) {
+        throw new Error(`Payment method not found: ${id}`)
+      }
 
-    // 認可チェック
-    if (!paymentMethod.belongsTo(userId)) {
-      throw new Error('Unauthorized')
-    }
+      // 認可チェック
+      if (!paymentMethod.belongsTo(userId)) {
+        throw new Error(`Unauthorized: User ${userId} cannot access payment method ${id}`)
+      }
 
-    // ドメインサービスで使用中チェック
-    const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(id)
-    paymentMethodUsageChecker.validateDeletion(id, subscriptions)
+      // ドメインサービスで使用中チェック
+      const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(
+        id,
+        tx,
+      )
+      paymentMethodUsageChecker.validateDeletion(id, subscriptions)
 
-    await this.paymentMethodRepository.delete(id)
+      await this.paymentMethodRepository.delete(id, tx)
+    })
   }
 
   async deleteMany(ids: PaymentMethodId[], userId: UserId): Promise<void> {
-    // 全ての支払い方法がこのユーザーのものか確認
-    const paymentMethods = await Promise.all(ids.map((id) => this.getPaymentMethodById(id)))
+    // 空配列の場合は早期リターン（トランザクション開始前）
+    if (ids.length === 0) return
 
-    for (const paymentMethod of paymentMethods) {
-      if (!paymentMethod) {
-        throw new Error('Payment method not found')
+    return this.transactionManager.execute(async (tx) => {
+      // 全ての支払い方法を一括取得
+      const paymentMethods = await this.paymentMethodRepository.findByIds(ids, tx)
+
+      // 存在しないIDをチェック
+      if (paymentMethods.length !== ids.length) {
+        const foundIds = new Set(paymentMethods.map((pm) => pm.id))
+        const missingIds = ids.filter((id) => !foundIds.has(id))
+        throw new Error(`Payment method not found: ${missingIds.join(', ')}`)
       }
-      if (!paymentMethod.belongsTo(userId)) {
-        throw new Error('Unauthorized')
+
+      // 全ての支払い方法がこのユーザーのものか確認
+      for (const paymentMethod of paymentMethods) {
+        if (!paymentMethod.belongsTo(userId)) {
+          throw new Error(
+            `Unauthorized: User ${userId} cannot access payment method ${paymentMethod.id}`,
+          )
+        }
       }
-    }
 
-    // ドメインサービスで使用中チェック
-    for (const id of ids) {
-      const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(id)
-      paymentMethodUsageChecker.validateDeletion(id, subscriptions)
-    }
+      // 使用中チェック（一括取得）
+      const allSubscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethods(
+        ids,
+        tx,
+      )
 
-    await this.paymentMethodRepository.deleteMany(ids)
+      // 各支払い方法ごとに使用中チェック
+      for (const id of ids) {
+        const subscriptions = allSubscriptions.filter((s) => s.paymentMethodId === id)
+        paymentMethodUsageChecker.validateDeletion(id, subscriptions)
+      }
+
+      await this.paymentMethodRepository.deleteMany(ids, tx)
+    })
   }
 }
 
 // シングルトンインスタンスをエクスポート
-export const paymentMethodService = new PaymentMethodService(paymentMethodRepository)
+export const paymentMethodService = new PaymentMethodService(
+  paymentMethodRepository,
+  transactionManager,
+)
