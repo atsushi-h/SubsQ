@@ -1,10 +1,10 @@
 import { User } from '../../domain/entities/user'
-import type { IUserRepository } from '../../domain/repositories/user.repository.interface'
 import type { ITransactionManager } from '../../domain/repositories/transaction-manager.interface'
+import type { IUserRepository } from '../../domain/repositories/user.repository.interface'
 import { userAccountDeleter } from '../../domain/services'
 import { Email } from '../../domain/value-objects/email'
-import { userRepository } from '../../repository/user.repository'
 import { type DbClient, transactionManager } from '../../repository/transaction-manager'
+import { userRepository } from '../../repository/user.repository'
 
 export interface CreateUserInput {
   email: string
