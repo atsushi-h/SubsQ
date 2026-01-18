@@ -147,17 +147,19 @@ export class SubscriptionService {
   }
 
   async delete(id: SubscriptionId, userId: UserId): Promise<void> {
-    const subscription = await this.getSubscriptionById(id)
-    if (!subscription) {
-      throw new Error(`Subscription not found: ${id}`)
-    }
+    return this.transactionManager.execute(async (tx) => {
+      const subscription = await this.subscriptionRepository.findById(id, tx)
+      if (!subscription) {
+        throw new Error(`Subscription not found: ${id}`)
+      }
 
-    // 認可チェック
-    if (!subscription.belongsTo(userId)) {
-      throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
-    }
+      // 認可チェック
+      if (!subscription.belongsTo(userId)) {
+        throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
+      }
 
-    await this.subscriptionRepository.delete(id)
+      await this.subscriptionRepository.delete(id, tx)
+    })
   }
 
   async deleteMany(ids: SubscriptionId[], userId: UserId): Promise<void> {
