@@ -20,6 +20,10 @@
       "automerge": true
     },
     {
+      "matchManagers": ["github-actions"],
+      "automerge": true
+    },
+    {
       "matchDepTypes": ["devDependencies"],
       "addLabels": ["devDependencies"]
     },
