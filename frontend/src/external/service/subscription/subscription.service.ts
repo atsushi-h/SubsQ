@@ -164,19 +164,22 @@ export class SubscriptionService {
 
   async deleteMany(ids: SubscriptionId[], userId: UserId): Promise<void> {
     return this.transactionManager.execute(async (tx) => {
-      // 全てのサブスクリプションがこのユーザーのものか確認
-      const subscriptions = await Promise.all(
-        ids.map((id) => this.subscriptionRepository.findById(id, tx)),
-      )
+      // 全てのサブスクリプションを一括取得
+      const subscriptions = await this.subscriptionRepository.findByIds(ids, tx)
 
-      for (let i = 0; i < subscriptions.length; i++) {
-        const subscription = subscriptions[i]
-        const id = ids[i]
-        if (!subscription) {
-          throw new Error(`Subscription not found: ${id}`)
-        }
+      // 存在しないIDをチェック
+      if (subscriptions.length !== ids.length) {
+        const foundIds = new Set(subscriptions.map((s) => s.id))
+        const missingIds = ids.filter((id) => !foundIds.has(id))
+        throw new Error(`Subscription not found: ${missingIds.join(', ')}`)
+      }
+
+      // 全てのサブスクリプションがこのユーザーのものか確認
+      for (const subscription of subscriptions) {
         if (!subscription.belongsTo(userId)) {
-          throw new Error(`Unauthorized: User ${userId} cannot access subscription ${id}`)
+          throw new Error(
+            `Unauthorized: User ${userId} cannot access subscription ${subscription.id}`,
+          )
         }
       }
 

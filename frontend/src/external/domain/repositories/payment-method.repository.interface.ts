@@ -23,6 +23,15 @@ export interface IPaymentMethodRepository {
   findById(id: PaymentMethodId, client?: DbClient): Promise<PaymentMethod | null>
 
   /**
+   * 複数のIDで支払い方法を一括取得
+   *
+   * @param ids 支払い方法IDの配列
+   * @param client DBクライアントまたはトランザクション（オプション）
+   * @returns 支払い方法の配列（存在しないIDは含まれない）
+   */
+  findByIds(ids: PaymentMethodId[], client?: DbClient): Promise<PaymentMethod[]>
+
+  /**
    * ユーザーIDで全支払い方法を取得
    *
    * @param userId ユーザーID
@@ -90,6 +99,18 @@ export interface IPaymentMethodRepository {
    */
   getSubscriptionsForPaymentMethod(
     paymentMethodId: PaymentMethodId,
+    client?: DbClient,
+  ): Promise<Subscription[]>
+
+  /**
+   * 複数の支払い方法IDでサブスクリプションを一括取得
+   *
+   * @param paymentMethodIds 支払い方法IDの配列
+   * @param client DBクライアントまたはトランザクション（オプション）
+   * @returns サブスクリプションの配列
+   */
+  getSubscriptionsForPaymentMethods(
+    paymentMethodIds: PaymentMethodId[],
     client?: DbClient,
   ): Promise<Subscription[]>
 }

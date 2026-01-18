@@ -118,28 +118,34 @@ export class PaymentMethodService {
 
   async deleteMany(ids: PaymentMethodId[], userId: UserId): Promise<void> {
     return this.transactionManager.execute(async (tx) => {
-      // 全ての支払い方法がこのユーザーのものか確認
-      const paymentMethods = await Promise.all(
-        ids.map((id) => this.paymentMethodRepository.findById(id, tx)),
-      )
+      // 全ての支払い方法を一括取得
+      const paymentMethods = await this.paymentMethodRepository.findByIds(ids, tx)
 
-      for (let i = 0; i < paymentMethods.length; i++) {
-        const paymentMethod = paymentMethods[i]
-        const id = ids[i]
-        if (!paymentMethod) {
-          throw new Error(`Payment method not found: ${id}`)
-        }
+      // 存在しないIDをチェック
+      if (paymentMethods.length !== ids.length) {
+        const foundIds = new Set(paymentMethods.map((pm) => pm.id))
+        const missingIds = ids.filter((id) => !foundIds.has(id))
+        throw new Error(`Payment method not found: ${missingIds.join(', ')}`)
+      }
+
+      // 全ての支払い方法がこのユーザーのものか確認
+      for (const paymentMethod of paymentMethods) {
         if (!paymentMethod.belongsTo(userId)) {
-          throw new Error(`Unauthorized: User ${userId} cannot access payment method ${id}`)
+          throw new Error(
+            `Unauthorized: User ${userId} cannot access payment method ${paymentMethod.id}`,
+          )
         }
       }
 
-      // ドメインサービスで使用中チェック
+      // 使用中チェック（一括取得）
+      const allSubscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethods(
+        ids,
+        tx,
+      )
+
+      // 各支払い方法ごとに使用中チェック
       for (const id of ids) {
-        const subscriptions = await this.paymentMethodRepository.getSubscriptionsForPaymentMethod(
-          id,
-          tx,
-        )
+        const subscriptions = allSubscriptions.filter((s) => s.paymentMethodId === id)
         paymentMethodUsageChecker.validateDeletion(id, subscriptions)
       }
 

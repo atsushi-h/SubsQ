@@ -27,6 +27,25 @@ export class PaymentMethodRepository implements IPaymentMethodRepository {
     })
   }
 
+  async findByIds(ids: PaymentMethodId[], client: DbClient = db): Promise<PaymentMethod[]> {
+    if (ids.length === 0) return []
+
+    const results = await client
+      .select()
+      .from(paymentMethods)
+      .where(inArray(paymentMethods.id, ids))
+
+    return results.map((result) =>
+      PaymentMethod.reconstruct({
+        id: result.id,
+        userId: result.userId,
+        name: result.name,
+        createdAt: new Date(result.createdAt * 1000),
+        updatedAt: new Date(result.updatedAt * 1000),
+      }),
+    )
+  }
+
   async findByUserId(userId: UserId): Promise<PaymentMethod[]> {
     const results = await db.select().from(paymentMethods).where(eq(paymentMethods.userId, userId))
 
@@ -125,6 +144,13 @@ export class PaymentMethodRepository implements IPaymentMethodRepository {
     client: DbClient = db,
   ): Promise<Subscription[]> {
     return subscriptionRepository.findByPaymentMethodId(paymentMethodId, client)
+  }
+
+  async getSubscriptionsForPaymentMethods(
+    paymentMethodIds: PaymentMethodId[],
+    client: DbClient = db,
+  ): Promise<Subscription[]> {
+    return subscriptionRepository.findByPaymentMethodIds(paymentMethodIds, client)
   }
 }
 

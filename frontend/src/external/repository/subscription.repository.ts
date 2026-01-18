@@ -32,6 +32,27 @@ export class SubscriptionRepository implements ISubscriptionRepository {
     })
   }
 
+  async findByIds(ids: SubscriptionId[], client: DbClient = db): Promise<Subscription[]> {
+    if (ids.length === 0) return []
+
+    const results = await client.select().from(subscriptions).where(inArray(subscriptions.id, ids))
+
+    return results.map((result) =>
+      Subscription.reconstruct({
+        id: result.id,
+        userId: result.userId,
+        serviceName: result.serviceName,
+        amount: Amount.fromValue(result.amount),
+        billingCycle: BillingCycle.fromValue(result.billingCycle),
+        baseDate: BaseDate.fromValue(result.baseDate),
+        paymentMethodId: result.paymentMethodId,
+        memo: result.memo ?? '',
+        createdAt: new Date(result.createdAt * 1000),
+        updatedAt: new Date(result.updatedAt * 1000),
+      }),
+    )
+  }
+
   async findByUserId(userId: UserId): Promise<Subscription[]> {
     const results = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
 
@@ -134,6 +155,33 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.paymentMethodId, paymentMethodId))
+
+    return results.map((result) =>
+      Subscription.reconstruct({
+        id: result.id,
+        userId: result.userId,
+        serviceName: result.serviceName,
+        amount: Amount.fromValue(result.amount),
+        billingCycle: BillingCycle.fromValue(result.billingCycle),
+        baseDate: BaseDate.fromValue(result.baseDate),
+        paymentMethodId: result.paymentMethodId,
+        memo: result.memo ?? '',
+        createdAt: new Date(result.createdAt * 1000),
+        updatedAt: new Date(result.updatedAt * 1000),
+      }),
+    )
+  }
+
+  async findByPaymentMethodIds(
+    paymentMethodIds: string[],
+    client: DbClient = db,
+  ): Promise<Subscription[]> {
+    if (paymentMethodIds.length === 0) return []
+
+    const results = await client
+      .select()
+      .from(subscriptions)
+      .where(inArray(subscriptions.paymentMethodId, paymentMethodIds))
 
     return results.map((result) =>
       Subscription.reconstruct({
