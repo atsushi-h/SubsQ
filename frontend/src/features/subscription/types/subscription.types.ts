@@ -5,4 +5,3 @@ import type {
 
 export type Subscription = SubscriptionResponse
 export type SubscriptionList = ListSubscriptionsResponse
-export type BillingCycle = 'monthly' | 'yearly'
