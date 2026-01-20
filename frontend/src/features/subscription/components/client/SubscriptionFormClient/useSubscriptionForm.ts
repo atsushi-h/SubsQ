@@ -37,8 +37,9 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: subscriptionIdの変更を検知して再実行する必要がある
   useEffect(() => {
     if (props.mode === 'edit' && existingSubscription) {
-      const baseDate = new Date(existingSubscription.baseDate)
-      const baseDateString = baseDate.toISOString().split('T')[0] // YYYY-MM-DD
+      // ISO文字列から直接日付部分を取得（タイムゾーンの影響を受けない）
+      // "2024-03-15T00:00:00.000Z" → "2024-03-15"
+      const baseDateString = existingSubscription.baseDate.split('T')[0]
 
       setFormData({
         serviceName: existingSubscription.serviceName,
@@ -78,7 +79,9 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
       }
 
       // ISO datetime 形式に変換（baseDate）
-      const baseDateISO = new Date(formData.baseDate).toISOString()
+      // タイムゾーンの影響を受けないように明示的にUTCで日付を作成
+      const [year, month, day] = formData.baseDate.split('-')
+      const baseDateISO = new Date(Date.UTC(+year, +month - 1, +day)).toISOString()
 
       if (props.mode === 'create') {
         createMutation.mutate(
