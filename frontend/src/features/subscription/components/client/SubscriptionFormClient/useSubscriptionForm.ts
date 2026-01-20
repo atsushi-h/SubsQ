@@ -17,6 +17,8 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
   const createMutation = useCreateSubscriptionMutation()
   const updateMutation = useUpdateSubscriptionMutation()
 
+  const subscriptionId = props.mode === 'edit' ? props.subscriptionId : undefined
+
   const { data: existingSubscription, isLoading: isLoadingSubscription } =
     useSubscriptionDetailQuery(props.mode === 'edit' ? props.subscriptionId : '')
 
@@ -31,6 +33,8 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // 編集モードの場合、既存データをロード
+  // subscriptionIdを依存配列に含めることで、編集対象が変わったときに確実に再実行される
+  // biome-ignore lint/correctness/useExhaustiveDependencies: subscriptionIdの変更を検知して再実行する必要がある
   useEffect(() => {
     if (props.mode === 'edit' && existingSubscription) {
       const baseDate = new Date(existingSubscription.baseDate)
@@ -44,7 +48,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
         memo: existingSubscription.memo || '',
       })
     }
-  }, [props.mode, existingSubscription])
+  }, [props.mode, subscriptionId, existingSubscription])
 
   const handleChange = useCallback((field: keyof SubscriptionFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
