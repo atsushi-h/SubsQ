@@ -8,6 +8,5 @@ export function useSubscriptionListQuery() {
   return useQuery({
     queryKey: subscriptionKeys.lists(),
     queryFn: () => listSubscriptionsByUserIdQueryAction(),
-    staleTime: 0,
   })
 }

@@ -9,6 +9,5 @@ export function useSubscriptionDetailQuery(id: string) {
     queryKey: subscriptionKeys.detail(id),
     queryFn: () => getSubscriptionByIdQueryAction({ id }),
     enabled: !!id,
-    staleTime: 0,
   })
 }
