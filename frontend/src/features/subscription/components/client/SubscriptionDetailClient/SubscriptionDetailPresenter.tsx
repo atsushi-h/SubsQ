@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/ui/dialog'
+import { DateUtil } from '@/shared/utils/date'
 
 type Props = {
   subscription: Subscription | null
@@ -37,10 +38,6 @@ export function SubscriptionDetailPresenter({
 }: Props) {
   const formatAmount = (amount: number) => `¥${amount.toLocaleString('ja-JP')}`
   const formatBillingCycle = (cycle: string) => (cycle === 'monthly' ? '月額' : '年額')
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ja-JP')
-  }
 
   if (isLoading) {
     return (
@@ -100,7 +97,7 @@ export function SubscriptionDetailPresenter({
 
           <div>
             <p className="text-sm text-muted-foreground mb-1">次回請求日</p>
-            <p className="text-lg">{formatDate(subscription.baseDate)}</p>
+            <p className="text-lg">{DateUtil.formatDate(subscription.baseDate)}</p>
           </div>
 
           <div>
@@ -119,11 +116,11 @@ export function SubscriptionDetailPresenter({
             <div className="grid grid-cols-2 gap-6 text-sm text-muted-foreground">
               <div>
                 <p>作成日時</p>
-                <p>{formatDate(subscription.createdAt)}</p>
+                <p>{DateUtil.formatDateTime(subscription.createdAt)}</p>
               </div>
               <div>
                 <p>更新日時</p>
-                <p>{formatDate(subscription.updatedAt)}</p>
+                <p>{DateUtil.formatDateTime(subscription.updatedAt)}</p>
               </div>
             </div>
           </div>

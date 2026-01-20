@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table'
+import { DateUtil } from '@/shared/utils/date'
 
 type Props = {
   subscriptions: Subscription[]
@@ -49,10 +50,6 @@ export function SubscriptionListPresenter({
 }: Props) {
   const formatAmount = (amount: number) => `¥${amount.toLocaleString('ja-JP')}`
   const formatBillingCycle = (cycle: string) => (cycle === 'monthly' ? '月額' : '年額')
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ja-JP')
-  }
 
   if (isLoading) {
     return (
@@ -113,7 +110,7 @@ export function SubscriptionListPresenter({
                   <TableCell className="font-medium">{subscription.serviceName}</TableCell>
                   <TableCell>{formatAmount(subscription.amount)}</TableCell>
                   <TableCell>{formatBillingCycle(subscription.billingCycle)}</TableCell>
-                  <TableCell>{formatDate(subscription.baseDate)}</TableCell>
+                  <TableCell>{DateUtil.formatDate(subscription.baseDate)}</TableCell>
                   <TableCell>{subscription.paymentMethod?.name ?? '未設定'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
