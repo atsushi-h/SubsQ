@@ -3,6 +3,11 @@ import { z } from 'zod'
 // バリデーション定数
 const MAX_SUBSCRIPTION_AMOUNT = 1_000_000
 const MAX_SERVICE_NAME_LENGTH = 100
+const MIN_YEAR = 2000
+const MAX_YEAR = 2100
+
+// YYYY-MM-DD形式の正規表現
+const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/
 
 export const subscriptionFormSchema = z.object({
   serviceName: z
@@ -30,7 +35,15 @@ export const subscriptionFormSchema = z.object({
   baseDate: z
     .string()
     .min(1, '基準日を入力してください')
-    .refine((val) => !Number.isNaN(new Date(val).getTime()), '有効な日付を入力してください'),
+    .regex(DATE_FORMAT_REGEX, 'YYYY-MM-DD形式で入力してください')
+    .refine((val) => {
+      const date = new Date(val)
+      if (Number.isNaN(date.getTime())) {
+        return false
+      }
+      const year = date.getFullYear()
+      return year >= MIN_YEAR && year <= MAX_YEAR
+    }, `有効な日付を入力してください（${MIN_YEAR}年〜${MAX_YEAR}年）`),
   memo: z.string().optional(),
 })
 
