@@ -1,12 +1,5 @@
-import { getSessionServer } from '@/features/auth/servers/auth.server'
+import { SubscriptionListPageTemplate } from '@/features/subscription/components/server/SubscriptionListPageTemplate'
 
-export default async function SubscriptionsPage() {
-  const session = await getSessionServer()
-
-  return (
-    <div>
-      <h1>Subscriptions</h1>
-      <p>Welcome, {session?.user?.name}!</p>
-    </div>
-  )
+export default function SubscriptionsPage() {
+  return <SubscriptionListPageTemplate />
 }

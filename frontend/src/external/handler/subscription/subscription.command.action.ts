@@ -12,8 +12,10 @@ import {
 } from '@/external/handler/subscription/subscription.command.server'
 import { withAuth } from '@/features/auth/servers/auth.guard'
 
-export async function createSubscriptionCommandAction(request: CreateSubscriptionRequest) {
-  return withAuth(({ userId }) => createSubscriptionCommand(request, userId))
+export async function createSubscriptionCommandAction(
+  data: Omit<CreateSubscriptionRequest, 'userId'>,
+) {
+  return withAuth(({ userId }) => createSubscriptionCommand({ ...data, userId }, userId))
 }
 
 export async function updateSubscriptionCommandAction(request: UpdateSubscriptionRequest) {

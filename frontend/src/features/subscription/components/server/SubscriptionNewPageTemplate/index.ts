@@ -1,0 +1,1 @@
+export { SubscriptionNewPageTemplate } from './SubscriptionNewPageTemplate'
