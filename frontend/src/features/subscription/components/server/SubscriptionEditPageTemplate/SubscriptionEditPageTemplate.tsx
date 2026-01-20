@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { notFound } from 'next/navigation'
 import { getSubscriptionByIdQuery } from '@/external/handler/subscription/subscription.query.server'
 import { getAuthenticatedSessionServer } from '@/features/auth/servers/redirect.server'
-import { SubscriptionFormContainer } from '@/features/subscription/components/client/SubscriptionFormClient'
+import { SubscriptionForm } from '@/features/subscription/components/client/SubscriptionForm'
 import { subscriptionKeys } from '@/features/subscription/queries/subscription.query-keys'
 import { getQueryClient } from '@/shared/lib/query-client'
 
@@ -27,7 +27,7 @@ export async function SubscriptionEditPageTemplate({ subscriptionId }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <SubscriptionFormContainer mode="edit" subscriptionId={subscriptionId} />
+      <SubscriptionForm mode="edit" subscriptionId={subscriptionId} />
     </HydrationBoundary>
   )
 }

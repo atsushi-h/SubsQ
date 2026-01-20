@@ -1,5 +1,5 @@
-import { SubscriptionFormContainer } from '@/features/subscription/components/client/SubscriptionFormClient'
+import { SubscriptionForm } from '@/features/subscription/components/client/SubscriptionForm'
 
 export function SubscriptionNewPageTemplate() {
-  return <SubscriptionFormContainer mode="create" />
+  return <SubscriptionForm mode="create" />
 }

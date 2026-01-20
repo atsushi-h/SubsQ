@@ -24,40 +24,50 @@ features/subscription/
 │  │  ├─ SubscriptionNewPageTemplate/
 │  │  │  ├─ index.ts
 │  │  │  └─ SubscriptionNewPageTemplate.tsx
-│  │  └─ SubscriptionEditPageTemplate/
+│  │  ├─ SubscriptionEditPageTemplate/
+│  │  │  ├─ index.ts
+│  │  │  └─ SubscriptionEditPageTemplate.tsx
+│  │  └─ SubscriptionDetailPageTemplate/
 │  │     ├─ index.ts
-│  │     └─ SubscriptionEditPageTemplate.tsx
+│  │     └─ SubscriptionDetailPageTemplate.tsx
 │  └─ client/    # Client Components
 │     ├─ SubscriptionList/
 │     │  ├─ index.ts
 │     │  ├─ SubscriptionListContainer.tsx
 │     │  ├─ SubscriptionListPresenter.tsx
-│     │  ├─ SubscriptionCard.tsx
 │     │  └─ useSubscriptionList.ts
 │     ├─ SubscriptionForm/
 │     │  ├─ index.ts
 │     │  ├─ SubscriptionFormContainer.tsx
 │     │  ├─ SubscriptionFormPresenter.tsx
 │     │  └─ useSubscriptionForm.ts
-│     └─ SubscriptionSummary/
+│     └─ SubscriptionDetail/
 │        ├─ index.ts
-│        ├─ SubscriptionSummaryContainer.tsx
-│        └─ SubscriptionSummaryPresenter.tsx
-├─ hooks/        # カスタムフック
-│  ├─ useSubscriptionQuery.ts
-│  └─ useSubscriptionMutation.ts
+│        ├─ SubscriptionDetailContainer.tsx
+│        ├─ SubscriptionDetailPresenter.tsx
+│        └─ useSubscriptionDetail.ts
+├─ hooks/        # TanStack Query Hooks
+│  ├─ useSubscriptionListQuery.ts
+│  ├─ useSubscriptionDetailQuery.ts
+│  ├─ useCreateSubscriptionMutation.ts
+│  ├─ useUpdateSubscriptionMutation.ts
+│  └─ useDeleteSubscriptionMutation.ts
 ├─ queries/      # TanStack Query関連
-│  ├─ keys.ts
-│  └─ helpers.ts
-├─ actions/      # Server Actions
-│  ├─ createSubscription.ts
-│  ├─ updateSubscription.ts
-│  └─ deleteSubscription.ts
-├─ types/        # 型定義
-│  └─ index.ts
-└─ utils/        # ユーティリティ
-   ├─ validation.ts
-   └─ calculation.ts  # 月額換算・次回請求日計算
+│  └─ subscription.query-keys.ts
+├─ schemas/      # Zodスキーマ
+│  └─ subscription-form.schema.ts
+└─ types/        # 型定義
+   └─ subscription.types.ts
+
+**注意:**
+- Server Actions（`'use server'`を含むファイル）は、アーキテクチャ上 `external/handler/[feature]/` に配置されています
+  - `external/handler/subscription/subscription.command.action.ts` - Server Actions（create, update, delete）
+  - `external/handler/subscription/subscription.command.server.ts` - Command処理のビジネスロジック
+  - `external/handler/subscription/subscription.query.server.ts` - Query処理（データ取得）
+  - `external/handler/subscription/subscription.query.action.ts` - Query Actions
+  - `external/handler/subscription/subscription.converter.ts` - DTO変換ロジック
+- View専用の子コンポーネントは必要に応じて同じディレクトリ内に配置（例: SubscriptionCard.tsx）
+- `utils/` ディレクトリは必要に応じて作成
 ```
 
 ## Container/Presenterパターン
@@ -224,23 +234,25 @@ server/
 ### 実装例
 ```tsx
 // features/subscription/components/server/SubscriptionListPageTemplate/SubscriptionListPageTemplate.tsx
-import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
-import { getQueryClient } from '@/lib/query-client'
-import { subscriptionKeys } from '@/features/subscription/queries/keys'
-import { listSubscriptionsServer } from '@/external/handler/subscription.query.server'
-import { SubscriptionListContainer } from '../../client/SubscriptionList'
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { listSubscriptionsByUserIdQuery } from '@/external/handler/subscription/subscription.query.server'
+import { getAuthenticatedSessionServer } from '@/features/auth/servers/redirect.server'
+import { SubscriptionList } from '@/features/subscription/components/client/SubscriptionList'
+import { subscriptionKeys } from '@/features/subscription/queries/subscription.query-keys'
+import { getQueryClient } from '@/shared/lib/query-client'
 
 export async function SubscriptionListPageTemplate() {
+  const session = await getAuthenticatedSessionServer()
   const queryClient = getQueryClient()
 
   await queryClient.prefetchQuery({
-    queryKey: subscriptionKeys.list(),
-    queryFn: () => listSubscriptionsServer(),
+    queryKey: subscriptionKeys.lists(),
+    queryFn: () => listSubscriptionsByUserIdQuery(session.user.id),
   })
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <SubscriptionListContainer />
+      <SubscriptionList />
     </HydrationBoundary>
   )
 }
@@ -252,10 +264,10 @@ export { SubscriptionListPageTemplate } from './SubscriptionListPageTemplate'
 
 ## Client Componentsの命名規則
 
-index.tsでエクスポートする際は、より具体的で意味のある名前に変更します：
+index.tsでエクスポートする際は、エイリアスを使用して外部から使いやすい名前を提供します：
 ```tsx
 // features/auth/components/client/Login/index.ts
-export { LoginContainer as LoginForm } from './LoginContainer'
+export { LoginClientContainer as Login } from './LoginClientContainer'
 
 // features/subscription/components/client/SubscriptionList/index.ts
 export { SubscriptionListContainer as SubscriptionList } from './SubscriptionListContainer'
@@ -263,8 +275,8 @@ export { SubscriptionListContainer as SubscriptionList } from './SubscriptionLis
 // features/subscription/components/client/SubscriptionForm/index.ts
 export { SubscriptionFormContainer as SubscriptionForm } from './SubscriptionFormContainer'
 
-// features/payment-method/components/client/PaymentMethodList/index.ts
-export { PaymentMethodListContainer as PaymentMethodList } from './PaymentMethodListContainer'
+// features/subscription/components/client/SubscriptionDetail/index.ts
+export { SubscriptionDetailContainer as SubscriptionDetail } from './SubscriptionDetailContainer'
 ```
 
 ## Presenterコンポーネントの使用ルール

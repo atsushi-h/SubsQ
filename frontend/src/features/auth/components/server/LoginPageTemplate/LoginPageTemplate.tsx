@@ -1,5 +1,5 @@
-import { LoginPageClient } from '@/features/auth/components/client/LoginPageClient'
+import { Login } from '@/features/auth/components/client/Login'
 
 export function LoginPageTemplate() {
-  return <LoginPageClient />
+  return <Login />
 }
