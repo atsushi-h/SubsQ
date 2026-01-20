@@ -17,9 +17,8 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
   const createMutation = useCreateSubscriptionMutation()
   const updateMutation = useUpdateSubscriptionMutation()
 
-  const { data: existingSubscription, isLoading: isLoadingSubscription } = useSubscriptionDetailQuery(
-    props.mode === 'edit' ? props.subscriptionId : '',
-  )
+  const { data: existingSubscription, isLoading: isLoadingSubscription } =
+    useSubscriptionDetailQuery(props.mode === 'edit' ? props.subscriptionId : '')
 
   const [formData, setFormData] = useState<SubscriptionFormData>({
     serviceName: '',
