@@ -1,0 +1,1 @@
+export { SubscriptionEditPageTemplate } from './SubscriptionEditPageTemplate'
