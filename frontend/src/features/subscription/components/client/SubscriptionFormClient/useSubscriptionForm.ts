@@ -17,8 +17,10 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
   const createMutation = useCreateSubscriptionMutation()
   const updateMutation = useUpdateSubscriptionMutation()
 
+  const subscriptionId = 'subscriptionId' in props ? props.subscriptionId : undefined
+
   const { data: existingSubscription, isLoading: isLoadingSubscription } =
-    useSubscriptionDetailQuery('subscriptionId' in props ? props.subscriptionId : undefined)
+    useSubscriptionDetailQuery(subscriptionId)
 
   const [formData, setFormData] = useState<SubscriptionFormData>({
     serviceName: '',
@@ -47,7 +49,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
         memo: existingSubscription.memo || '',
       })
     }
-  }, [props.mode, 'subscriptionId' in props ? props.subscriptionId : null, existingSubscription])
+  }, [props.mode, subscriptionId, existingSubscription])
 
   const handleChange = useCallback((field: keyof SubscriptionFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
