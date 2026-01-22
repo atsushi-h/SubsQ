@@ -17,8 +17,12 @@ jobs:
     name: Run Migration (${{ inputs.environment }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: ${{ inputs.environment }}
     env:
-      DATABASE_URL: ${{ inputs.environment == 'dev' && secrets.DATABASE_URL_DEV || secrets.DATABASE_URL_PRD }}
+      # マイグレーションには直接接続（Direct connection）を使用
+      # - DATABASE_URL_DIRECT: スキーマ変更など特殊な操作に適した直接接続（poolerなし）
+      # - DATABASE_URL: アプリケーション実行時に使用するPooled connection（APIサーバーなど）
+      DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
     defaults:
       run:
         working-directory: frontend
@@ -55,10 +59,10 @@ jobs:
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "::error::DATABASE_URL is not set for ${{ inputs.environment }} environment"
-            echo "::error::Please ensure DATABASE_URL_${{ inputs.environment == 'dev' && 'DEV' || 'PRD' }} secret is configured"
+            echo "::error::Please ensure DATABASE_URL_DIRECT secret is configured in ${{ inputs.environment }} environment"
             exit 1
           fi
-          echo "::notice::DATABASE_URL is configured for ${{ inputs.environment }} environment"
+          echo "::notice::DATABASE_URL (direct connection) is configured for ${{ inputs.environment }} environment"
 
       - name: Display migration files
         run: |
