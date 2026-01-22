@@ -22,12 +22,14 @@
 
 ## インフラストラクチャ
 
-| 環境             | サービス         | 詳細                             |
-| ---------------- | ---------------- | -------------------------------- |
-| 本番 DB          | Neon             | PostgreSQL 互換のサーバーレス DB |
-| 開発 DB          | Docker Compose   | PostgreSQL 15                    |
-| ホスティング     | Google Cloud Run | コンテナベースのサーバーレス     |
-| 認証プロバイダー | Google OAuth     | ソーシャルログインのみ           |
+| 環境               | サービス                 | 詳細                             |
+| ------------------ | ------------------------ | -------------------------------- |
+| 本番 DB            | Neon                     | PostgreSQL 互換のサーバーレス DB |
+| 開発 DB            | Docker Compose           | PostgreSQL 15                    |
+| ホスティング       | Google Cloud Run         | コンテナベースのサーバーレス     |
+| コンテナレジストリ | Google Artifact Registry | Docker イメージの保存・管理      |
+| CDN                | Cloudflare               | 静的アセット配信・DDoS 対策      |
+| 認証プロバイダー   | Google OAuth             | ソーシャルログインのみ           |
 
 ## 開発環境要件
 
