@@ -1,4 +1,5 @@
 name: Database Migration
+run-name: Database Migration on ${{ inputs.environment }}
 
 on:
   workflow_dispatch:
