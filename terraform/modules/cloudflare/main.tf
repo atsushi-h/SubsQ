@@ -166,8 +166,8 @@ resource "cloudflare_ruleset" "rate_limiting" {
   }
 }
 
-# Cloudflare Accessアプリケーション (dev環境など、認証が必要な環境用)
-resource "cloudflare_access_application" "app" {
+# Cloudflare Zero Trust Accessアプリケーション (dev環境など、認証が必要な環境用)
+resource "cloudflare_zero_trust_access_application" "app" {
   count = var.enable_access ? 1 : 0
 
   zone_id          = var.zone_id
@@ -180,11 +180,11 @@ resource "cloudflare_access_application" "app" {
   # 必要に応じて特定のパスのみを保護することも可能
 }
 
-# Cloudflare Accessポリシー - メールベース認証
-resource "cloudflare_access_policy" "email_policy" {
+# Cloudflare Zero Trust Accessポリシー - メールベース認証
+resource "cloudflare_zero_trust_access_policy" "email_policy" {
   count = var.enable_access && length(var.access_allowed_emails) > 0 ? 1 : 0
 
-  application_id = cloudflare_access_application.app[0].id
+  application_id = cloudflare_zero_trust_access_application.app[0].id
   zone_id        = var.zone_id
   name           = "${var.environment}-email-policy"
   precedence     = 1
