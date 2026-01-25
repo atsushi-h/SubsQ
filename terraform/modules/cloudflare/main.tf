@@ -33,10 +33,6 @@ resource "cloudflare_zone_settings_override" "app" {
     # 最小TLSバージョン
     min_tls_version = "1.2"
 
-    # HTTP/2とHTTP/3
-    http2 = "on"
-    http3 = "on"
-
     # セキュリティヘッダー
     security_header {
       enabled            = true

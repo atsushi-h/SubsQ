@@ -15,11 +15,6 @@ resource "google_artifact_registry_repository" "docker_repo" {
     id     = "keep-recent-images"
     action = "DELETE"
 
-    condition {
-      tag_state  = "ANY"
-      older_than = "0s"
-    }
-
     most_recent_versions {
       keep_count = var.cleanup_keep_count
     }
