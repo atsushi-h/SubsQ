@@ -68,6 +68,12 @@ variable "cloudflare_subdomain" {
   default     = "dev"
 }
 
+variable "cloudflare_domain" {
+  description = "Cloudflareで管理するドメイン名 (例: example.com)"
+  type        = string
+  default     = "subsq-app.com"
+}
+
 variable "cloudflare_access_allowed_emails" {
   description = "Cloudflare Accessで許可するメールアドレスのリスト"
   type        = list(string)

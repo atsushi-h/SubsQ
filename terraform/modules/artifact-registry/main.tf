@@ -17,7 +17,7 @@ resource "google_artifact_registry_repository" "docker_repo" {
     action = "DELETE"
 
     condition {
-      older_than = "2592000s"  # 30日 (秒単位)
+      older_than = "2592000s" # 30日 (秒単位)
     }
   }
 

@@ -44,3 +44,8 @@ variable "access_allowed_emails" {
     error_message = "Cloudflare Accessを有効にする場合、少なくとも1つのメールアドレスを指定してください。access_allowed_emails変数に許可するメールアドレスを設定するか、enable_access = false で無効化してください。"
   }
 }
+
+variable "domain_name" {
+  description = "ドメイン名 (例: 'example.com')"
+  type        = string
+}

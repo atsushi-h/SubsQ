@@ -68,6 +68,12 @@ variable "cloudflare_subdomain" {
   default     = ""
 }
 
+variable "cloudflare_domain" {
+  description = "Cloudflareで管理するドメイン名 (例: example.com)"
+  type        = string
+  default     = "subsq-app.com"
+}
+
 # ===========================
 # アプリケーション環境変数
 # ===========================

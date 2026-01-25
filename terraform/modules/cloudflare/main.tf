@@ -108,6 +108,32 @@ resource "cloudflare_ruleset" "cache_rules" {
   }
 }
 
+# Cloud Run向けのHostヘッダー変換ルール
+# CloudflareプロキシがCloud Runに接続する際、Hostヘッダーをカスタムドメインから
+# Cloud RunのURLに書き換える必要がある
+resource "cloudflare_ruleset" "host_header_transform" {
+  zone_id     = var.zone_id
+  name        = "${var.environment}-host-header-transform"
+  description = "${var.environment}環境用のHostヘッダー変換ルール"
+  kind        = "zone"
+  phase       = "http_request_late_transform"
+
+  rules {
+    action = "rewrite"
+    action_parameters {
+      headers {
+        name      = "Host"
+        operation = "set"
+        value     = var.cloud_run_url
+      }
+    }
+    # サブドメインが空（apex domain）の場合とサブドメインありの場合で条件を分岐
+    expression  = var.subdomain == "" ? "(http.host eq \"${var.domain_name}\")" : "(http.host eq \"${var.subdomain}.${var.domain_name}\")"
+    description = "Cloud Run向けのHostヘッダー書き換え"
+    enabled     = true
+  }
+}
+
 # Cloudflare Zero Trust Accessアプリケーション (dev環境など、認証が必要な環境用)
 resource "cloudflare_zero_trust_access_application" "app" {
   count = var.enable_access ? 1 : 0

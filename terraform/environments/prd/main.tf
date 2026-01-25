@@ -67,6 +67,7 @@ module "cloudflare" {
   zone_id       = var.cloudflare_zone_id
   account_id    = var.cloudflare_account_id
   subdomain     = var.cloudflare_subdomain
+  domain_name   = var.cloudflare_domain
   cloud_run_url = replace(module.cloud_run.service_url, "https://", "")
   environment   = "prd"
 }
