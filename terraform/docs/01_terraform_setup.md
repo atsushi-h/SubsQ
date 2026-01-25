@@ -206,7 +206,28 @@ Cloudflareでドメインのzoneを作成済みであることを確認します
 - Zone IDは Cloudflareダッシュボード > 該当ドメイン > 右サイドバー から取得できます
 - Account IDは Cloudflareダッシュボード > プロフィール > Account Home > 右サイドバー から取得できます
 - API Tokenは Cloudflareダッシュボード > My Profile > API Tokens から作成します
-  - 必要な権限: `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit`, `Account - Zero Trust:Edit`（Cloudflare Accessを使用する場合）
+
+#### 必要なAPI Token権限
+
+**基本権限（必須）:**
+
+| スコープ | 権限 | レベル |
+|----------|------|--------|
+| ゾーン | ゾーン | 読み取り |
+| ゾーン | DNS | 編集 |
+| ゾーン | ゾーン設定 | 編集 |
+| ゾーン | Cache Rules | 編集 |
+| ゾーン | ページ ルール | 編集 |
+
+**Cloudflare Access使用時（dev環境で必要）:**
+
+| スコープ | 権限 | レベル |
+|----------|------|--------|
+| アカウント | Zero Trust | 編集 |
+| アカウント | アクセス: アプリおよびポリシー | 編集 |
+| アカウント | アクセス: 組織、ID プロバイダー、およびグループ | 編集 |
+
+> **Note**: Cloudflare Accessを使用しない場合（prd環境など`enable_access = false`の場合）、Access関連の権限は不要です。
 
 #### Cloudflare Accessによる認証（dev環境のみ）
 
