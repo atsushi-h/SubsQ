@@ -77,6 +77,6 @@ module "cloudflare" {
   api_rate_limit_requests_per_minute = 120
 
   # Cloudflare Access設定 (dev環境のみ有効化)
-  enable_access          = true
-  access_allowed_emails  = var.cloudflare_access_allowed_emails
+  enable_access         = true
+  access_allowed_emails = var.cloudflare_access_allowed_emails
 }
