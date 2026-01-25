@@ -65,13 +65,9 @@ jobs:
       - name: Build Docker image
         working-directory: frontend
         run: |
+          # 環境変数はランタイム（--set-env-vars）のみで渡す
+          # ビルド時には機密情報を含めない（セキュリティベストプラクティス）
           docker build \
-            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            --build-arg GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
-            --build-arg GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-            --build-arg BETTER_AUTH_SECRET="${{ secrets.BETTER_AUTH_SECRET }}" \
-            --build-arg BETTER_AUTH_URL="${{ secrets.BETTER_AUTH_URL }}" \
-            --build-arg NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}" \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }} \
             .
 
@@ -93,6 +89,9 @@ jobs:
       - name: Deploy to Cloud Run
         id: deploy
         run: |
+          # 環境変数をランタイムで設定
+          # すべての変数がサーバーサイドのみで使用されるため、
+          # ビルド時ではなくランタイムで渡すことでセキュリティを確保
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }} \
             --region=${{ env.REGION }} \
