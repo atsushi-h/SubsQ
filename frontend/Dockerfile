@@ -15,6 +15,11 @@ FROM base AS builder
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 
+# ビルド時は環境変数バリデーションをスキップ
+# サーバー専用環境変数（BETTER_AUTH_SECRET等）はランタイムで渡すため、
+# ビルド時の検証は不要
+ENV SKIP_ENV_VALIDATION=true
+
 # DATABASE_URLはダミー値で検証をパス（実際の値はランタイムで渡す）
 ARG DATABASE_URL="postgresql://build-dummy:dummy@localhost:5432/dummy"
 ENV DATABASE_URL=${DATABASE_URL}

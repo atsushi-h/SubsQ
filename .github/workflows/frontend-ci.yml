@@ -55,9 +55,5 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          DATABASE_URL: postgresql://user:password@localhost:5432/test
           NEXT_PUBLIC_APP_URL: http://localhost:3000
-          GOOGLE_CLIENT_ID: test-client-id
-          GOOGLE_CLIENT_SECRET: test-client-secret
-          BETTER_AUTH_SECRET: test-secret-key-at-least-32-characters-long-for-ci
-          BETTER_AUTH_URL: http://localhost:3000
+          SKIP_ENV_VALIDATION: true

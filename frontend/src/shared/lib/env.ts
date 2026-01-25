@@ -23,6 +23,7 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
 
-  skipValidation: false,
+  // ビルド時は検証をスキップ、ランタイムでは検証を実行
+  skipValidation: process.env.SKIP_ENV_VALIDATION === 'true',
   emptyStringAsUndefined: true,
 })
