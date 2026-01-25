@@ -69,7 +69,8 @@ resource "cloudflare_ruleset" "cache_rules" {
         default = 31536000 # 1年
       }
     }
-    expression  = "(http.request.uri.path matches \"^/_next/static/.*\")"
+    # 無料プランでは'matches'オペレーター使用不可のため'starts_with'を使用
+    expression  = "(starts_with(http.request.uri.path, \"/_next/static/\"))"
     description = "Next.js静的アセットをキャッシュ"
     enabled     = true
   }
@@ -80,7 +81,8 @@ resource "cloudflare_ruleset" "cache_rules" {
     action_parameters {
       cache = false
     }
-    expression  = "(http.request.uri.path matches \"^/api/.*\")"
+    # 無料プランでは'matches'オペレーター使用不可のため'starts_with'を使用
+    expression  = "(starts_with(http.request.uri.path, \"/api/\"))"
     description = "APIルートのキャッシュをバイパス"
     enabled     = true
   }
@@ -99,65 +101,9 @@ resource "cloudflare_ruleset" "cache_rules" {
         default = 86400 # 1日
       }
     }
-    expression  = "(http.request.uri.path matches \"^/images/.*\" or http.request.uri.path matches \"^/favicon.ico\")"
+    # 無料プランでは'matches'オペレーター使用不可のため'starts_with'と'eq'を使用
+    expression  = "(starts_with(http.request.uri.path, \"/images/\") or http.request.uri.path eq \"/favicon.ico\")"
     description = "公開画像をキャッシュ"
-    enabled     = true
-  }
-}
-
-# WAF (Web Application Firewall) ルール
-resource "cloudflare_ruleset" "waf_custom_rules" {
-  zone_id     = var.zone_id
-  name        = "${var.environment}-waf-custom"
-  description = "${var.environment}環境用のカスタムWAFルール"
-  kind        = "zone"
-  phase       = "http_request_firewall_custom"
-
-  # 既知の悪質なボットをブロック
-  rules {
-    action      = "block"
-    expression  = "(cf.client.bot) and not (cf.verified_bot_category in {\"Search Engine Crawler\" \"Page Preview Service\"})"
-    description = "悪質なボットをブロック"
-    enabled     = var.enable_waf
-  }
-
-  # 高い脅威スコアにチャレンジ
-  rules {
-    action      = "challenge"
-    expression  = "(cf.threat_score gt 14)"
-    description = "高脅威スコアのリクエストにチャレンジ"
-    enabled     = var.enable_waf
-  }
-}
-
-# レート制限
-resource "cloudflare_ruleset" "rate_limiting" {
-  count = var.enable_rate_limiting ? 1 : 0
-
-  zone_id     = var.zone_id
-  name        = "${var.environment}-rate-limiting"
-  description = "${var.environment}環境用のレート制限ルール"
-  kind        = "zone"
-  phase       = "http_ratelimit"
-
-  # APIレート制限
-  rules {
-    action = "block"
-    action_parameters {
-      response {
-        status_code  = 429
-        content      = "Too many requests"
-        content_type = "text/plain"
-      }
-    }
-    ratelimit {
-      characteristics     = ["ip.src"]
-      period              = 60
-      requests_per_period = var.api_rate_limit_requests_per_minute
-      mitigation_timeout  = 600 # 10分
-    }
-    expression  = "(http.request.uri.path matches \"^/api/.*\")"
-    description = "APIレート制限"
     enabled     = true
   }
 }
@@ -166,7 +112,8 @@ resource "cloudflare_ruleset" "rate_limiting" {
 resource "cloudflare_zero_trust_access_application" "app" {
   count = var.enable_access ? 1 : 0
 
-  zone_id          = var.zone_id
+  # 無料プランでも使用可能だが、account_idが必要（zone_idは使用不可）
+  account_id       = var.account_id
   name             = "${var.environment}-${var.subdomain}"
   domain           = "${var.subdomain}.${data.cloudflare_zone.main[0].name}"
   session_duration = "24h"
@@ -181,10 +128,11 @@ resource "cloudflare_zero_trust_access_policy" "email_policy" {
   count = var.enable_access && length(var.access_allowed_emails) > 0 ? 1 : 0
 
   application_id = cloudflare_zero_trust_access_application.app[0].id
-  zone_id        = var.zone_id
-  name           = "${var.environment}-email-policy"
-  precedence     = 1
-  decision       = "allow"
+  # 無料プランでも使用可能だが、account_idが必要（zone_idは使用不可）
+  account_id = var.account_id
+  name       = "${var.environment}-email-policy"
+  precedence = 1
+  decision   = "allow"
 
   include {
     email = var.access_allowed_emails

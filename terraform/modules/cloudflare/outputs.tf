@@ -17,8 +17,3 @@ output "cache_ruleset_id" {
   description = "キャッシュルールセットのID"
   value       = cloudflare_ruleset.cache_rules.id
 }
-
-output "waf_ruleset_id" {
-  description = "WAFルールセットのID"
-  value       = cloudflare_ruleset.waf_custom_rules.id
-}

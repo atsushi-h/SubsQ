@@ -65,18 +65,13 @@ module "cloudflare" {
   source = "../../modules/cloudflare"
 
   zone_id       = var.cloudflare_zone_id
+  account_id    = var.cloudflare_account_id
   subdomain     = var.cloudflare_subdomain
   cloud_run_url = replace(module.cloud_run.service_url, "https://", "")
   environment   = "dev"
 
-  # セキュリティ設定
-  enable_waf           = true
-  enable_rate_limiting = true
-
-  # APIレート制限 (dev環境では緩め)
-  api_rate_limit_requests_per_minute = 120
-
   # Cloudflare Access設定 (dev環境のみ有効化)
+  # 注意: Cloudflare Accessは無料プランでも使用可能（最大50ユーザーまで）
   enable_access         = true
   access_allowed_emails = var.cloudflare_access_allowed_emails
 }

@@ -146,6 +146,7 @@ Settings > Secrets and variables > Actions > Repository secrets
 | `TFSTATE_BUCKET_NAME` | Terraform State用GCSバケット名 | 基盤リポジトリで作成（`tfstate-{project_id}`） |
 | `CLOUDFLARE_API_TOKEN` | CloudflareのAPI Token | Cloudflareダッシュボード > My Profile > API Tokens |
 | `CLOUDFLARE_ZONE_ID` | CloudflareのZone ID | Cloudflareダッシュボード > ドメイン選択 > 右サイドバー |
+| `CLOUDFLARE_ACCOUNT_ID` | CloudflareのAccount ID | Cloudflareダッシュボード > プロフィール > Account Home > 右サイドバー |
 
 #### Environment Secrets (dev/prd)
 
@@ -203,8 +204,9 @@ Settings > Environments > dev > Environment variables
 Cloudflareでドメインのzoneを作成済みであることを確認します。
 
 - Zone IDは Cloudflareダッシュボード > 該当ドメイン > 右サイドバー から取得できます
+- Account IDは Cloudflareダッシュボード > プロフィール > Account Home > 右サイドバー から取得できます
 - API Tokenは Cloudflareダッシュボード > My Profile > API Tokens から作成します
-  - 必要な権限: `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit`, `Access:Edit`（Cloudflare Accessを使用する場合）
+  - 必要な権限: `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit`, `Account - Zero Trust:Edit`（Cloudflare Accessを使用する場合）
 
 #### Cloudflare Accessによる認証（dev環境のみ）
 
@@ -222,6 +224,66 @@ dev環境では、Cloudflare Accessによる認証が**デフォルトで有効*
 
 **無効化する場合**:
 dev環境のTerraform設定（`terraform/environments/dev/main.tf`）で `enable_access = false` に変更します。
+
+### セキュリティに関する重要な注意事項
+
+#### Cloudflare無料プランの制限
+
+このプロジェクトは**Cloudflare無料プラン**を前提として設定されています。そのため、以下のセキュリティ機能は**無効化**されています：
+
+| 機能 | 必要なプラン | 状態 |
+|-----|------------|------|
+| **WAF Custom Rules** | Pro以上 | ❌ 無効化 |
+| **Rate Limiting** | Enterprise | ❌ 無効化 |
+| **Cache Rules** | 無料プラン | ✅ 有効（matchesの代わりにstarts_with使用） |
+| **Zero Trust Access** | 無料プラン | ✅ 有効（dev環境のみ、最大50ユーザー） |
+
+#### セキュリティリスクと対策
+
+WAFとRate Limitingを無効化することで、以下のリスクが発生します：
+
+**リスク**:
+- ボット攻撃に対する保護がない
+- 自動化された攻撃に対する防御が弱い
+- APIへの過度なリクエストを制限できない
+
+**推奨される代替策**（Cloudflareダッシュボードから手動で設定）:
+
+1. **Managed Rules（マネージドルール）を有効化**
+   - 場所: Cloudflareダッシュボード > Security > WAF > Managed Rules
+   - 無料プランで利用可能
+   - 一般的な脅威から自動的に保護
+
+2. **Bot Fight Modeを有効化**
+   - 場所: Cloudflareダッシュボード > Security > Bots
+   - 無料プランで利用可能
+   - 悪意のあるボットをブロック
+
+3. **Security Levelを調整**
+   - 場所: Cloudflareダッシュボード > Security > Settings
+   - 推奨: "Medium" または "High"
+   - 疑わしいトラフィックにチャレンジを表示
+
+4. **Challenge Passageを短く設定**
+   - 場所: Cloudflareダッシュボード > Security > Settings
+   - 推奨: 30分
+   - セキュリティチャレンジの有効期間を短縮
+
+#### 有料プランへの移行
+
+将来的にProプラン以上に移行する場合、Terraformコードを修正して以下の機能を有効化できます：
+
+**Proプラン ($20/月) で利用可能**:
+- WAF Custom Rules
+- より高度なキャッシュ設定
+- Page Rules（より多くのルール数）
+
+**Enterpriseプラン (要見積) で利用可能**:
+- Rate Limiting
+- Advanced DDoS Protection
+- カスタムSSL証明書
+
+詳細は[プランドキュメント](../README.md#cloudflare無料プラン対応)を参照してください。
 
 ### Step 3: GitHub Environmentsの保護ルール設定（prd環境推奨）
 

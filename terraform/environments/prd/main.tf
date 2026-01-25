@@ -65,14 +65,8 @@ module "cloudflare" {
   source = "../../modules/cloudflare"
 
   zone_id       = var.cloudflare_zone_id
+  account_id    = var.cloudflare_account_id
   subdomain     = var.cloudflare_subdomain
   cloud_run_url = replace(module.cloud_run.service_url, "https://", "")
   environment   = "prd"
-
-  # セキュリティ設定
-  enable_waf           = true
-  enable_rate_limiting = true
-
-  # APIレート制限 (本番環境では厳格)
-  api_rate_limit_requests_per_minute = 60
 }

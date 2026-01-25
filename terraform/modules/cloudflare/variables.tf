@@ -3,6 +3,11 @@ variable "zone_id" {
   type        = string
 }
 
+variable "account_id" {
+  description = "Cloudflare Account ID (Zero Trust Access用に必要)"
+  type        = string
+}
+
 variable "subdomain" {
   description = "アプリケーションのサブドメイン (例: 'dev', 'www')"
   type        = string
@@ -21,24 +26,6 @@ variable "environment" {
     condition     = contains(["dev", "prd"], var.environment)
     error_message = "環境は 'dev' または 'prd' のいずれかである必要があります。"
   }
-}
-
-variable "enable_waf" {
-  description = "WAF (Web Application Firewall) ルールを有効にするか"
-  type        = bool
-  default     = true
-}
-
-variable "enable_rate_limiting" {
-  description = "レート制限ルールを有効にするか"
-  type        = bool
-  default     = true
-}
-
-variable "api_rate_limit_requests_per_minute" {
-  description = "IP毎に許可されるAPIリクエスト数 (1分あたり)"
-  type        = number
-  default     = 60
 }
 
 variable "enable_access" {
