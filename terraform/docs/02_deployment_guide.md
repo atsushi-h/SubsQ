@@ -235,8 +235,16 @@ Actions > Deploy Frontend > Run workflow
   - Unique visitors
 
 - **Security** > **Events**:
-  - Firewall events
-  - Rate limiting events
+  - Firewall events（Managed Rulesが有効の場合）
+  - Bot Fight Mode events（Bot Fight Modeが有効の場合）
+
+**重要**: 無料プランではWAF Custom RulesとRate Limitingは使用できません。代わりに以下の無料機能を活用してください：
+
+- **Managed Rules**: Security > WAF > Managed Rulesから有効化
+- **Bot Fight Mode**: Security > Botsから有効化
+- **Security Level**: Security > Settingsで"Medium"以上に設定
+
+詳細は[セットアップガイドのセキュリティ注意事項](./01_terraform_setup.md#セキュリティに関する重要な注意事項)を参照してください。
 
 ## トラブルシューティング
 

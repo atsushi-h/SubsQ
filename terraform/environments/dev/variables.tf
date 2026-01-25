@@ -57,6 +57,11 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
+variable "cloudflare_account_id" {
+  description = "Cloudflare Account ID (Zero Trust Access用に必要)"
+  type        = string
+}
+
 variable "cloudflare_subdomain" {
   description = "アプリケーションのサブドメイン (例: 'dev' → dev.example.com)"
   type        = string

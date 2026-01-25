@@ -57,6 +57,11 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
+variable "cloudflare_account_id" {
+  description = "Cloudflare Account ID"
+  type        = string
+}
+
 variable "cloudflare_subdomain" {
   description = "アプリケーションのサブドメイン (空文字でapex domain: subsq-app.com)"
   type        = string
