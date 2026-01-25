@@ -39,8 +39,6 @@ jobs:
 
     env:
       TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
-      # Cloudflare Access設定（dev環境のみ使用、prd環境では空の配列がデフォルト）
-      TF_VAR_cloudflare_access_allowed_emails: ${{ secrets.CLOUDFLARE_ACCESS_ALLOWED_EMAILS || '[]' }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
       # 注意: TF_VAR_cloud_run_imageは意図的に指定していません
@@ -91,7 +89,13 @@ jobs:
       - name: Terraform Plan
         if: inputs.action == 'plan' || inputs.action == 'apply'
         id: plan
-        run: terraform plan -no-color -input=false -out=tfplan
+        run: |
+          if [ "${{ inputs.environment }}" == "dev" ]; then
+            terraform plan -no-color -input=false -out=tfplan \
+              -var='cloudflare_access_allowed_emails=${{ secrets.CLOUDFLARE_ACCESS_ALLOWED_EMAILS }}'
+          else
+            terraform plan -no-color -input=false -out=tfplan
+          fi
         continue-on-error: true
 
       - name: Show Plan in Summary
@@ -133,7 +137,13 @@ jobs:
 
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
-        run: terraform destroy -auto-approve
+        run: |
+          if [ "${{ inputs.environment }}" == "dev" ]; then
+            terraform destroy -auto-approve \
+              -var='cloudflare_access_allowed_emails=${{ secrets.CLOUDFLARE_ACCESS_ALLOWED_EMAILS }}'
+          else
+            terraform destroy -auto-approve
+          fi
 
       - name: Report Success
         if: success()
