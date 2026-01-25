@@ -167,13 +167,61 @@ Settings > Environments > dev（または prd）> Environment secrets
 
 **注意**: GitHub Environmentsを使用することで、環境ごとに異なる値を自動的に使い分けることができます。
 
+#### Environment Variables (dev環境のみ)
+
+dev環境でCloudflare Accessによる認証を有効にする場合、以下の変数を設定します：
+
+**設定場所**:
+```
+Settings > Environments > dev > Environment variables
+```
+
+| Variable名 | 説明 | 設定値の例 |
+|-----------|------|------------|
+| `CLOUDFLARE_ACCESS_ALLOWED_EMAILS` | アクセスを許可するメールアドレス（JSON配列形式） | `["user1@example.com", "user2@example.com"]` |
+
+**設定手順**:
+
+1. GitHubリポジトリの **Settings** タブを開く
+2. **Environments** をクリック
+3. **dev** 環境をクリック
+4. **Environment variables** セクションで **Add variable** をクリック
+5. 以下を入力:
+   - **Name**: `CLOUDFLARE_ACCESS_ALLOWED_EMAILS`
+   - **Value**: `["your-email@example.com", "team-member@example.com"]`
+     - ⚠️ **重要**: JSON配列形式で入力してください（ダブルクォート必須）
+     - 例: `["alice@example.com", "bob@example.com"]`
+6. **Add variable** をクリック
+
+**注意**:
+- この変数を設定しない場合、デフォルトで空の配列 `[]` が使用され、誰もアクセスできなくなります
+- prd環境では設定不要です（Cloudflare Accessが無効のため）
+- ワークフローファイルで `TF_VAR_` プレフィックスが自動的に付与されます
+
 ### Step 2: Cloudflare Zone の準備
 
 Cloudflareでドメインのzoneを作成済みであることを確認します。
 
 - Zone IDは Cloudflareダッシュボード > 該当ドメイン > 右サイドバー から取得できます
 - API Tokenは Cloudflareダッシュボード > My Profile > API Tokens から作成します
-  - 必要な権限: `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit`
+  - 必要な権限: `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit`, `Access:Edit`（Cloudflare Accessを使用する場合）
+
+#### Cloudflare Accessによる認証（dev環境のみ）
+
+dev環境では、Cloudflare Accessによる認証が**デフォルトで有効**になっています。これにより、許可されたメールアドレスのユーザーのみがアクセスできるようになります。
+
+**仕組み**:
+1. ユーザーがdev環境にアクセスすると、Cloudflareのログイン画面が表示されます
+2. ユーザーは許可されたメールアドレスでログインします（ワンタイムコード認証）
+3. 認証に成功すると、24時間セッションが維持されます
+
+**設定方法**:
+1. GitHub Environmentsの変数に `TF_VAR_cloudflare_access_allowed_emails` を追加（上記参照）
+2. 許可するメールアドレスをJSON配列形式で指定
+3. Terraformをapplyして設定を反映
+
+**無効化する場合**:
+dev環境のTerraform設定（`terraform/environments/dev/main.tf`）で `enable_access = false` に変更します。
 
 ### Step 3: GitHub Environmentsの保護ルール設定（prd環境推奨）
 

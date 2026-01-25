@@ -40,3 +40,20 @@ variable "api_rate_limit_requests_per_minute" {
   type        = number
   default     = 60
 }
+
+variable "enable_access" {
+  description = "Cloudflare Accessによる認証を有効にするか"
+  type        = bool
+  default     = false
+}
+
+variable "access_allowed_emails" {
+  description = "Cloudflare Accessで許可するメールアドレスのリスト"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = var.enable_access ? length(var.access_allowed_emails) > 0 : true
+    error_message = "Cloudflare Accessを有効にする場合、少なくとも1つのメールアドレスを指定してください。access_allowed_emails変数に許可するメールアドレスを設定するか、enable_access = false で無効化してください。"
+  }
+}

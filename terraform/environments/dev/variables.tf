@@ -63,6 +63,12 @@ variable "cloudflare_subdomain" {
   default     = "dev"
 }
 
+variable "cloudflare_access_allowed_emails" {
+  description = "Cloudflare Accessで許可するメールアドレスのリスト"
+  type        = list(string)
+  default     = []
+}
+
 # ===========================
 # アプリケーション環境変数
 # ===========================
