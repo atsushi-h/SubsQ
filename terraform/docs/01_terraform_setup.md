@@ -75,7 +75,7 @@ Cloud Runサービスを作成する際、**必ずコンテナイメージを指
 
 #### 1. Terraform Applyでインフラ作成
 
-GitHub Actionsの「Terraform」ワークフロー（`.github/workflows/terraform.yml`）を実行します：
+GitHub Actionsの「Terraform」ワークフロー（`.github/workflows/terraform-deploy.yml`）を実行します：
 
 1. GitHubリポジトリの **Actions** タブを開く
 2. **Terraform** ワークフローを選択
@@ -112,14 +112,14 @@ GitHub Actionsの「Deploy Frontend」ワークフロー（`.github/workflows/de
 - 例: `v1.2.3-abc1234`
 
 ##### インフラ設定の変更（稀）
-**使用するワークフロー**: `terraform.yml`（Action: `apply`）
+**使用するワークフロー**: `terraform-deploy.yml`（Action: `apply`）
 
 - CPU、メモリ、スケーリング設定などを変更する際に使用
 - 環境変数の追加・変更（ただし値はGitHub Secretsで管理）
 - IAM設定の変更
 
 **重要な注意点**:
-- ✅ `terraform.yml` は**イメージを管理しません**
+- ✅ `terraform-deploy.yml` は**イメージを管理しません**
 - ✅ Terraformは `lifecycle { ignore_changes }` によりイメージの変更を無視します
 - ✅ イメージは常に `deploy-frontend.yml` で管理されます
 - ✅ terraform apply を実行しても、現在動いているアプリケーションイメージは変わりません
@@ -187,7 +187,7 @@ Cloudflareでドメインのzoneを作成済みであることを確認します
 
 ## GitHub Actionsワークフロー
 
-### terraform.yml
+### terraform-deploy.yml
 
 **トリガー**: 手動実行（workflow_dispatch）
 

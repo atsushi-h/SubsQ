@@ -1,4 +1,4 @@
-name: Terraform
+name: Terraform Deploy
 run-name: Terraform ${{ inputs.action }} on ${{ inputs.environment }}
 
 on:
