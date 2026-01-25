@@ -11,6 +11,14 @@ RUN corepack enable pnpm
 # ===========================
 FROM base AS builder
 
+# ビルド引数として受け取る（公開情報のみ）
+ARG NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+
+# DATABASE_URLはダミー値で検証をパス（実際の値はランタイムで渡す）
+ARG DATABASE_URL="postgresql://build-dummy:dummy@localhost:5432/dummy"
+ENV DATABASE_URL=${DATABASE_URL}
+
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
