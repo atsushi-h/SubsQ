@@ -1,0 +1,89 @@
+name: Terraform CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-checks:
+    name: Terraform Format & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+        with:
+          terraform_version: 1.14.3
+
+      - name: Terraform Format Check
+        id: fmt
+        run: |
+          cd terraform
+          terraform fmt -check -recursive -diff
+        continue-on-error: true
+
+      - name: Terraform Init (dev)
+        run: |
+          cd terraform/environments/dev
+          terraform init -backend=false
+
+      - name: Terraform Validate (dev)
+        id: validate_dev
+        run: |
+          cd terraform/environments/dev
+          terraform validate -no-color
+
+      - name: Terraform Init (prd)
+        run: |
+          cd terraform/environments/prd
+          terraform init -backend=false
+
+      - name: Terraform Validate (prd)
+        id: validate_prd
+        run: |
+          cd terraform/environments/prd
+          terraform validate -no-color
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Terraform CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.fmt.outcome }}" == "success" ]; then
+            echo "✅ **Format Check**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Format Check**: Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Run \`cd terraform && make fmt\` to fix formatting issues." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.validate_dev.outcome }}" == "success" ]; then
+            echo "✅ **Validate (dev)**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Validate (dev)**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.validate_prd.outcome }}" == "success" ]; then
+            echo "✅ **Validate (prd)**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Validate (prd)**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if any check failed
+        if: steps.fmt.outcome == 'failure' || steps.validate_dev.outcome == 'failure' || steps.validate_prd.outcome == 'failure'
+        run: |
+          echo "::error::Terraform checks failed. Please review the logs above."
+          exit 1
