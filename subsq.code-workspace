@@ -11,6 +11,10 @@
 		{
 			"path": "./frontend/",
 			"name": "💻 Frontend"
+		},
+		{
+			"path": "./terraform/",
+			"name": "🏗️ Terraform"
 		}
 	]
 }

@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
 
       - name: Setup mise
-        uses: jdx/mise-action@v3.6.0
+        uses: jdx/mise-action@v3.6.1
         with:
           install: true
           cache: true
