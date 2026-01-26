@@ -17,6 +17,15 @@ resource "cloudflare_record" "app" {
   proxied = true
   ttl     = 1 # Auto (プロキシ有効時)
   comment = "Terraformで管理 - ${var.environment}環境"
+
+  # Cloud RunのURLはGitHub Actions (frontend-deploy.yml) で管理されるため、
+  # Terraformではcontentの変更を無視します。
+  # これにより、Cloud RunのデプロイとTerraformのインフラ管理が独立して動作します。
+  lifecycle {
+    ignore_changes = [
+      content
+    ]
+  }
 }
 
 # SSL/TLS設定
@@ -131,6 +140,15 @@ resource "cloudflare_ruleset" "host_header_transform" {
     expression  = var.subdomain == "" ? "(http.host eq \"${var.domain_name}\")" : "(http.host eq \"${var.subdomain}.${var.domain_name}\")"
     description = "Cloud Run向けのHostヘッダー書き換え"
     enabled     = true
+  }
+
+  # Cloud RunのURLはGitHub Actions (frontend-deploy.yml) で管理されるため、
+  # Terraformではrulesの変更を無視します。
+  # これにより、Cloud RunのデプロイとTerraformのインフラ管理が独立して動作します。
+  lifecycle {
+    ignore_changes = [
+      rules
+    ]
   }
 }
 

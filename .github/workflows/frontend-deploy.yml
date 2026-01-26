@@ -107,6 +107,117 @@ jobs:
           echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
           echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
 
+      - name: Update Cloudflare Settings
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          # Cloud Run URLからホスト名を抽出（https://を除去）
+          CLOUD_RUN_HOST=$(echo "${{ env.SERVICE_URL }}" | sed 's|https://||')
+          echo "Cloud Run Host: $CLOUD_RUN_HOST"
+
+          # 環境に応じたサブドメインを設定
+          if [ "${{ inputs.environment }}" == "dev" ]; then
+            SUBDOMAIN="dev"
+            FULL_DOMAIN="dev.subsq-app.com"
+          else
+            SUBDOMAIN=""
+            FULL_DOMAIN="subsq-app.com"
+          fi
+
+          echo "::group::Update DNS Record"
+          # DNSレコードIDを取得
+          DNS_RECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/dns_records?type=CNAME&name=${FULL_DOMAIN}" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" | jq -r '.result[0].id')
+
+          if [ -z "$DNS_RECORD_ID" ] || [ "$DNS_RECORD_ID" == "null" ]; then
+            echo "::error::Failed to get DNS record ID for ${FULL_DOMAIN}"
+            exit 1
+          fi
+
+          echo "DNS Record ID: $DNS_RECORD_ID"
+
+          # DNSレコードを更新
+          DNS_UPDATE_RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/dns_records/${DNS_RECORD_ID}" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "{
+              \"type\": \"CNAME\",
+              \"name\": \"${FULL_DOMAIN}\",
+              \"content\": \"${CLOUD_RUN_HOST}\",
+              \"ttl\": 1,
+              \"proxied\": true
+            }")
+
+          if echo "$DNS_UPDATE_RESPONSE" | jq -e '.success == true' > /dev/null; then
+            echo "✅ DNS record updated successfully"
+            echo "   ${FULL_DOMAIN} -> ${CLOUD_RUN_HOST}"
+          else
+            echo "::error::Failed to update DNS record"
+            echo "$DNS_UPDATE_RESPONSE" | jq .
+            exit 1
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Update Host Header Transform Rule"
+          # Host Header Transform Rulesetを取得
+          RULESET_INFO=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json")
+
+          RULESET_ID=$(echo "$RULESET_INFO" | jq -r '.result[] | select(.phase == "http_request_late_transform") | .id')
+
+          if [ -z "$RULESET_ID" ] || [ "$RULESET_ID" == "null" ]; then
+            echo "::error::Failed to get Host Header Transform ruleset ID"
+            exit 1
+          fi
+
+          echo "Ruleset ID: $RULESET_ID"
+
+          # 環境に応じた条件式を設定
+          if [ "${{ inputs.environment }}" == "dev" ]; then
+            EXPRESSION="(http.host eq \"dev.subsq-app.com\")"
+          else
+            EXPRESSION="(http.host eq \"subsq-app.com\")"
+          fi
+
+          # Rulesetを更新（オブジェクト形式のheaders構造を使用）
+          RULESET_UPDATE_RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets/${RULESET_ID}" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "{
+              \"rules\": [
+                {
+                  \"action\": \"rewrite\",
+                  \"action_parameters\": {
+                    \"headers\": {
+                      \"Host\": {
+                        \"operation\": \"set\",
+                        \"value\": \"${CLOUD_RUN_HOST}\"
+                      }
+                    }
+                  },
+                  \"expression\": \"${EXPRESSION}\",
+                  \"description\": \"Cloud Run向けのHostヘッダー書き換え\",
+                  \"enabled\": true
+                }
+              ]
+            }")
+
+          if echo "$RULESET_UPDATE_RESPONSE" | jq -e '.success == true' > /dev/null; then
+            echo "✅ Host Header Transform rule updated successfully"
+            echo "   Expression: ${EXPRESSION}"
+            echo "   Target Host: ${CLOUD_RUN_HOST}"
+          else
+            echo "::error::Failed to update Host Header Transform rule"
+            echo "$RULESET_UPDATE_RESPONSE" | jq .
+            exit 1
+          fi
+          echo "::endgroup::"
+
+          echo "::notice::Cloudflare settings updated successfully for ${{ inputs.environment }} environment"
+
       - name: Health Check
         id: health_check
         run: |
