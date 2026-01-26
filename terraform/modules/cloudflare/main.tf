@@ -117,24 +117,19 @@ resource "cloudflare_ruleset" "cache_rules" {
   }
 }
 
-# Cloud Run向けのHostヘッダー変換ルール
-# CloudflareプロキシがCloud Runに接続する際、Hostヘッダーをカスタムドメインから
-# Cloud RunのURLに書き換える必要がある
-resource "cloudflare_ruleset" "host_header_transform" {
+# Cloud Run向けのHost Header Override（Origin Rules使用）
+# Transform RulesではHostヘッダーを変更できないため、Origin Rulesを使用
+resource "cloudflare_ruleset" "origin_rules" {
   zone_id     = var.zone_id
-  name        = "${var.environment}-host-header-transform"
-  description = "${var.environment}環境用のHostヘッダー変換ルール"
+  name        = "${var.environment}-origin-rules"
+  description = "${var.environment}環境用のOriginルール"
   kind        = "zone"
-  phase       = "http_request_late_transform"
+  phase       = "http_request_origin"
 
   rules {
-    action = "rewrite"
+    action = "route"
     action_parameters {
-      headers {
-        name      = "Host"
-        operation = "set"
-        value     = var.cloud_run_url
-      }
+      host_header = var.cloud_run_url
     }
     # サブドメインが空（apex domain）の場合とサブドメインありの場合で条件を分岐
     expression  = var.subdomain == "" ? "(http.host eq \"${var.domain_name}\")" : "(http.host eq \"${var.subdomain}.${var.domain_name}\")"

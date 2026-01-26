@@ -160,59 +160,50 @@ jobs:
           fi
           echo "::endgroup::"
 
-          echo "::group::Update Host Header Transform Rule"
-          # Host Header Transform Rulesetを取得
+          echo "::group::Update Origin Rules (Host Header Override)"
+          # Origin Rulesetを取得
           RULESET_INFO=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json")
 
-          RULESET_ID=$(echo "$RULESET_INFO" | jq -r '.result[] | select(.phase == "http_request_late_transform") | .id')
+          RULESET_ID=$(echo "$RULESET_INFO" | jq -r '.result[] | select(.phase == "http_request_origin" and (.name | contains("'${{ inputs.environment }}'-origin-rules"))) | .id')
 
           if [ -z "$RULESET_ID" ] || [ "$RULESET_ID" == "null" ]; then
-            echo "::error::Failed to get Host Header Transform ruleset ID"
-            exit 1
-          fi
-
-          echo "Ruleset ID: $RULESET_ID"
-
-          # 環境に応じた条件式を設定
-          if [ "${{ inputs.environment }}" == "dev" ]; then
-            EXPRESSION="(http.host eq \"dev.subsq-app.com\")"
+            echo "::warning::Origin rules ruleset not found for ${{ inputs.environment }}. Skipping update."
           else
-            EXPRESSION="(http.host eq \"subsq-app.com\")"
-          fi
+            echo "Ruleset ID: $RULESET_ID"
 
-          # Rulesetを更新（オブジェクト形式のheaders構造を使用）
-          RULESET_UPDATE_RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets/${RULESET_ID}" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            --data "{
-              \"rules\": [
-                {
-                  \"action\": \"rewrite\",
-                  \"action_parameters\": {
-                    \"headers\": {
-                      \"Host\": {
-                        \"operation\": \"set\",
-                        \"value\": \"${CLOUD_RUN_HOST}\"
-                      }
-                    }
-                  },
-                  \"expression\": \"${EXPRESSION}\",
-                  \"description\": \"Cloud Run向けのHostヘッダー書き換え\",
-                  \"enabled\": true
-                }
-              ]
-            }")
+            # Rulesetを更新（Origin Rules - host_headerを使用）
+            RULESET_UPDATE_RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets/${RULESET_ID}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{
+                \"name\": \"${{ inputs.environment }}-origin-rules\",
+                \"description\": \"${{ inputs.environment }}環境用のOriginルール\",
+                \"kind\": \"zone\",
+                \"phase\": \"http_request_origin\",
+                \"rules\": [
+                  {
+                    \"action\": \"route\",
+                    \"action_parameters\": {
+                      \"host_header\": \"${CLOUD_RUN_HOST}\"
+                    },
+                    \"expression\": \"(http.host eq \\\"${FULL_DOMAIN}\\\")\",
+                    \"description\": \"Cloud Run向けのHostヘッダー書き換え\",
+                    \"enabled\": true
+                  }
+                ]
+              }")
 
-          if echo "$RULESET_UPDATE_RESPONSE" | jq -e '.success == true' > /dev/null; then
-            echo "✅ Host Header Transform rule updated successfully"
-            echo "   Expression: ${EXPRESSION}"
-            echo "   Target Host: ${CLOUD_RUN_HOST}"
-          else
-            echo "::error::Failed to update Host Header Transform rule"
-            echo "$RULESET_UPDATE_RESPONSE" | jq .
-            exit 1
+            if echo "$RULESET_UPDATE_RESPONSE" | jq -e '.success == true' > /dev/null; then
+              echo "✅ Origin rule updated successfully"
+              echo "   Domain: ${FULL_DOMAIN}"
+              echo "   Target Host: ${CLOUD_RUN_HOST}"
+            else
+              echo "::error::Failed to update Origin rule"
+              echo "$RULESET_UPDATE_RESPONSE" | jq .
+              exit 1
+            fi
           fi
           echo "::endgroup::"
 

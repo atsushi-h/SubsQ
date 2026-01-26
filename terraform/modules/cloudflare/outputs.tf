@@ -18,7 +18,7 @@ output "cache_ruleset_id" {
   value       = cloudflare_ruleset.cache_rules.id
 }
 
-output "host_header_transform_ruleset_id" {
-  description = "Hostヘッダー変換ルールセットのID"
-  value       = cloudflare_ruleset.host_header_transform.id
+output "origin_rules_ruleset_id" {
+  description = "OriginルールセットのID"
+  value       = cloudflare_ruleset.origin_rules.id
 }
