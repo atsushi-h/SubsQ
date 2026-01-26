@@ -1,3 +1,8 @@
+---
+name: project-guidelines
+description: SubsQプロジェクト固有のアーキテクチャ、ファイル構造、コードパターン（Container/Presenter、CQRS、TanStack Query）、テスト要件、デプロイワークフローのガイドライン。Next.js App Router、Drizzle ORM、Better Auth使用。
+---
+
 # プロジェクトガイドライン
 
 SubsQ - サブスクリプション管理Webアプリケーション（日本市場向け）
