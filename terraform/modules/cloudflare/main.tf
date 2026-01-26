@@ -13,18 +13,13 @@ resource "cloudflare_record" "app" {
   zone_id = var.zone_id
   name    = var.subdomain
   type    = "CNAME"
-  content = var.cloud_run_url
+  content = "ghs.googlehosted.com"
   proxied = true
   ttl     = 1 # Auto (プロキシ有効時)
   comment = "Terraformで管理 - ${var.environment}環境"
 
-  # Cloud RunのURLはGitHub Actions (frontend-deploy.yml) で管理されるため、
-  # Terraformではcontentの変更を無視します。
-  # これにより、Cloud RunのデプロイとTerraformのインフラ管理が独立して動作します。
   lifecycle {
-    ignore_changes = [
-      content
-    ]
+    ignore_changes = [proxied]
   }
 }
 
