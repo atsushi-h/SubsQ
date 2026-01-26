@@ -112,3 +112,25 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+# カスタムドメインマッピング
+# Cloud Runにカスタムドメインを認識させることで、Hostヘッダーの問題を解消
+resource "google_cloud_run_domain_mapping" "app" {
+  count    = var.custom_domain != null ? 1 : 0
+  location = var.region
+  name     = var.custom_domain
+
+  metadata {
+    namespace = var.project_id
+    labels = {
+      environment = var.environment
+      managed_by  = "terraform"
+    }
+  }
+
+  spec {
+    route_name = google_cloud_run_v2_service.app.name
+  }
+
+  depends_on = [google_cloud_run_v2_service.app]
+}

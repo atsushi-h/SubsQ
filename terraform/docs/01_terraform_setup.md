@@ -73,7 +73,21 @@ Cloud Runサービスを作成する際、**必ずコンテナイメージを指
 
 初めてインフラをセットアップする場合、以下の順序で実行してください：
 
-#### 1. Terraform Applyでインフラ作成
+#### 1. Cloudflareプロキシの一時無効化（推奨）
+
+Cloud Run Domain Mappingは証明書発行のためにドメイン検証を行います。Cloudflareプロキシ（オレンジ雲）が有効だと検証に時間がかかる場合があるため、初回セットアップ時は一時的に無効化することを推奨します。
+
+**手順**:
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にアクセス
+2. 対象ドメインを選択
+3. **DNS** > **Records** を開く
+4. 該当レコード（`dev` または apex domain）を見つける
+5. プロキシステータスのアイコンをクリックして **オレンジ雲 → グレー雲** に変更
+6. 保存
+
+**注意**: この手順はオプションです。プロキシを有効のままでも動作しますが、証明書発行に最大30-60分かかる場合があります。
+
+#### 2. Terraform Applyでインフラ作成
 
 GitHub Actionsの「Terraform」ワークフロー（`.github/workflows/terraform-deploy.yml`）を実行します：
 
@@ -85,9 +99,41 @@ GitHub Actionsの「Terraform」ワークフロー（`.github/workflows/terrafor
    - **Action**: `apply`
 5. **Run workflow** を実行
 
-この時点では、Cloud RunサービスはGoogleの公式Helloイメージ（`us-docker.pkg.dev/cloudrun/container/hello`）で作成されます。
+この時点では、Cloud RunサービスはGoogleの公式Helloイメージ（`us-docker.pkg.dev/cloudrun/container/hello`）で作成され、**Cloud Run Domain Mapping**も同時に作成されます。
 
-#### 2. アプリケーションのビルドとデプロイ
+#### 3. Domain Mapping証明書の発行を待つ
+
+Cloud Run Domain Mappingの証明書発行には通常5-15分かかります（プロキシ無効化の場合）。
+
+**確認方法**:
+
+**方法1: GCP Console（推奨）**
+1. [Cloud Run Console](https://console.cloud.google.com/run) を開く
+2. 対象サービス（`subsq-frontend-dev` または `subsq-frontend-prd`）を選択
+3. **カスタムドメイン** タブを開く
+4. ステータスが **「Ready」** になるまで待つ
+
+**方法2: gcloud CLI**
+```bash
+# dev環境の場合
+gcloud run domain-mappings describe dev.subsq-app.com --region=asia-northeast1
+
+# prd環境の場合
+gcloud run domain-mappings describe subsq-app.com --region=asia-northeast1
+```
+
+**ステータスが「Ready」になったら次のステップへ進んでください。**
+
+#### 4. Cloudflareプロキシの再有効化
+
+証明書が発行されたら、Cloudflareプロキシを再度有効化します。
+
+**手順**:
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) の **DNS** > **Records** を開く
+2. 該当レコードのプロキシステータスを **グレー雲 → オレンジ雲** に変更
+3. 保存
+
+#### 5. アプリケーションのビルドとデプロイ
 
 GitHub Actionsの「Deploy Frontend」ワークフロー（`.github/workflows/deploy-frontend.yml`）を実行します：
 
@@ -98,9 +144,22 @@ GitHub Actionsの「Deploy Frontend」ワークフロー（`.github/workflows/de
    - **Environment**: `dev` または `prd`
 5. **Run workflow** を実行
 
-これにより、実際のアプリケーションイメージがビルドされ、Cloud Runサービスにデプロイされます。イメージタグは自動生成されます（形式: `v{バージョン}-{コミットハッシュ}`、例: `v1.2.3-abc1234`）。
+これにより：
+- 実際のアプリケーションイメージがビルドされる
+- Cloud Runサービスにデプロイされる
+- Cloudflare DNSレコードが最新のCloud Run URLに自動更新される
+- イメージタグは自動生成されます（形式: `v{バージョン}-{コミットハッシュ}`、例: `v1.2.3-abc1234`）
 
-#### 3. 以降の運用
+#### 6. 動作確認
+
+デプロイ完了後、カスタムドメインでアクセスして動作を確認します：
+
+- **Dev環境**: `https://dev.subsq-app.com/`
+- **Prd環境**: `https://subsq-app.com/`
+
+**期待される結果**: HTTPステータス200、正常にページが表示される
+
+#### 7. 以降の運用
 
 初回セットアップ完了後、以下のように運用します：
 
@@ -390,6 +449,53 @@ Actions タブ > Deploy Frontend > Run workflow
 
 **デバッグ方法**:
 GitHub Actionsのログを確認（Actions タブ > 失敗したワークフロー > ログを展開）
+
+### 問題: Domain Mappingの証明書発行が失敗する
+
+**原因**: Cloudflareプロキシが有効でDNS検証が妨げられている、またはDNS設定が正しくない
+
+**解決方法**:
+1. **Cloudflareプロキシを一時的に無効化**（オレンジ雲 → グレー雲）
+2. 5-15分待つ
+3. GCP Consoleでステータスを確認:
+   ```bash
+   gcloud run domain-mappings describe dev.subsq-app.com --region=asia-northeast1
+   ```
+4. ステータスが「Ready」になったら、Cloudflareプロキシを再度有効化（グレー雲 → オレンジ雲）
+
+**注意**: プロキシを有効のままでも動作しますが、証明書発行に最大30-60分かかる場合があります。
+
+### 問題: カスタムドメインで接続エラーが発生する
+
+**原因**: SSL/TLS設定が不適切、またはDomain Mappingの証明書が未発行
+
+**確認事項**:
+1. Cloudflare SSL/TLS設定が **"Full (strict)"** になっているか確認
+   - Cloudflare Dashboard > SSL/TLS > Overview
+2. Domain Mappingのステータスが「Ready」になっているか確認
+   - GCP Console > Cloud Run > [サービス名] > カスタムドメイン
+3. DNSレコードが正しく設定されているか確認
+   - Cloudflare Dashboard > DNS > Records
+
+**解決方法**:
+- SSL/TLS設定を"Full (strict)"に変更
+- Domain Mappingの証明書発行を待つ
+- 必要に応じてCloudflareプロキシを一時無効化
+
+### 問題: 証明書のステータスが更新されない
+
+**原因**: DNS伝播待ち、またはCloudflareプロキシによる干渉
+
+**解決方法**:
+1. **方法1（推奨）**: Cloudflareプロキシを無効化して再試行
+2. **方法2**: 最大60分待つ（DNS伝播には時間がかかる場合がある）
+3. Domain Mappingを削除して再作成:
+   ```bash
+   # 削除
+   gcloud run domain-mappings delete dev.subsq-app.com --region=asia-northeast1
+   # Terraformで再作成
+   terraform apply
+   ```
 
 ## 次のステップ
 

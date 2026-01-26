@@ -77,3 +77,14 @@ variable "env_vars" {
   default     = {}
   sensitive   = true
 }
+
+variable "project_id" {
+  description = "GCPプロジェクトID（Domain Mapping用）"
+  type        = string
+}
+
+variable "custom_domain" {
+  description = "カスタムドメイン（例: dev.example.com）。nullの場合はDomain Mappingを作成しない"
+  type        = string
+  default     = null
+}

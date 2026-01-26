@@ -17,3 +17,8 @@ output "service_location" {
   description = "Cloud Runサービスのロケーション"
   value       = google_cloud_run_v2_service.app.location
 }
+
+output "domain_mapping_status" {
+  description = "Domain Mappingのステータス"
+  value       = var.custom_domain != null ? google_cloud_run_domain_mapping.app[0].status : null
+}

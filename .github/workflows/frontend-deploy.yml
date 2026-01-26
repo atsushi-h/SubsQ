@@ -107,7 +107,7 @@ jobs:
           echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
           echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
 
-      - name: Update Cloudflare Settings
+      - name: Update Cloudflare DNS
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
@@ -160,54 +160,7 @@ jobs:
           fi
           echo "::endgroup::"
 
-          echo "::group::Update Origin Rules (Host Header Override)"
-          # Origin Rulesetを取得
-          RULESET_INFO=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json")
-
-          RULESET_ID=$(echo "$RULESET_INFO" | jq -r '.result[] | select(.phase == "http_request_origin" and (.name | contains("'${{ inputs.environment }}'-origin-rules"))) | .id')
-
-          if [ -z "$RULESET_ID" ] || [ "$RULESET_ID" == "null" ]; then
-            echo "::warning::Origin rules ruleset not found for ${{ inputs.environment }}. Skipping update."
-          else
-            echo "Ruleset ID: $RULESET_ID"
-
-            # Rulesetを更新（Origin Rules - host_headerを使用）
-            RULESET_UPDATE_RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/rulesets/${RULESET_ID}" \
-              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-              -H "Content-Type: application/json" \
-              --data "{
-                \"name\": \"${{ inputs.environment }}-origin-rules\",
-                \"description\": \"${{ inputs.environment }}環境用のOriginルール\",
-                \"kind\": \"zone\",
-                \"phase\": \"http_request_origin\",
-                \"rules\": [
-                  {
-                    \"action\": \"route\",
-                    \"action_parameters\": {
-                      \"host_header\": \"${CLOUD_RUN_HOST}\"
-                    },
-                    \"expression\": \"(http.host eq \\\"${FULL_DOMAIN}\\\")\",
-                    \"description\": \"Cloud Run向けのHostヘッダー書き換え\",
-                    \"enabled\": true
-                  }
-                ]
-              }")
-
-            if echo "$RULESET_UPDATE_RESPONSE" | jq -e '.success == true' > /dev/null; then
-              echo "✅ Origin rule updated successfully"
-              echo "   Domain: ${FULL_DOMAIN}"
-              echo "   Target Host: ${CLOUD_RUN_HOST}"
-            else
-              echo "::error::Failed to update Origin rule"
-              echo "$RULESET_UPDATE_RESPONSE" | jq .
-              exit 1
-            fi
-          fi
-          echo "::endgroup::"
-
-          echo "::notice::Cloudflare settings updated successfully for ${{ inputs.environment }} environment"
+          echo "::notice::Cloudflare DNS updated successfully for ${{ inputs.environment }} environment"
 
       - name: Health Check
         id: health_check

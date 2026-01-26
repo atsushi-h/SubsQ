@@ -27,6 +27,10 @@ module "cloud_run" {
   image        = var.cloud_run_image
   environment  = "dev"
 
+  # カスタムドメインマッピング
+  project_id    = var.gcp_project_id
+  custom_domain = "dev.${var.cloudflare_domain}"
+
   # サービスアカウント (指定がない場合はデフォルトのCompute Engine SAを使用)
   service_account_email = var.cloud_run_service_account_email
 

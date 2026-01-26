@@ -117,35 +117,9 @@ resource "cloudflare_ruleset" "cache_rules" {
   }
 }
 
-# Cloud Run向けのHost Header Override（Origin Rules使用）
-# Transform RulesではHostヘッダーを変更できないため、Origin Rulesを使用
-resource "cloudflare_ruleset" "origin_rules" {
-  zone_id     = var.zone_id
-  name        = "${var.environment}-origin-rules"
-  description = "${var.environment}環境用のOriginルール"
-  kind        = "zone"
-  phase       = "http_request_origin"
-
-  rules {
-    action = "route"
-    action_parameters {
-      host_header = var.cloud_run_url
-    }
-    # サブドメインが空（apex domain）の場合とサブドメインありの場合で条件を分岐
-    expression  = var.subdomain == "" ? "(http.host eq \"${var.domain_name}\")" : "(http.host eq \"${var.subdomain}.${var.domain_name}\")"
-    description = "Cloud Run向けのHostヘッダー書き換え"
-    enabled     = true
-  }
-
-  # Cloud RunのURLはGitHub Actions (frontend-deploy.yml) で管理されるため、
-  # Terraformではrulesの変更を無視します。
-  # これにより、Cloud RunのデプロイとTerraformのインフラ管理が独立して動作します。
-  lifecycle {
-    ignore_changes = [
-      rules
-    ]
-  }
-}
+# NOTE: Cloudflare無料プランではHost Header Override機能が使えないため、
+# Cloud Run側でDomain Mappingを設定してカスタムドメインを認識させます。
+# 設定は terraform/modules/cloud-run/main.tf を参照してください。
 
 # Cloudflare Zero Trust Accessアプリケーション (dev環境など、認証が必要な環境用)
 resource "cloudflare_zero_trust_access_application" "app" {
