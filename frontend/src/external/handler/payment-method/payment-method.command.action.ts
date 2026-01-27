@@ -12,8 +12,10 @@ import {
 } from '@/external/handler/payment-method/payment-method.command.server'
 import { withAuth } from '@/features/auth/servers/auth.guard'
 
-export async function createPaymentMethodCommandAction(request: CreatePaymentMethodRequest) {
-  return withAuth(({ userId }) => createPaymentMethodCommand(request, userId))
+export async function createPaymentMethodCommandAction(
+  data: Omit<CreatePaymentMethodRequest, 'userId'>,
+) {
+  return withAuth(({ userId }) => createPaymentMethodCommand({ ...data, userId }, userId))
 }
 
 export async function updatePaymentMethodCommandAction(request: UpdatePaymentMethodRequest) {
