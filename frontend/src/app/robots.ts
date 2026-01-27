@@ -1,6 +1,6 @@
-import { MetadataRoute } from 'next'
-import { isProduction } from '@/shared/lib/env'
+import type { MetadataRoute } from 'next'
 import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
+import { isProduction } from '@/shared/lib/env'
 
 export default function robots(): MetadataRoute.Robots {
   if (!isProduction()) {
