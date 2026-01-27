@@ -12,7 +12,7 @@ export const env = createEnv({
 
   client: {
     NEXT_PUBLIC_APP_URL: z.string(),
-    NEXT_PUBLIC_APP_ENV: z.enum(['dev', 'prd']),
+    NEXT_PUBLIC_APP_ENV: z.enum(['dev', 'prd']).default('dev'),
   },
 
   runtimeEnv: {
@@ -29,6 +29,12 @@ export const env = createEnv({
   skipValidation: process.env.SKIP_ENV_VALIDATION === 'true',
   emptyStringAsUndefined: true,
 })
+
+/**
+ * 環境値の型定義
+ * 他のモジュールで環境値を型安全に扱うためにエクスポート
+ */
+export type AppEnv = z.infer<typeof env.schema>['NEXT_PUBLIC_APP_ENV']
 
 /**
  * 環境判定ヘルパー
