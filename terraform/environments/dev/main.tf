@@ -55,6 +55,7 @@ module "cloud_run" {
   env_vars = {
     NODE_ENV                = "production"
     NEXT_TELEMETRY_DISABLED = "1"
+    NEXT_PUBLIC_APP_ENV     = "dev"
     DATABASE_URL            = var.database_url
     GOOGLE_CLIENT_ID        = var.google_client_id
     GOOGLE_CLIENT_SECRET    = var.google_client_secret

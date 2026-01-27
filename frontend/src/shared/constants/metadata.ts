@@ -1,4 +1,4 @@
-import { env } from '@/shared/lib/env'
+import { env, isProduction } from '@/shared/lib/env'
 
 /**
  * アプリケーション全体で使用するメタデータ定数
@@ -23,11 +23,11 @@ export const METADATA_CONSTANTS = {
 
   // Robots 設定
   DEFAULT_ROBOTS: {
-    index: true,
-    follow: true,
+    index: isProduction(),
+    follow: isProduction(),
     googleBot: {
-      index: true,
-      follow: true,
+      index: isProduction(),
+      follow: isProduction(),
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,

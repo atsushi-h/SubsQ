@@ -15,6 +15,9 @@ FROM base AS builder
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 
+ARG NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV}
+
 # ビルド時は環境変数バリデーションをスキップ
 # サーバー専用環境変数（BETTER_AUTH_SECRET等）はランタイムで渡すため、
 # ビルド時の検証は不要

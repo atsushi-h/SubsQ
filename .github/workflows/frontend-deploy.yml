@@ -98,7 +98,7 @@ jobs:
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }} \
             --region=${{ env.REGION }} \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }},BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }},NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }},NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1"
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }},BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }},NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }},NEXT_PUBLIC_APP_ENV=${{ secrets.NEXT_PUBLIC_APP_ENV }},NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1"
 
           # Get service URL
           SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
