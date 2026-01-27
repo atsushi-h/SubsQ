@@ -119,7 +119,9 @@ export function SubscriptionFormPresenter({
               <Label htmlFor="paymentMethodId">支払い方法</Label>
               <Select
                 value={formData.paymentMethodId || 'unset'}
-                onValueChange={(value) => onChange('paymentMethodId', value === 'unset' ? '' : value)}
+                onValueChange={(value) =>
+                  onChange('paymentMethodId', value === 'unset' ? '' : value)
+                }
                 disabled={isSubmitting || isLoadingPaymentMethods}
               >
                 <SelectTrigger>
