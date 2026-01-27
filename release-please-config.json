@@ -18,6 +18,11 @@
       "release-type": "node",
       "component": "frontend",
       "changelog-path": "CHANGELOG.md"
+    },
+    "backend": {
+      "release-type": "go",
+      "component": "backend",
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }
