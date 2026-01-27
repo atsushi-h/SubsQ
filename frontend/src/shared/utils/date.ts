@@ -70,7 +70,9 @@ export const DateUtil = {
       throw new Error(`無効な日付: ${dateString}`)
     }
 
-    return formatISO(date)
+    // formatISO()はdate-fns v4でローカルタイムゾーンオフセット付き形式を返すため、
+    // Zodのz.iso.datetime()が期待するUTC形式（Z終端）にするためtoISOString()を使用
+    return date.toISOString()
   },
 
   /**

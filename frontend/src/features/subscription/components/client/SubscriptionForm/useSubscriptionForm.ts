@@ -10,6 +10,10 @@ import {
   validateSubscriptionForm,
 } from '@/features/subscription/schemas/subscription-form.schema'
 import { DateUtil } from '@/shared/utils/date'
+import type {
+  CreateSubscriptionRequest,
+  UpdateSubscriptionRequest,
+} from '@/external/dto/subscription.dto'
 
 type UseSubscriptionFormProps = { mode: 'create' } | { mode: 'edit'; subscriptionId: string }
 
@@ -82,36 +86,41 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
       const baseDateISO = DateUtil.dateStringToISO(formData.baseDate)
 
       if (props.mode === 'create') {
-        createMutation.mutate(
-          {
-            serviceName: formData.serviceName,
-            amount: Number(formData.amount),
-            billingCycle: formData.billingCycle,
-            baseDate: baseDateISO,
-            memo: formData.memo || undefined,
+        const requestData: Omit<CreateSubscriptionRequest, 'userId'> = {
+          serviceName: formData.serviceName,
+          amount: Number(formData.amount),
+          billingCycle: formData.billingCycle,
+          baseDate: baseDateISO,
+        }
+
+        // 空文字列でない場合のみmemoを含める（Next.js Server Actionsのシリアライゼーション問題を回避）
+        if (formData.memo && formData.memo.trim() !== '') {
+          requestData.memo = formData.memo
+        }
+
+        createMutation.mutate(requestData, {
+          onSuccess: () => {
+            router.push('/subscriptions')
           },
-          {
-            onSuccess: () => {
-              router.push('/subscriptions')
-            },
-          },
-        )
+        })
       } else {
-        updateMutation.mutate(
-          {
-            id: props.subscriptionId,
-            serviceName: formData.serviceName,
-            amount: Number(formData.amount),
-            billingCycle: formData.billingCycle,
-            baseDate: baseDateISO,
-            memo: formData.memo || undefined,
+        const requestData: UpdateSubscriptionRequest = {
+          id: props.subscriptionId,
+          serviceName: formData.serviceName,
+          amount: Number(formData.amount),
+          billingCycle: formData.billingCycle,
+          baseDate: baseDateISO,
+        }
+
+        if (formData.memo && formData.memo.trim() !== '') {
+          requestData.memo = formData.memo
+        }
+
+        updateMutation.mutate(requestData, {
+          onSuccess: () => {
+            router.push(`/subscriptions/${props.subscriptionId}`)
           },
-          {
-            onSuccess: () => {
-              router.push(`/subscriptions/${props.subscriptionId}`)
-            },
-          },
-        )
+        })
       }
     },
     [formData, props, createMutation, updateMutation, router],
