@@ -34,7 +34,7 @@ export const env = createEnv({
  * 環境値の型定義
  * 他のモジュールで環境値を型安全に扱うためにエクスポート
  */
-export type AppEnv = z.infer<typeof env.schema>['NEXT_PUBLIC_APP_ENV']
+export type AppEnv = typeof env.NEXT_PUBLIC_APP_ENV
 
 /**
  * 環境判定ヘルパー
