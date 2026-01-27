@@ -32,6 +32,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
     amount: '',
     billingCycle: 'monthly',
     baseDate: '',
+    paymentMethodId: '',
     memo: '',
   })
 
@@ -50,6 +51,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
         amount: existingSubscription.amount.toString(),
         billingCycle: existingSubscription.billingCycle,
         baseDate: baseDateString,
+        paymentMethodId: existingSubscription.paymentMethod?.id || '',
         memo: existingSubscription.memo || '',
       })
     }
@@ -98,6 +100,13 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
           requestData.memo = formData.memo
         }
 
+        // paymentMethodIdの処理
+        if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
+          requestData.paymentMethodId = formData.paymentMethodId
+        } else {
+          requestData.paymentMethodId = null
+        }
+
         createMutation.mutate(requestData, {
           onSuccess: () => {
             router.push('/subscriptions')
@@ -114,6 +123,13 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
 
         if (formData.memo && formData.memo.trim() !== '') {
           requestData.memo = formData.memo
+        }
+
+        // paymentMethodIdの処理
+        if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
+          requestData.paymentMethodId = formData.paymentMethodId
+        } else {
+          requestData.paymentMethodId = null
         }
 
         updateMutation.mutate(requestData, {

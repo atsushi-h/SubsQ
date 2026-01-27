@@ -1,10 +1,18 @@
 'use client'
 
+import { usePaymentMethodListQuery } from '@/features/payment-method/hooks/usePaymentMethodListQuery'
 import type { SubscriptionFormData } from '@/features/subscription/schemas/subscription-form.schema'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 import { Textarea } from '@/shared/components/ui/textarea'
 
 type Props = {
@@ -28,6 +36,8 @@ export function SubscriptionFormPresenter({
   onSubmit,
   onCancel,
 }: Props) {
+  const { data: paymentMethods, isLoading: isLoadingPaymentMethods } = usePaymentMethodListQuery()
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
@@ -102,6 +112,31 @@ export function SubscriptionFormPresenter({
                 disabled={isSubmitting}
               />
               {errors.baseDate && <p className="text-sm text-red-500">{errors.baseDate}</p>}
+            </div>
+
+            {/* 支払い方法 */}
+            <div className="space-y-2">
+              <Label htmlFor="paymentMethodId">支払い方法</Label>
+              <Select
+                value={formData.paymentMethodId || 'unset'}
+                onValueChange={(value) => onChange('paymentMethodId', value === 'unset' ? '' : value)}
+                disabled={isSubmitting || isLoadingPaymentMethods}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="未設定" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unset">未設定</SelectItem>
+                  {paymentMethods?.map((pm) => (
+                    <SelectItem key={pm.id} value={pm.id}>
+                      {pm.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.paymentMethodId && (
+                <p className="text-sm text-red-500">{errors.paymentMethodId}</p>
+              )}
             </div>
 
             {/* メモ */}
