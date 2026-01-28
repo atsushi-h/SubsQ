@@ -44,6 +44,7 @@ export const subscriptionFormSchema = z.object({
       const year = date.getFullYear()
       return year >= MIN_YEAR && year <= MAX_YEAR
     }, `有効な日付を入力してください（${MIN_YEAR}年〜${MAX_YEAR}年）`),
+  paymentMethodId: z.string().optional(),
   memo: z.string().optional(),
 })
 

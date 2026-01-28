@@ -6,6 +6,7 @@ import type {
   CreateSubscriptionRequest,
   UpdateSubscriptionRequest,
 } from '@/external/dto/subscription.dto'
+import { usePaymentMethodListQuery } from '@/features/payment-method/hooks/usePaymentMethodListQuery'
 import { useCreateSubscriptionMutation } from '@/features/subscription/hooks/useCreateSubscriptionMutation'
 import { useSubscriptionDetailQuery } from '@/features/subscription/hooks/useSubscriptionDetailQuery'
 import { useUpdateSubscriptionMutation } from '@/features/subscription/hooks/useUpdateSubscriptionMutation'
@@ -26,12 +27,19 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
 
   const { data: existingSubscription, isLoading: isLoadingSubscription } =
     useSubscriptionDetailQuery(subscriptionId)
+  const {
+    data: paymentMethods,
+    isLoading: isLoadingPaymentMethods,
+    isError: isErrorPaymentMethods,
+    error: errorPaymentMethods,
+  } = usePaymentMethodListQuery()
 
   const [formData, setFormData] = useState<SubscriptionFormData>({
     serviceName: '',
     amount: '',
     billingCycle: 'monthly',
     baseDate: '',
+    paymentMethodId: '',
     memo: '',
   })
 
@@ -50,6 +58,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
         amount: existingSubscription.amount.toString(),
         billingCycle: existingSubscription.billingCycle,
         baseDate: baseDateString,
+        paymentMethodId: existingSubscription.paymentMethod?.id || '',
         memo: existingSubscription.memo || '',
       })
     }
@@ -98,6 +107,13 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
           requestData.memo = formData.memo
         }
 
+        // paymentMethodIdの処理
+        if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
+          requestData.paymentMethodId = formData.paymentMethodId
+        } else {
+          requestData.paymentMethodId = null
+        }
+
         createMutation.mutate(requestData, {
           onSuccess: () => {
             router.push('/subscriptions')
@@ -114,6 +130,13 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
 
         if (formData.memo && formData.memo.trim() !== '') {
           requestData.memo = formData.memo
+        }
+
+        // paymentMethodIdの処理
+        if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
+          requestData.paymentMethodId = formData.paymentMethodId
+        } else {
+          requestData.paymentMethodId = null
         }
 
         updateMutation.mutate(requestData, {
@@ -139,6 +162,10 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
     errors,
     isLoading: isLoadingSubscription,
     isSubmitting: props.mode === 'create' ? createMutation.isPending : updateMutation.isPending,
+    paymentMethods,
+    isLoadingPaymentMethods,
+    isErrorPaymentMethods,
+    errorPaymentMethods,
     handleChange,
     handleSubmit,
     handleCancel,
