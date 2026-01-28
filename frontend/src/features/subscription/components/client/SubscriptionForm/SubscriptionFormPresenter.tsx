@@ -1,6 +1,6 @@
 'use client'
 
-import { usePaymentMethodListQuery } from '@/features/payment-method/hooks/usePaymentMethodListQuery'
+import type { PaymentMethodResponse } from '@/external/dto/payment-method.dto'
 import type { SubscriptionFormData } from '@/features/subscription/schemas/subscription-form.schema'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
@@ -21,6 +21,8 @@ type Props = {
   errors: Record<string, string>
   isLoading: boolean
   isSubmitting: boolean
+  paymentMethods: PaymentMethodResponse[] | undefined
+  isLoadingPaymentMethods: boolean
   onChange: (field: keyof SubscriptionFormData, value: string) => void
   onSubmit: (e: React.FormEvent) => void
   onCancel: () => void
@@ -32,12 +34,12 @@ export function SubscriptionFormPresenter({
   errors,
   isLoading,
   isSubmitting,
+  paymentMethods,
+  isLoadingPaymentMethods,
   onChange,
   onSubmit,
   onCancel,
 }: Props) {
-  const { data: paymentMethods, isLoading: isLoadingPaymentMethods } = usePaymentMethodListQuery()
-
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">

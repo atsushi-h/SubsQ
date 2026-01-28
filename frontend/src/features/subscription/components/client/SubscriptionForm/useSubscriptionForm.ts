@@ -6,6 +6,7 @@ import type {
   CreateSubscriptionRequest,
   UpdateSubscriptionRequest,
 } from '@/external/dto/subscription.dto'
+import { usePaymentMethodListQuery } from '@/features/payment-method/hooks/usePaymentMethodListQuery'
 import { useCreateSubscriptionMutation } from '@/features/subscription/hooks/useCreateSubscriptionMutation'
 import { useSubscriptionDetailQuery } from '@/features/subscription/hooks/useSubscriptionDetailQuery'
 import { useUpdateSubscriptionMutation } from '@/features/subscription/hooks/useUpdateSubscriptionMutation'
@@ -26,6 +27,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
 
   const { data: existingSubscription, isLoading: isLoadingSubscription } =
     useSubscriptionDetailQuery(subscriptionId)
+  const { data: paymentMethods, isLoading: isLoadingPaymentMethods } = usePaymentMethodListQuery()
 
   const [formData, setFormData] = useState<SubscriptionFormData>({
     serviceName: '',
@@ -155,6 +157,8 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
     errors,
     isLoading: isLoadingSubscription,
     isSubmitting: props.mode === 'create' ? createMutation.isPending : updateMutation.isPending,
+    paymentMethods,
+    isLoadingPaymentMethods,
     handleChange,
     handleSubmit,
     handleCancel,
