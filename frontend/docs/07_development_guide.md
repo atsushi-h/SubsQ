@@ -81,15 +81,15 @@ export function Component({ prop1, prop2 }: ComponentProps) {
   
   // 4. ローカル状態
   const [state, setState] = useState()
-  
+
   // 5. 副作用
   useEffect(() => {}, [])
-  
-  // 6. ハンドラー（必ずuseCallbackを使用）
-  const handleClick = useCallback(() => {
+
+  // 6. ハンドラー（React Compilerが自動的に最適化）
+  const handleClick = () => {
     // 処理
-  }, [/* 依存配列 */])
-  
+  }
+
   // 7. レンダリング
   return <div>...</div>
 }
@@ -621,5 +621,133 @@ export function Component() {
 
   // React Developer Tools で確認可能
   return <div>...</div>
+}
+```
+
+## React Compilerによる自動最適化
+
+### 概要
+
+このプロジェクトでは**React Compiler**（`babel-plugin-react-compiler` 1.0.0）を使用しています。
+React Compilerは、ビルド時にReactコンポーネントを自動的に最適化し、パフォーマンスを向上させます。
+
+```typescript
+// next.config.ts
+const nextConfig: NextConfig = {
+  reactCompiler: true, // React Compiler有効化
+}
+```
+
+### 自動最適化の内容
+
+React Compilerは以下を**自動的に処理**します：
+
+1. **関数の参照安定性**: イベントハンドラーなどの関数を自動メモ化
+2. **計算結果のメモ化**: 高コストな計算を自動最適化
+3. **再レンダリングの最適化**: 不要な再レンダリングを自動防止
+
+### 不要になったフック
+
+以下のフックは**使用する必要がありません**：
+
+```typescript
+// ❌ 不要: useCallback
+// React Compilerが関数の参照を自動的に安定化
+const handleClick = useCallback(() => {
+  doSomething()
+}, [])
+
+// ✅ 推奨: シンプルな関数定義
+const handleClick = () => {
+  doSomething()
+}
+
+// ❌ 不要: useMemo
+// React Compilerが計算結果を自動的にメモ化
+const sortedItems = useMemo(() => {
+  return items.sort((a, b) => a.id - b.id)
+}, [items])
+
+// ✅ 推奨: 直接計算
+const sortedItems = items.sort((a, b) => a.id - b.id)
+```
+
+### 例外的にuseCallbackが必要なケース
+
+以下のような特殊なケースでは、将来的にも`useCallback`が必要になる可能性があります：
+
+1. **外部ライブラリへの関数渡し**: ライブラリが参照の同一性に依存する場合
+2. **useEffectの依存配列**: 無限ループを防ぐために明示的なメモ化が必要な場合
+3. **React.memoと組み合わせる場合**: 子コンポーネントの再レンダリング制御
+
+```typescript
+// 例: useEffectの依存配列で明示的なメモ化が必要な場合
+const fetchData = useCallback(async () => {
+  const result = await api.fetch()
+  setData(result)
+}, []) // 空の依存配列で関数を安定化
+
+useEffect(() => {
+  fetchData()
+}, [fetchData]) // fetchDataの参照が安定しているため無限ループを防げる
+```
+
+ただし、このようなケースでも、まず**useCallbackなし**で実装してみて、問題が発生した場合にのみ追加することを推奨します。
+
+### 検証方法
+
+React Compilerの最適化効果を確認する方法：
+
+1. **React DevTools Profiler**を使用
+   - コンポーネントの再レンダリング回数を確認
+   - レンダリング時間を計測
+
+2. **ビルドログの確認**
+   ```bash
+   pnpm build
+   # React Compilerの最適化ログが表示される
+   ```
+
+3. **パフォーマンステスト**
+   - Lighthouseでパフォーマンススコアを確認
+   - 目標: Performance 90以上
+
+### ベストプラクティス
+
+1. **シンプルに書く**: 手動メモ化は避け、シンプルなコードを心がける
+2. **React Compilerを信頼**: 自動最適化に任せる
+3. **必要な場合のみ手動最適化**: パフォーマンス問題が実際に発生した場合のみ対処
+
+```typescript
+// ✅ 推奨: シンプルで読みやすい
+export function useSubscriptionList() {
+  const { data, isLoading } = useSubscriptionListQuery()
+  const router = useRouter()
+
+  const handleView = (id: string) => {
+    router.push(`/subscriptions/${id}`)
+  }
+
+  return {
+    subscriptions: data?.subscriptions ?? [],
+    isLoading,
+    handleView,
+  }
+}
+
+// ❌ 避ける: 不要な手動メモ化
+export function useSubscriptionList() {
+  const { data, isLoading } = useSubscriptionListQuery()
+  const router = useRouter()
+
+  const handleView = useCallback((id: string) => {
+    router.push(`/subscriptions/${id}`)
+  }, [router]) // React Compilerが自動処理するため不要
+
+  return {
+    subscriptions: data?.subscriptions ?? [],
+    isLoading,
+    handleView,
+  }
 }
 ```
