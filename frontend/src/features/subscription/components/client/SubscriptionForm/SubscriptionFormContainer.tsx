@@ -13,6 +13,8 @@ export function SubscriptionFormContainer(props: Props) {
     isSubmitting,
     paymentMethods,
     isLoadingPaymentMethods,
+    isErrorPaymentMethods,
+    errorPaymentMethods,
     handleChange,
     handleSubmit,
     handleCancel,
@@ -27,6 +29,8 @@ export function SubscriptionFormContainer(props: Props) {
       isSubmitting={isSubmitting}
       paymentMethods={paymentMethods}
       isLoadingPaymentMethods={isLoadingPaymentMethods}
+      isErrorPaymentMethods={isErrorPaymentMethods}
+      errorPaymentMethods={errorPaymentMethods}
       onChange={handleChange}
       onSubmit={handleSubmit}
       onCancel={handleCancel}

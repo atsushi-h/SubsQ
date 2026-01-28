@@ -27,7 +27,12 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
 
   const { data: existingSubscription, isLoading: isLoadingSubscription } =
     useSubscriptionDetailQuery(subscriptionId)
-  const { data: paymentMethods, isLoading: isLoadingPaymentMethods } = usePaymentMethodListQuery()
+  const {
+    data: paymentMethods,
+    isLoading: isLoadingPaymentMethods,
+    isError: isErrorPaymentMethods,
+    error: errorPaymentMethods,
+  } = usePaymentMethodListQuery()
 
   const [formData, setFormData] = useState<SubscriptionFormData>({
     serviceName: '',
@@ -159,6 +164,8 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
     isSubmitting: props.mode === 'create' ? createMutation.isPending : updateMutation.isPending,
     paymentMethods,
     isLoadingPaymentMethods,
+    isErrorPaymentMethods,
+    errorPaymentMethods,
     handleChange,
     handleSubmit,
     handleCancel,

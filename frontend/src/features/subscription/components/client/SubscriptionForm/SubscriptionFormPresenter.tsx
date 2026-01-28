@@ -23,6 +23,8 @@ type Props = {
   isSubmitting: boolean
   paymentMethods: PaymentMethodResponse[] | undefined
   isLoadingPaymentMethods: boolean
+  isErrorPaymentMethods: boolean
+  errorPaymentMethods: Error | null
   onChange: (field: keyof SubscriptionFormData, value: string) => void
   onSubmit: (e: React.FormEvent) => void
   onCancel: () => void
@@ -36,6 +38,8 @@ export function SubscriptionFormPresenter({
   isSubmitting,
   paymentMethods,
   isLoadingPaymentMethods,
+  isErrorPaymentMethods,
+  errorPaymentMethods,
   onChange,
   onSubmit,
   onCancel,
@@ -124,7 +128,7 @@ export function SubscriptionFormPresenter({
                 onValueChange={(value) =>
                   onChange('paymentMethodId', value === 'unset' ? '' : value)
                 }
-                disabled={isSubmitting || isLoadingPaymentMethods}
+                disabled={isSubmitting || isLoadingPaymentMethods || isErrorPaymentMethods}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="未設定" />
@@ -138,6 +142,11 @@ export function SubscriptionFormPresenter({
                   ))}
                 </SelectContent>
               </Select>
+              {isErrorPaymentMethods && (
+                <p className="text-sm text-red-500">
+                  支払い方法の読み込みに失敗しました。{errorPaymentMethods?.message}
+                </p>
+              )}
               {errors.paymentMethodId && (
                 <p className="text-sm text-red-500">{errors.paymentMethodId}</p>
               )}
