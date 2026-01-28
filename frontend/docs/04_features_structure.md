@@ -191,7 +191,6 @@ export function SubscriptionListPresenter({
 ### カスタムフック
 ```tsx
 // features/subscription/components/client/SubscriptionList/useSubscriptionList.ts
-import { useCallback } from 'react'
 import { useSubscriptionListQuery } from '@/features/subscription/hooks/useSubscriptionQuery'
 import { useDeleteSubscriptionMutation } from '@/features/subscription/hooks/useSubscriptionMutation'
 
@@ -199,10 +198,10 @@ export function useSubscriptionList() {
   const { data, isLoading } = useSubscriptionListQuery()
   const deleteMutation = useDeleteSubscriptionMutation()
 
-  // イベントハンドラーはuseCallbackで最適化
-  const handleDelete = useCallback(async (subscriptionId: string) => {
+  // React Compilerが関数の参照安定性を自動的に最適化
+  const handleDelete = async (subscriptionId: string) => {
     await deleteMutation.mutateAsync(subscriptionId)
-  }, [deleteMutation])
+  }
 
   return {
     subscriptions: data?.subscriptions || [],

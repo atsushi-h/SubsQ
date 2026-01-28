@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
   CreatePaymentMethodRequest,
   UpdatePaymentMethodRequest,
@@ -40,12 +40,11 @@ export function usePaymentMethodForm(props: UsePaymentMethodFormProps) {
   const [deleteTarget, setDeleteTarget] = useState<PaymentMethodWithUsage | null>(null)
 
   // 使用中件数を計算
-  const usageCount = useMemo(() => {
-    if (!paymentMethodId || !subscriptionData?.subscriptions) return 0
-
-    return subscriptionData.subscriptions.filter((sub) => sub.paymentMethod?.id === paymentMethodId)
-      .length
-  }, [paymentMethodId, subscriptionData])
+  const usageCount =
+    !paymentMethodId || !subscriptionData?.subscriptions
+      ? 0
+      : subscriptionData.subscriptions.filter((sub) => sub.paymentMethod?.id === paymentMethodId)
+          .length
 
   // 編集モードの場合、既存データをロード
   // biome-ignore lint/correctness/useExhaustiveDependencies: 編集対象のpaymentMethodIdが変わったときに確実に再実行する必要がある
@@ -57,7 +56,7 @@ export function usePaymentMethodForm(props: UsePaymentMethodFormProps) {
     }
   }, [props.mode, paymentMethodId, existingPaymentMethod])
 
-  const handleChange = useCallback((field: keyof PaymentMethodFormData, value: string) => {
+  const handleChange = (field: keyof PaymentMethodFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     // エラーをクリア
     setErrors((prev) => {
@@ -65,65 +64,62 @@ export function usePaymentMethodForm(props: UsePaymentMethodFormProps) {
       delete newErrors[field]
       return newErrors
     })
-  }, [])
+  }
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-      // バリデーション
-      const result = validatePaymentMethodForm(formData)
-      if (!result.success) {
-        const newErrors: Record<string, string> = {}
-        result.error.issues.forEach((issue) => {
-          if (issue.path[0]) {
-            newErrors[issue.path[0].toString()] = issue.message
-          }
-        })
-        setErrors(newErrors)
-        return
+    // バリデーション
+    const result = validatePaymentMethodForm(formData)
+    if (!result.success) {
+      const newErrors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          newErrors[issue.path[0].toString()] = issue.message
+        }
+      })
+      setErrors(newErrors)
+      return
+    }
+
+    if (props.mode === 'create') {
+      const requestData: Omit<CreatePaymentMethodRequest, 'userId'> = {
+        name: formData.name,
       }
 
-      if (props.mode === 'create') {
-        const requestData: Omit<CreatePaymentMethodRequest, 'userId'> = {
-          name: formData.name,
-        }
-
-        createMutation.mutate(requestData, {
-          onSuccess: () => {
-            router.push('/payment-methods')
-          },
-        })
-      } else {
-        const requestData: UpdatePaymentMethodRequest = {
-          id: props.paymentMethodId,
-          name: formData.name,
-        }
-
-        updateMutation.mutate(requestData, {
-          onSuccess: () => {
-            router.push('/payment-methods')
-          },
-        })
+      createMutation.mutate(requestData, {
+        onSuccess: () => {
+          router.push('/payment-methods')
+        },
+      })
+    } else {
+      const requestData: UpdatePaymentMethodRequest = {
+        id: props.paymentMethodId,
+        name: formData.name,
       }
-    },
-    [formData, props, createMutation, updateMutation, router],
-  )
 
-  const handleCancel = useCallback(() => {
+      updateMutation.mutate(requestData, {
+        onSuccess: () => {
+          router.push('/payment-methods')
+        },
+      })
+    }
+  }
+
+  const handleCancel = () => {
     router.push('/payment-methods')
-  }, [router])
+  }
 
-  const handleDeleteRequest = useCallback(() => {
+  const handleDeleteRequest = () => {
     if (props.mode === 'edit' && existingPaymentMethod) {
       setDeleteTarget({
         ...existingPaymentMethod,
         usageCount,
       })
     }
-  }, [props.mode, existingPaymentMethod, usageCount])
+  }
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = () => {
     if (deleteTarget) {
       deleteMutation.mutate(deleteTarget.id, {
         onSuccess: () => {
@@ -131,11 +127,11 @@ export function usePaymentMethodForm(props: UsePaymentMethodFormProps) {
         },
       })
     }
-  }, [deleteTarget, deleteMutation, router])
+  }
 
-  const handleDeleteCancel = useCallback(() => {
+  const handleDeleteCancel = () => {
     setDeleteTarget(null)
-  }, [])
+  }
 
   return {
     formData,

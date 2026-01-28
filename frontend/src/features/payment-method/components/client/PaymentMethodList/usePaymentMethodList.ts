@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useDeletePaymentMethodMutation } from '@/features/payment-method/hooks/useDeletePaymentMethodMutation'
 import { usePaymentMethodListQuery } from '@/features/payment-method/hooks/usePaymentMethodListQuery'
 import type { PaymentMethodWithUsage } from '@/features/payment-method/types/payment-method.types'
@@ -15,32 +15,29 @@ export function usePaymentMethodList() {
   const [deleteTarget, setDeleteTarget] = useState<PaymentMethodWithUsage | null>(null)
 
   // 使用中件数を計算
-  const paymentMethodsWithUsage = useMemo<PaymentMethodWithUsage[]>(() => {
-    if (!paymentMethods || !subscriptionData?.subscriptions) return []
+  const paymentMethodsWithUsage: PaymentMethodWithUsage[] =
+    !paymentMethods || !subscriptionData?.subscriptions
+      ? []
+      : paymentMethods.map((pm) => ({
+          ...pm,
+          usageCount: subscriptionData.subscriptions.filter(
+            (sub) => sub.paymentMethod?.id === pm.id,
+          ).length,
+        }))
 
-    return paymentMethods.map((pm) => ({
-      ...pm,
-      usageCount: subscriptionData.subscriptions.filter((sub) => sub.paymentMethod?.id === pm.id)
-        .length,
-    }))
-  }, [paymentMethods, subscriptionData])
-
-  const handleCreate = useCallback(() => {
+  const handleCreate = () => {
     router.push('/payment-methods/new')
-  }, [router])
+  }
 
-  const handleEdit = useCallback(
-    (id: string) => {
-      router.push(`/payment-methods/${id}/edit`)
-    },
-    [router],
-  )
+  const handleEdit = (id: string) => {
+    router.push(`/payment-methods/${id}/edit`)
+  }
 
-  const handleDeleteRequest = useCallback((paymentMethod: PaymentMethodWithUsage) => {
+  const handleDeleteRequest = (paymentMethod: PaymentMethodWithUsage) => {
     setDeleteTarget(paymentMethod)
-  }, [])
+  }
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = () => {
     if (deleteTarget) {
       deleteMutation.mutate(deleteTarget.id, {
         onSuccess: () => {
@@ -48,11 +45,11 @@ export function usePaymentMethodList() {
         },
       })
     }
-  }, [deleteTarget, deleteMutation])
+  }
 
-  const handleDeleteCancel = useCallback(() => {
+  const handleDeleteCancel = () => {
     setDeleteTarget(null)
-  }, [])
+  }
 
   return {
     paymentMethods: paymentMethodsWithUsage,

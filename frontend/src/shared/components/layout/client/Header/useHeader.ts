@@ -1,7 +1,6 @@
 'use client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { useCallback } from 'react'
 import { signOut, useSession } from '@/features/auth/lib/better-auth-client'
 
 export function useHeader() {
@@ -9,12 +8,12 @@ export function useHeader() {
   const router = useRouter()
   const queryClient = useQueryClient()
 
-  const handleSignOut = useCallback(async () => {
+  const handleSignOut = async () => {
     await signOut()
     // キャッシュをすべてクリア
     queryClient.clear()
     router.push('/login')
-  }, [router, queryClient])
+  }
 
   return {
     userName: session?.user?.name || undefined,

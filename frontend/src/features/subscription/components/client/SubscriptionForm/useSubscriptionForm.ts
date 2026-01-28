@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
   CreateSubscriptionRequest,
   UpdateSubscriptionRequest,
@@ -64,7 +64,7 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
     }
   }, [props.mode, subscriptionId, existingSubscription])
 
-  const handleChange = useCallback((field: keyof SubscriptionFormData, value: string) => {
+  const handleChange = (field: keyof SubscriptionFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     // エラーをクリア
     setErrors((prev) => {
@@ -72,90 +72,87 @@ export function useSubscriptionForm(props: UseSubscriptionFormProps) {
       delete newErrors[field]
       return newErrors
     })
-  }, [])
+  }
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-      // バリデーション
-      const result = validateSubscriptionForm(formData)
-      if (!result.success) {
-        const newErrors: Record<string, string> = {}
-        result.error.issues.forEach((issue) => {
-          if (issue.path[0]) {
-            newErrors[issue.path[0].toString()] = issue.message
-          }
-        })
-        setErrors(newErrors)
-        return
+    // バリデーション
+    const result = validateSubscriptionForm(formData)
+    if (!result.success) {
+      const newErrors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          newErrors[issue.path[0].toString()] = issue.message
+        }
+      })
+      setErrors(newErrors)
+      return
+    }
+
+    // ISO datetime 形式に変換（baseDate）
+    const baseDateISO = DateUtil.dateStringToISO(formData.baseDate)
+
+    if (props.mode === 'create') {
+      const requestData: Omit<CreateSubscriptionRequest, 'userId'> = {
+        serviceName: formData.serviceName,
+        amount: Number(formData.amount),
+        billingCycle: formData.billingCycle,
+        baseDate: baseDateISO,
       }
 
-      // ISO datetime 形式に変換（baseDate）
-      const baseDateISO = DateUtil.dateStringToISO(formData.baseDate)
+      // 空文字列でない場合のみmemoを含める（Next.js Server Actionsのシリアライゼーション問題を回避）
+      if (formData.memo && formData.memo.trim() !== '') {
+        requestData.memo = formData.memo
+      }
 
-      if (props.mode === 'create') {
-        const requestData: Omit<CreateSubscriptionRequest, 'userId'> = {
-          serviceName: formData.serviceName,
-          amount: Number(formData.amount),
-          billingCycle: formData.billingCycle,
-          baseDate: baseDateISO,
-        }
-
-        // 空文字列でない場合のみmemoを含める（Next.js Server Actionsのシリアライゼーション問題を回避）
-        if (formData.memo && formData.memo.trim() !== '') {
-          requestData.memo = formData.memo
-        }
-
-        // paymentMethodIdの処理
-        if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
-          requestData.paymentMethodId = formData.paymentMethodId
-        } else {
-          requestData.paymentMethodId = null
-        }
-
-        createMutation.mutate(requestData, {
-          onSuccess: () => {
-            router.push('/subscriptions')
-          },
-        })
+      // paymentMethodIdの処理
+      if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
+        requestData.paymentMethodId = formData.paymentMethodId
       } else {
-        const requestData: UpdateSubscriptionRequest = {
-          id: props.subscriptionId,
-          serviceName: formData.serviceName,
-          amount: Number(formData.amount),
-          billingCycle: formData.billingCycle,
-          baseDate: baseDateISO,
-        }
-
-        if (formData.memo && formData.memo.trim() !== '') {
-          requestData.memo = formData.memo
-        }
-
-        // paymentMethodIdの処理
-        if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
-          requestData.paymentMethodId = formData.paymentMethodId
-        } else {
-          requestData.paymentMethodId = null
-        }
-
-        updateMutation.mutate(requestData, {
-          onSuccess: () => {
-            router.push(`/subscriptions/${props.subscriptionId}`)
-          },
-        })
+        requestData.paymentMethodId = null
       }
-    },
-    [formData, props, createMutation, updateMutation, router],
-  )
 
-  const handleCancel = useCallback(() => {
+      createMutation.mutate(requestData, {
+        onSuccess: () => {
+          router.push('/subscriptions')
+        },
+      })
+    } else {
+      const requestData: UpdateSubscriptionRequest = {
+        id: props.subscriptionId,
+        serviceName: formData.serviceName,
+        amount: Number(formData.amount),
+        billingCycle: formData.billingCycle,
+        baseDate: baseDateISO,
+      }
+
+      if (formData.memo && formData.memo.trim() !== '') {
+        requestData.memo = formData.memo
+      }
+
+      // paymentMethodIdの処理
+      if (formData.paymentMethodId && formData.paymentMethodId.trim() !== '') {
+        requestData.paymentMethodId = formData.paymentMethodId
+      } else {
+        requestData.paymentMethodId = null
+      }
+
+      updateMutation.mutate(requestData, {
+        onSuccess: () => {
+          router.push(`/subscriptions/${props.subscriptionId}`)
+        },
+      })
+    }
+  }
+
+  const handleCancel = () => {
     if (props.mode === 'edit') {
       router.push(`/subscriptions/${props.subscriptionId}`)
     } else {
       router.push('/subscriptions')
     }
-  }, [props, router])
+  }
 
   return {
     formData,

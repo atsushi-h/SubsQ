@@ -128,29 +128,24 @@ export function useSubscriptionList() {
   const deleteMutation = useDeleteSubscriptionMutation()
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null)
 
-  const handleCreate = useCallback(() => {
+  // React Compilerが関数の参照安定性を自動的に最適化
+  const handleCreate = () => {
     router.push('/subscriptions/new')
-  }, [router])
+  }
 
-  const handleView = useCallback(
-    (id: string) => {
-      router.push(`/subscriptions/${id}`)
-    },
-    [router],
-  )
+  const handleView = (id: string) => {
+    router.push(`/subscriptions/${id}`)
+  }
 
-  const handleEdit = useCallback(
-    (id: string) => {
-      router.push(`/subscriptions/${id}/edit`)
-    },
-    [router],
-  )
+  const handleEdit = (id: string) => {
+    router.push(`/subscriptions/${id}/edit`)
+  }
 
-  const handleDeleteRequest = useCallback((subscription: Subscription) => {
+  const handleDeleteRequest = (subscription: Subscription) => {
     setDeleteTarget(subscription)
-  }, [])
+  }
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = () => {
     if (deleteTarget) {
       deleteMutation.mutate(deleteTarget.id, {
         onSuccess: () => {
@@ -158,11 +153,11 @@ export function useSubscriptionList() {
         },
       })
     }
-  }, [deleteTarget, deleteMutation])
+  }
 
-  const handleDeleteCancel = useCallback(() => {
+  const handleDeleteCancel = () => {
     setDeleteTarget(null)
-  }, [])
+  }
 
   return {
     subscriptions: data?.subscriptions ?? [],

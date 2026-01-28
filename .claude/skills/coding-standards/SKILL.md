@@ -232,17 +232,17 @@ setCount(count + 1)  // 非同期シナリオで古い値になる可能性あ�
 {isLoading ? <Spinner /> : error ? <ErrorMessage error={error} /> : data ? <DataDisplay data={data} /> : null}
 ```
 
-### useCallbackの使用
+### イベントハンドラーの定義
 
 ```typescript
-// ✅ 良い例: イベントハンドラーはuseCallbackでメモ化
-const handleDelete = useCallback((id: string) => {
+// ✅ 良い例: シンプルなイベントハンドラー（React Compilerが自動最適化）
+const handleDelete = (id: string) => {
   deleteSubscription(id)
-}, [deleteSubscription])
+}
 
-const handleSubmit = useCallback(async (data: FormData) => {
+const handleSubmit = async (data: FormData) => {
   await createSubscription(data)
-}, [createSubscription])
+}
 ```
 
 ---
@@ -378,17 +378,30 @@ export function calculateNextBillingDate(
 
 ## パフォーマンス
 
-### メモ化
+### React Compilerによる自動最適化
+
+このプロジェクトではReact Compiler（`babel-plugin-react-compiler` 1.0.0）を使用しています。
+React Compilerは以下を自動的に処理します：
+
+- **関数の参照安定性**: イベントハンドラーなどの関数を自動的にメモ化
+- **計算結果のメモ化**: 高コストな計算を自動的に最適化
+- **再レンダリングの最適化**: 不要な再レンダリングを防止
+
+そのため、**手動での`useMemo`/`useCallback`の使用は不要**です。
 
 ```typescript
-import { useMemo, useCallback } from 'react'
+// ✅ 良い例: シンプルな実装（React Compilerが自動最適化）
+const sortedSubscriptions = subscriptions.sort((a, b) => b.amount - a.amount)
 
-// ✅ 良い例: 高コストな計算をメモ化
+const handleSearch = (query: string) => {
+  setSearchQuery(query)
+}
+
+// ❌ 悪い例: 不要な手動メモ化（React Compilerの最適化を阻害する可能性）
 const sortedSubscriptions = useMemo(() => {
   return subscriptions.sort((a, b) => b.amount - a.amount)
 }, [subscriptions])
 
-// ✅ 良い例: コールバックをメモ化
 const handleSearch = useCallback((query: string) => {
   setSearchQuery(query)
 }, [])
