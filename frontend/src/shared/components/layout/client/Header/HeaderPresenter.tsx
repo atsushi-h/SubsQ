@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu'
+import { ModeToggle } from '@/shared/components/mode-toggle'
 
 type Props = {
   userName?: string
@@ -23,7 +24,8 @@ export function HeaderPresenter({ userName, userEmail, userImage, onSignOut }: P
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
       <div className="flex h-14 items-center px-6 justify-end">
-        <nav className="flex items-center">
+        <nav className="flex items-center gap-2">
+          <ModeToggle />
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
