@@ -4,6 +4,7 @@ import './globals.css'
 import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
 import { generateMetadata, generateViewport } from '@/shared/lib/metadata'
 import { QueryProvider } from '@/shared/providers/QueryProvider'
+import { ThemeProvider } from '@/shared/providers/ThemeProvider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -40,9 +41,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <QueryProvider>{children}</QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -9,11 +9,11 @@ type Props = {
 
 export function LoginClientPresenter({ onGoogleLogin }: Props) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold">SubsQ</CardTitle>
-          <p className="mt-2 text-sm text-gray-600">シンプルなサブスク管理アプリ</p>
+          <p className="mt-2 text-sm text-muted-foreground">シンプルなサブスク管理アプリ</p>
         </CardHeader>
         <CardContent>
           <Button type="button" variant="secondary" className="w-full" onClick={onGoogleLogin}>

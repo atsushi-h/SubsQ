@@ -1,6 +1,7 @@
 'use client'
 
 import { LogOut, User } from 'lucide-react'
+import { ModeToggle } from '@/shared/components/common/client/ModeToggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -21,9 +22,10 @@ type Props = {
 
 export function HeaderPresenter({ userName, userEmail, userImage, onSignOut }: Props) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="flex h-14 items-center px-6 justify-end">
-        <nav className="flex items-center">
+        <nav className="flex items-center gap-2">
+          <ModeToggle />
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
