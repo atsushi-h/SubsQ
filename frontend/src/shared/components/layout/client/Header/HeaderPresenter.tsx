@@ -1,7 +1,7 @@
 'use client'
 
 import { LogOut, User } from 'lucide-react'
-import { ModeToggle } from '@/shared/components/mode-toggle'
+import { ModeToggle } from '@/shared/components/common/client/ModeToggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
 import {

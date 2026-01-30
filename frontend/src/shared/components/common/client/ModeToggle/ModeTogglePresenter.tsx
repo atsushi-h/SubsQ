@@ -1,8 +1,6 @@
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
-
 import { Button } from '@/shared/components/ui/button'
 import {
   DropdownMenu,
@@ -11,9 +9,11 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu'
 
-export function ModeToggle() {
-  const { setTheme } = useTheme()
+type Props = {
+  onThemeChange: (theme: 'light' | 'dark' | 'system') => void
+}
 
+export function ModeTogglePresenter({ onThemeChange }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -24,9 +24,9 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onThemeChange('light')}>Light</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onThemeChange('dark')}>Dark</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onThemeChange('system')}>System</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
