@@ -22,7 +22,7 @@ type Props = {
 
 export function HeaderPresenter({ userName, userEmail, userImage, onSignOut }: Props) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="flex h-14 items-center px-6 justify-end">
         <nav className="flex items-center gap-2">
           <ModeToggle />
