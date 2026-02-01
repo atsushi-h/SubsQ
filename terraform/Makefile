@@ -1,4 +1,4 @@
-.PHONY: help fmt fmt-check validate
+.PHONY: help fmt fmt-check validate lint
 
 # デフォルトターゲット: ヘルプを表示
 help:
@@ -11,6 +11,7 @@ help:
 	@echo "  make fmt           Terraformファイルをフォーマット"
 	@echo "  make fmt-check     フォーマットチェック（CI用・変更なし）"
 	@echo "  make validate      Terraform設定を検証（構文チェック）"
+	@echo "  make lint          TFLintによる静的解析"
 	@echo ""
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "推奨ワークフロー:"
@@ -19,6 +20,7 @@ help:
 	@echo "1. コード変更後"
 	@echo "   → make fmt        (フォーマット)"
 	@echo "   → make validate   (構文チェック)"
+	@echo "   → make lint       (静的解析)"
 	@echo ""
 	@echo "2. コミット"
 	@echo "   → git add . && git commit -m \"feat: update terraform\""
@@ -49,3 +51,11 @@ validate:
 	@echo "Validating prd environment..."
 	@cd environments/prd && terraform init -backend=false && terraform validate
 	@echo "✓ Validation complete"
+
+# TFLintによる静的解析
+lint:
+	@echo "Running TFLint dev environment..."
+	@cd environments/dev && tflint --init && tflint
+	@echo "Running TFLint prd environment..."
+	@cd environments/prd && tflint --init && tflint
+	@echo "✓ Lint complete"

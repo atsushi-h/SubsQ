@@ -25,6 +25,11 @@ jobs:
         with:
           terraform_version: 1.14.3
 
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6.2.1
+        with:
+          tflint_version: 0.60.0
+
       - name: Terraform Format Check
         id: fmt
         run: |
@@ -54,6 +59,22 @@ jobs:
           cd terraform/environments/prd
           terraform validate -no-color
 
+      - name: TFLint (dev)
+        id: lint_dev
+        run: |
+          cd terraform/environments/dev
+          tflint --init
+          tflint --no-color
+        continue-on-error: true
+
+      - name: TFLint (prd)
+        id: lint_prd
+        run: |
+          cd terraform/environments/prd
+          tflint --init
+          tflint --no-color
+        continue-on-error: true
+
       - name: Summary
         if: always()
         run: |
@@ -82,8 +103,22 @@ jobs:
             echo "❌ **Validate (prd)**: Failed" >> $GITHUB_STEP_SUMMARY
           fi
 
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.lint_dev.outcome }}" == "success" ]; then
+            echo "✅ **TFLint (dev)**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **TFLint (dev)**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.lint_prd.outcome }}" == "success" ]; then
+            echo "✅ **TFLint (prd)**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **TFLint (prd)**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Fail if any check failed
-        if: steps.fmt.outcome == 'failure' || steps.validate_dev.outcome == 'failure' || steps.validate_prd.outcome == 'failure'
+        if: steps.fmt.outcome == 'failure' || steps.validate_dev.outcome == 'failure' || steps.validate_prd.outcome == 'failure' || steps.lint_dev.outcome == 'failure' || steps.lint_prd.outcome == 'failure'
         run: |
           echo "::error::Terraform checks failed. Please review the logs above."
           exit 1
