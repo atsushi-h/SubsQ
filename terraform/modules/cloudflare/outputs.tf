@@ -1,16 +1,16 @@
 output "dns_record_id" {
   description = "DNSレコードのID"
-  value       = cloudflare_record.app.id
+  value       = cloudflare_dns_record.app.id
 }
 
 output "dns_record_name" {
   description = "完全なDNS名"
-  value       = cloudflare_record.app.hostname
+  value       = "${cloudflare_dns_record.app.name}.${var.domain_name}"
 }
 
 output "cloudflare_url" {
   description = "完全なCloudflare URL"
-  value       = "https://${cloudflare_record.app.hostname}"
+  value       = "https://${cloudflare_dns_record.app.name}.${var.domain_name}"
 }
 
 output "cache_ruleset_id" {
