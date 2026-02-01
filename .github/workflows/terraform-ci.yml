@@ -59,11 +59,15 @@ jobs:
           cd terraform/environments/prd
           terraform validate -no-color
 
+      - name: TFLint Init
+        run: |
+          cd terraform
+          tflint --init
+
       - name: TFLint (dev)
         id: lint_dev
         run: |
           cd terraform/environments/dev
-          tflint --init
           tflint --no-color
         continue-on-error: true
 
@@ -71,7 +75,6 @@ jobs:
         id: lint_prd
         run: |
           cd terraform/environments/prd
-          tflint --init
           tflint --no-color
         continue-on-error: true
 
