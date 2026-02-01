@@ -55,6 +55,7 @@ Database / Go Backend API
 | レイヤー | 責務 | テスト対象 |
 |---------|------|-----------|
 | **Handler** | 認証チェック、入力バリデーション、Serviceの呼び出し | ✅ Unit Test |
+| **Converter** | ドメインエンティティ→DTO変換 | ✅ Unit Test |
 | **Service** | ビジネスロジック、データ変換、エラーハンドリング | ✅ Unit Test |
 | **DTO** | Zodスキーマ定義、型変換、バリデーション | ✅ Unit Test |
 | **Client** | HTTP通信（OpenAPI生成） | ❌ 自動生成なのでテスト不要 |
@@ -446,6 +447,62 @@ describe('getSubscriptionByIdQuery', () => {
 
 ---
 
+### 4. Converterのテスト
+
+**テスト対象**: `subscription.converter.ts`
+
+**説明**:
+
+Converterは、ドメインエンティティをDTOに変換する純粋関数です。Handler層の責務の一部として、Handlerディレクトリに配置されています。
+
+**責務**:
+- ドメインエンティティ → DTO への変換
+- データ型変換（例: Unix秒 → ISO文字列）
+- 外部データの結合（例: PaymentMethodの埋め込み）
+
+**テストコード例**:
+
+```typescript
+// external/handler/subscription/subscription.converter.test.ts
+import { describe, expect, it } from 'vitest'
+import { Subscription } from '../../domain/entities/subscription'
+import { Amount } from '../../domain/value-objects/amount'
+import { BaseDate } from '../../domain/value-objects/base-date'
+import { BillingCycle } from '../../domain/value-objects/billing-cycle'
+import { toSubscriptionResponse } from './subscription.converter'
+
+describe('toSubscriptionResponse', () => {
+  it('SubscriptionエンティティをSubscriptionResponseに変換する', () => {
+    const subscription = Subscription.reconstruct({
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      userId: '123e4567-e89b-12d3-a456-426614174001',
+      serviceName: 'Netflix',
+      amount: Amount.fromValue(1200),
+      billingCycle: BillingCycle.fromValue('monthly'),
+      baseDate: BaseDate.fromValue(1704067200),
+      paymentMethodId: '123e4567-e89b-12d3-a456-426614174002',
+      memo: 'スタンダードプラン',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+    })
+
+    const paymentMethod = {
+      id: '123e4567-e89b-12d3-a456-426614174002',
+      name: 'クレジットカード',
+    }
+
+    const result = toSubscriptionResponse(subscription, paymentMethod)
+
+    expect(result.baseDate).toBe('2024-01-01T00:00:00.000Z')
+    expect(result.paymentMethod?.name).toBe('クレジットカード')
+  })
+})
+```
+
+**このテストで守れるもの**: ドメインモデルとDTOの変換ロジックの正確性、データ型変換の正しさ
+
+---
+
 ## テストファイルの配置
 
 ### コロケーション（同じディレクトリに配置）
@@ -501,6 +558,7 @@ pnpm test:coverage            # カバレッジ付き
 │                                                             │
 │  ✅ テストする                                              │
 │  ├── DTO / Zod → APIとの契約確認、型安全性                 │
+│  ├── Converter → ドメイン→DTO変換、型変換                  │
 │  ├── Service → ビジネスロジック、エラーハンドリング        │
 │  └── Handler → 認証チェック、入力バリデーション            │
 │                                                             │
