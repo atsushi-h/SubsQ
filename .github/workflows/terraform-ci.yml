@@ -28,7 +28,7 @@ jobs:
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v6.2.1
         with:
-          tflint_version: 0.60.0
+          tflint_version: v0.60.0
 
       - name: Terraform Format Check
         id: fmt
