@@ -3879,7 +3879,7 @@
                       "id": "RdgO5",
                       "name": "warning",
                       "width": "fill_container",
-                      "fill": "#2A1A1A",
+                      "fill": "#FEF2F2",
                       "cornerRadius": 8,
                       "gap": 8,
                       "padding": 12,
@@ -4326,12 +4326,12 @@
                   "id": "mMKFt",
                   "name": "loginBtn",
                   "width": "fill_container",
-                  "fill": "#FFFFFF",
+                  "fill": "#252529",
                   "cornerRadius": 8,
                   "stroke": {
                     "align": "inside",
                     "thickness": 1,
-                    "fill": "#2A2A2E"
+                    "fill": "$--border-subtle"
                   },
                   "gap": 8,
                   "padding": [
@@ -4355,7 +4355,7 @@
                       "type": "text",
                       "id": "KA84A",
                       "name": "loginBtnText",
-                      "fill": "#18181B",
+                      "fill": "$--text-primary",
                       "content": "Googleでログイン",
                       "fontFamily": "Inter",
                       "fontSize": 14,
