@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { LogOut, User } from 'lucide-react'
 import { ModeToggle } from '@/shared/components/common/client/ModeToggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
@@ -12,19 +13,49 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu'
+import { cn } from '@/shared/lib/utils'
 
 type Props = {
   userName?: string
   userEmail?: string
   userImage?: string | null
+  pathname?: string
   onSignOut: () => void
 }
 
-export function HeaderPresenter({ userName, userEmail, userImage, onSignOut }: Props) {
+export function HeaderPresenter({ userName, userEmail, userImage, pathname, onSignOut }: Props) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
-      <div className="flex h-14 items-center px-6 justify-end">
-        <nav className="flex items-center gap-2">
+      <div className="flex h-14 items-center justify-between px-6">
+        {/* 左側: ロゴ + ナビゲーション */}
+        <div className="flex items-center gap-6">
+          <Link href="/subscriptions" className="text-lg font-bold text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
+            SubsQ
+          </Link>
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/subscriptions"
+              className={cn(
+                'text-sm text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+                pathname === '/subscriptions' && 'font-medium',
+              )}
+            >
+              サブスク一覧
+            </Link>
+            <Link
+              href="/payment-methods"
+              className={cn(
+                'text-sm text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+                pathname === '/payment-methods' && 'font-medium',
+              )}
+            >
+              支払い方法
+            </Link>
+          </nav>
+        </div>
+
+        {/* 右側: モード切替 + ユーザーメニュー */}
+        <div className="flex items-center gap-2">
           <ModeToggle />
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
@@ -52,7 +83,7 @@ export function HeaderPresenter({ userName, userEmail, userImage, onSignOut }: P
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </nav>
+        </div>
       </div>
     </header>
   )
