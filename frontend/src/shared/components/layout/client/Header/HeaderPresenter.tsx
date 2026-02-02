@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { LogOut, User } from 'lucide-react'
+import Link from 'next/link'
 import { ModeToggle } from '@/shared/components/common/client/ModeToggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
@@ -29,7 +29,10 @@ export function HeaderPresenter({ userName, userEmail, userImage, pathname, onSi
       <div className="flex h-14 items-center justify-between px-6">
         {/* 左側: ロゴ + ナビゲーション */}
         <div className="flex items-center gap-6">
-          <Link href="/subscriptions" className="text-lg font-bold text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
+          <Link
+            href="/subscriptions"
+            className="text-lg font-bold text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
             SubsQ
           </Link>
           <nav className="flex items-center gap-6">
