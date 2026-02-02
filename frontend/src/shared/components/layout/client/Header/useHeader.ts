@@ -1,11 +1,12 @@
 'use client'
 import { useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from '@/features/auth/lib/better-auth-client'
 
 export function useHeader() {
   const { data: session } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
   const queryClient = useQueryClient()
 
   const handleSignOut = async () => {
@@ -21,5 +22,6 @@ export function useHeader() {
     // カスタムセッションのaccount.thumbnailを使用
     userImage: session?.account?.thumbnail || session?.user?.image || undefined,
     handleSignOut,
+    pathname,
   }
 }
