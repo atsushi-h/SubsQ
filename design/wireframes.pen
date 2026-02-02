@@ -4182,7 +4182,7 @@
                       "type": "frame",
                       "id": "Ylg3N",
                       "name": "withdrawBtn",
-                      "fill": "#EFEFEF",
+                      "fill": "#DC2626",
                       "cornerRadius": 8,
                       "effect": {
                         "type": "shadow",
@@ -4195,7 +4195,6 @@
                         "blur": 8,
                         "spread": -1
                       },
-                      "gap": 8,
                       "padding": [
                         10,
                         16
@@ -4203,20 +4202,10 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "icon_font",
-                          "id": "eiXIx",
-                          "name": "withdrawIcon",
-                          "width": 16,
-                          "height": 16,
-                          "iconFontName": "triangle-alert",
-                          "iconFontFamily": "lucide",
-                          "fill": "#EFEFEF"
-                        },
-                        {
                           "type": "text",
                           "id": "RVYb1",
                           "name": "withdrawText",
-                          "fill": "#71717A",
+                          "fill": "#FFFFFF",
                           "content": "退会する",
                           "fontFamily": "Inter",
                           "fontSize": 14,
@@ -8423,7 +8412,7 @@
                       "type": "frame",
                       "id": "fzBsk",
                       "name": "withdrawBtn",
-                      "fill": "#3F3F46",
+                      "fill": "#DC2626",
                       "cornerRadius": 8,
                       "effect": {
                         "type": "shadow",
@@ -8436,7 +8425,6 @@
                         "blur": 8,
                         "spread": -1
                       },
-                      "gap": 8,
                       "padding": [
                         10,
                         16
@@ -8444,20 +8432,10 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "icon_font",
-                          "id": "nx9tb",
-                          "name": "withdrawIcon",
-                          "width": 16,
-                          "height": 16,
-                          "iconFontName": "triangle-alert",
-                          "iconFontFamily": "lucide",
-                          "fill": "#3F3F46"
-                        },
-                        {
                           "type": "text",
                           "id": "bg7DT",
                           "name": "withdrawText",
-                          "fill": "#A1A1AA",
+                          "fill": "#FFFFFF",
                           "content": "退会する",
                           "fontFamily": "Inter",
                           "fontSize": 14,
