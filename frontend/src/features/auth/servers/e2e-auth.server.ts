@@ -9,5 +9,5 @@ export function checkE2EAuthEnabledServer(): boolean {
   if (!isDevelopment()) {
     return false
   }
-  return Boolean(process.env.E2E_TEST_PASSWORD)
+  return Boolean(process.env.E2E_TEST_PASSWORD) && Boolean(process.env.PLAYWRIGHT_E2E_MODE)
 }
