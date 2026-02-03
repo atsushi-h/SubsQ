@@ -8,6 +8,8 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
     GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
     BETTER_AUTH_URL: z.string(),
+    // E2Eテスト用パスワード（開発環境でE2E認証を有効化する場合は必須）
+    // 注意: isE2EAuthEnabled()がtrueの場合、このフィールドは必ず設定されている必要がある
     E2E_TEST_PASSWORD: z.string().optional(),
   },
 

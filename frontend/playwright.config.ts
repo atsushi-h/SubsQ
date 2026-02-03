@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 // .env.localから環境変数を読み込む
 dotenv.config({ path: path.resolve(__dirname, '.env.local') })
 
+// 認証状態ファイルのパス（auth.setup.tsと共有）
+export const AUTH_FILE = 'playwright/.auth/user.json'
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -25,7 +28,7 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json',
+        storageState: AUTH_FILE,
       },
       dependencies: ['setup'],
     },

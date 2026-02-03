@@ -80,6 +80,12 @@ export const auth = betterAuth({
       hash: async (password: string) => password,
       // カスタム検証関数: E2E_TEST_PASSWORDとの一致をチェック
       verify: async ({ password }: { hash: string; password: string }) => {
+        // E2E_TEST_PASSWORDが設定されていない場合は認証失敗
+        // isE2EAuthEnabled()がtrueの場合は必ず設定されているはずだが、型安全性のため明示的にチェック
+        if (!env.E2E_TEST_PASSWORD) {
+          console.error('[better-auth] E2E_TEST_PASSWORD is not set')
+          return false
+        }
         return password === env.E2E_TEST_PASSWORD
       },
     },
@@ -146,6 +152,10 @@ export const auth = betterAuth({
       try {
         // NOTE: ここではプロバイダー情報がないため、デフォルトでgoogleを使用
         // 通常はhooks.afterで保存されるため、このフォールバックが実行されることはほぼない
+        // ⚠️ 注意: E2E認証（credentials）でもこのフォールバックが実行されると
+        // 誤ったprovider（google）が保存される可能性がある
+        // 実際にはhooks.afterで正しいproviderで保存されるため問題ないが、
+        // このフォールバックに依存しないことが重要
         await createOrGetUserCommand({
           email: user.email,
           name: user.name || user.email,

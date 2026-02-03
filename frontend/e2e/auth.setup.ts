@@ -1,7 +1,8 @@
 import path from 'node:path'
 import { expect, test as setup } from '@playwright/test'
+import { AUTH_FILE } from '../playwright.config'
 
-const authFile = path.join(__dirname, '../playwright/.auth/user.json')
+const authFile = path.join(__dirname, '..', AUTH_FILE)
 
 setup('authenticate', async ({ page, request }) => {
   const email = 'e2e-test@example.com'
