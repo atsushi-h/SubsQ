@@ -18,10 +18,13 @@ export function useE2ELogin() {
       })
 
       if (result?.error) {
-        setError('メールアドレスまたはパスワードが正しくありません')
+        const errorMessage =
+          result.error.message || 'メールアドレスまたはパスワードが正しくありません'
+        setError(errorMessage)
       }
     } catch (err) {
-      setError('ログインに失敗しました')
+      const errorMessage = err instanceof Error ? err.message : 'ログインに失敗しました'
+      setError(errorMessage)
       console.error('E2E login failed:', err)
     } finally {
       setIsLoading(false)

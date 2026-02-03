@@ -21,8 +21,10 @@ setup('authenticate', async ({ page, request }) => {
         name: 'E2E Test User',
       },
     })
-    .catch(() => {
+    .catch((error) => {
       // ユーザーが既に存在する場合はエラーを無視
+      // その他のエラーはログ出力して確認できるようにする
+      console.log('[E2E Auth Setup] User creation skipped or failed:', error.message)
     })
 
   // ログインページに移動

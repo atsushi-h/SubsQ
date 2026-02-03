@@ -68,12 +68,15 @@ export const auth = betterAuth({
     },
   },
   // E2Eテスト用のCredentials認証（開発環境のみ）
+  // ⚠️ 警告: 本番環境では絶対に有効化しないこと
   emailAndPassword: {
     enabled: isE2EAuthEnabled(),
     requireEmailVerification: false,
     sendVerificationOnSignUp: false,
     password: {
-      // カスタムハッシュ関数: パスワードをそのまま返す（E2Eテスト専用）
+      // カスタムハッシュ関数: パスワードをそのまま返す
+      // ⚠️ セキュリティリスク: ハッシュ化しないため、開発環境専用
+      // 本番環境では絶対に使用しないこと（isE2EAuthEnabled()で制御）
       hash: async (password: string) => password,
       // カスタム検証関数: E2E_TEST_PASSWORDとの一致をチェック
       verify: async ({ password }: { hash: string; password: string }) => {
