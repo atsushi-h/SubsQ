@@ -8,6 +8,9 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
     GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
     BETTER_AUTH_URL: z.string(),
+    // E2Eテスト用パスワード（開発環境でE2E認証を有効化する場合は必須）
+    // 注意: isE2EAuthEnabled()がtrueの場合、このフィールドは必ず設定されている必要がある
+    E2E_TEST_PASSWORD: z.string().optional(),
   },
 
   client: {
@@ -21,6 +24,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    E2E_TEST_PASSWORD: process.env.E2E_TEST_PASSWORD,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   },
@@ -41,3 +45,9 @@ export type AppEnv = typeof env.NEXT_PUBLIC_APP_ENV
  */
 export const isProduction = () => env.NEXT_PUBLIC_APP_ENV === 'prd'
 export const isDevelopment = () => env.NEXT_PUBLIC_APP_ENV === 'dev'
+
+/**
+ * E2E認証が有効かチェック
+ * 開発環境かつE2E_TEST_PASSWORDが設定されている場合のみtrue
+ */
+export const isE2EAuthEnabled = () => isDevelopment() && Boolean(env.E2E_TEST_PASSWORD)

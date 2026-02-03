@@ -7,7 +7,7 @@ import { revalidateTag, unstable_cache } from 'next/cache'
 import type { UserResponse } from '@/external/dto/user.dto'
 import { createOrGetUserCommand } from '@/external/handler/user/user.command.server'
 import { getUserByEmailQuery } from '@/external/handler/user/user.query.server'
-import { env } from '@/shared/lib/env'
+import { env, isE2EAuthEnabled } from '@/shared/lib/env'
 
 /**
  * better-auth 認証フロー
@@ -19,6 +19,13 @@ import { env } from '@/shared/lib/env'
  *    → ここでユーザーをDBに保存（既存の場合は何もしない）
  * 4. better-auth がセッション（Cookie）を作成
  *    → user, session は better-auth が自動で作成する基本情報
+ * 5. customSession が呼ばれ、DBのユーザーIDでセッションのuser.idを上書き
+ *
+ * 【E2E Credentials 認証時（開発環境のみ）】
+ * 1. ユーザーがメール/パスワードでログイン
+ * 2. カスタムverify関数でE2E_TEST_PASSWORDとの一致をチェック
+ * 3. hooks.after で /sign-in/email パスに対してユーザーをDBに保存
+ * 4. better-auth がセッション（Cookie）を作成
  * 5. customSession が呼ばれ、DBのユーザーIDでセッションのuser.idを上書き
  *
  * 【認証済みリクエスト時】
@@ -60,19 +67,52 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
+  // E2Eテスト用のCredentials認証（開発環境のみ）
+  // ⚠️ 警告: 本番環境では絶対に有効化しないこと
+  emailAndPassword: {
+    enabled: isE2EAuthEnabled(),
+    requireEmailVerification: false,
+    sendVerificationOnSignUp: false,
+    password: {
+      // カスタムハッシュ関数: パスワードをそのまま返す
+      // ⚠️ セキュリティリスク: ハッシュ化しないため、開発環境専用
+      // 本番環境では絶対に使用しないこと（isE2EAuthEnabled()で制御）
+      hash: async (password: string) => password,
+      // カスタム検証関数: E2E_TEST_PASSWORDとの一致をチェック
+      verify: async ({ password }: { hash: string; password: string }) => {
+        // E2E_TEST_PASSWORDが設定されていない場合は認証失敗
+        // isE2EAuthEnabled()がtrueの場合は必ず設定されているはずだが、型安全性のため明示的にチェック
+        if (!env.E2E_TEST_PASSWORD) {
+          console.error('[better-auth] E2E_TEST_PASSWORD is not set')
+          return false
+        }
+        return password === env.E2E_TEST_PASSWORD
+      },
+    },
+  },
   hooks: {
     after: createAuthMiddleware(async (ctx: HookEndpointContext) => {
-      // Google OAuth コールバック時のみ実行
-      if (ctx.path === '/callback/:id') {
+      // Google OAuth と E2E認証の両方に対応
+      if (
+        ctx.path === '/callback/:id' ||
+        ctx.path === '/sign-in/email' ||
+        ctx.path === '/sign-up/email'
+      ) {
         const newSession = ctx.context.newSession
         if (newSession) {
           const { id, email, name, image } = newSession.user
+
+          // プロバイダー判定
+          const provider =
+            ctx.path === '/sign-in/email' || ctx.path === '/sign-up/email'
+              ? 'credentials'
+              : 'google'
 
           try {
             await createOrGetUserCommand({
               email,
               name: name || email,
-              provider: 'google',
+              provider,
               providerAccountId: id,
               thumbnail: image || undefined,
             })
@@ -110,6 +150,12 @@ export const auth = betterAuth({
 
       // dbUserが存在しない場合は、DB保存を試みる（初回ログイン時のフォールバック）
       try {
+        // NOTE: ここではプロバイダー情報がないため、デフォルトでgoogleを使用
+        // 通常はhooks.afterで保存されるため、このフォールバックが実行されることはほぼない
+        // ⚠️ 注意: E2E認証（credentials）でもこのフォールバックが実行されると
+        // 誤ったprovider（google）が保存される可能性がある
+        // 実際にはhooks.afterで正しいproviderで保存されるため問題ないが、
+        // このフォールバックに依存しないことが重要
         await createOrGetUserCommand({
           email: user.email,
           name: user.name || user.email,
