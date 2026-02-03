@@ -54,6 +54,4 @@ export const isDevelopment = () => env.NEXT_PUBLIC_APP_ENV === 'dev'
  * 開発環境かつE2E_TEST_PASSWORDとPLAYWRIGHT_E2E_MODEが両方設定されている場合のみtrue
  */
 export const isE2EAuthEnabled = () =>
-  isDevelopment() &&
-  Boolean(env.E2E_TEST_PASSWORD) &&
-  Boolean(env.PLAYWRIGHT_E2E_MODE)
+  isDevelopment() && Boolean(env.E2E_TEST_PASSWORD) && Boolean(env.PLAYWRIGHT_E2E_MODE)
