@@ -31,51 +31,97 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ステップ1-3: スキル実行とレビュー作成
+          # ステップ4: PR概要欄への記入
+          # ステップ5: 完了リアクション追加
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.issue.number }}
 
-            このプルリクエストを日本語でレビューしてください。
-            リポジトリのCLAUDE.mdを参照し、スタイルや規約に関するガイダンスに従ってください。
+            # ステップ1: スキルを使用した包括的なレビューの実行
+            まず、`/pr-review-toolkit:review-pr`スキルを実行してください。
+            このスキルは複数の専門エージェント(code-reviewer, comment-analyzer, pr-test-analyzer, silent-failure-hunter, type-design-analyzer)を使用して、包括的なPRレビューを行います。
 
-            レビュー結果はPRの概要欄（description）に追記してください。以下の手順で行ってください:
+            # ステップ2: プロジェクトガイドラインの参照
+            レビューにあたり、以下のプロジェクト固有のガイドラインを参照してください:
+            - `.claude/skills/coding-standards/SKILL.md`: コーディング規約とベストプラクティス
+            - `.claude/skills/project-guidelines/SKILL.md`: プロジェクトアーキテクチャとパターン
+            - `.claude/skills/testing/SKILL.md`: テスト戦略と要件
+
+            # ステップ3: レビュー結果の構造化
+            スキルの実行結果とガイドラインを基に、以下のテンプレート形式で日本語のレビューを作成してください。
+            **重要**: 改善提案や潜在的な問題を指摘する際は、必ずファイル名と行番号を含めてください(例: `src/app/api/auth/route.ts:45`)。
+
+            <!-- CLAUDE_REVIEW_START -->
+            ---
+            ## :robot: Claude Code Review
+
+            ### :clipboard: 概要
+            [変更内容の簡潔な要約を1-2文で記述]
+
+            ### :pencil: 変更内容の詳細
+            **変更ファイル一覧:**
+            - `ファイルパス`: 変更内容の簡潔な説明
+            - `ファイルパス`: 変更内容の簡潔な説明
+
+            **重要な変更:**
+            [特に重要なファイルや変更について詳しく説明。アーキテクチャへの影響、新機能の追加、既存ロジックの変更など]
+
+            ### :white_check_mark: 良い点
+            以下の観点から評価:
+            - コード品質とベストプラクティスの遵守
+            - プロジェクトガイドラインへの準拠
+            - 適切なテストの実装
+            - 可読性とメンテナンス性
+
+            ### :warning: 改善提案
+
+            #### :page_facing_up: コーディング規約違反
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            #### :bug: バグの可能性
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            #### :eyes: 可読性の改善
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            #### :zap: パフォーマンス
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            #### :lock: セキュリティ
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            #### :test_tube: テストカバレッジ
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            #### :recycle: 重複実装
+            - [ファイル名:行番号] 具体的な指摘内容
+
+            **注**: 該当がないカテゴリは省略可能です。
+
+            ### :mag: 潜在的な問題
+            以下の観点から評価:
+            - サイレントフェイラー(エラーの握りつぶし)
+            - 型設計の問題
+            - エッジケースの考慮漏れ
+            - 依存関係の問題
+
+            ### :bar_chart: 総合評価
+            **マージ推奨度: X/10**
+
+            [総合的な評価を2-3文で記述。スコアの理由、特に重要な改善点や優れている点を説明]
+
+            <!-- CLAUDE_REVIEW_END -->
+
+            # ステップ4: PR概要欄への記入
             1. `gh pr view ${{ github.event.issue.number }} --json body -q .body` で現在のPR概要を取得
             2. 概要内に `<!-- CLAUDE_REVIEW_START -->` と `<!-- CLAUDE_REVIEW_END -->` のマーカーがあれば、その間の内容を新しいレビューで置換
-            3. マーカーがなければ、概要の末尾に以下のテンプレート形式で追加してください。
-               各セクションは必ず記述し、該当がない場合は「特になし」と記載してください:
-               
-               <!-- CLAUDE_REVIEW_START -->
-               ---
-               ## :robot: Claude Code Review
-               
-               ### :clipboard: 概要
-               [変更内容の簡潔な要約を1-2文で]
-               
-               ### :pencil: 変更内容の詳細
-               **変更ファイル一覧:**
-               - `ファイルパス`: 変更内容の簡潔な説明
-               
-               **重要な変更:**
-               [特に重要なファイルや変更について詳しく説明。アーキテクチャへの影響、ロジックの変更点など]
-               
-               ### :white_check_mark: 良い点
-               - [コード品質やベストプラクティスの観点から良い点をリストで記述]
-               
-               ### :warning: 改善提案
-               - [コード品質、テストカバレッジの観点から改善提案をリストで記述]
-
-               ### :bug: 潜在的な問題
-               - [バグ、セキュリティ、パフォーマンスの懸念をリストで記述]
-               
-               ### :bar_chart: 総合評価
-               **マージ推奨度: X/10**
-               [全体的な評価を1-2文で。スコアの理由も簡潔に説明]
-               
-               <!-- CLAUDE_REVIEW_END -->
-            
+            3. マーカーがなければ、概要の末尾に上記テンプレートのレビュー結果を追加
             4. `gh pr edit ${{ github.event.issue.number }} --body "更新後の全文"` で概要を更新
-            5. レビュー完了後、依頼コメントに :white_check_mark: リアクションをつける:
-               `gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions -f content='+1'`
+
+            # ステップ5: 完了リアクションの追加
+            レビュー完了後、依頼コメントに👍リアクションをつける:
+            `gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions -f content='+1'`
           
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/sdk#command-line for available options
