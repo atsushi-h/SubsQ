@@ -39,6 +39,26 @@
    - コーディング規約
    - デバッグテクニック
 
+8. **[認証設計](./08_authentication.md)**
+   - Better Auth設定
+   - Google OAuth認証フロー
+   - セッション管理
+
+9. **[テスト戦略](./09_testing_strategy.md)**
+   - フロントエンドテスト戦略
+   - Unit Testの実装方針
+   - テストツールとライブラリ
+
+10. **[BFF層テスト戦略](./10_bff_testing_strategy.md)**
+    - BFF層のテスト方針
+    - Server Functionsのテスト
+    - モック戦略
+
+11. **[E2Eテスト](./11_e2e_testing.md)**
+    - PlaywrightによるE2Eテスト
+    - 開発環境専用のCredentials認証
+    - テストの書き方とベストプラクティス
+
 ## クイックスタート
 
 新しい機能を実装する場合は、以下の順序でドキュメントを参照してください：
