@@ -1070,6 +1070,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "mExlm",
+          "name": "footer",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "DzCYz",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "F6ZbH",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "uvY8J",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "9Xfu6",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -1929,6 +1990,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "WqOzF",
+          "name": "footerNew",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fYp3f",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Fq1Er",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "FDFEz",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "XmD4O",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -2681,6 +2803,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "yZpJ4",
+          "name": "footerEdit",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "w3xKM",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SIQWN",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "DSFqi",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "7crUY",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -3112,6 +3295,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "ygXBe",
+          "name": "footerPayList",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nQhRD",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "GAx4f",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "S3a6W",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "PrK3l",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -3476,6 +3720,67 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "r32Nd",
+          "name": "footerPayNew",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Trr5h",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "rj86N",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "gA0MY",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "tgjWy",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -3911,6 +4216,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "Mx41t",
+          "name": "footerPayEdit",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "qMK4w",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "99zCx",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "jSRDm",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "sAONL",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -4224,6 +4590,67 @@
                       "fontWeight": "normal"
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xkEf0",
+          "name": "footerSettings",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "NKpkg",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3PamA",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "YT9n8",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "PJMyS",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -5438,6 +5865,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "W2m0n",
+          "name": "footerDark1",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "sUkcn",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n9W8E",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "eKtyy",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "7ZcBP",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -6155,6 +6643,67 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "WHrb5",
+          "name": "footerDark2",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "z4i6D",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UjXqg",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "MyH7b",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Eil9E",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -6911,6 +7460,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "qe3Xf",
+          "name": "footerDark3",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "j2cjN",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "BuKQP",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "llnm9",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "PfjBv",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -7342,6 +7952,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "K5XxS",
+          "name": "footerDark4",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "hLhzY",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "6S2IE",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "dN6qv",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "nzKYr",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -7706,6 +8377,67 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "QHb9q",
+          "name": "footerDark5",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "JrrQo",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "153U5",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "L6gwA",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "xkOqF",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -8141,6 +8873,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "Nql3U",
+          "name": "footerDark6",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ApeNY",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "oiNeA",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "39m7F",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "fbTl7",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -8454,6 +9247,67 @@
                       "fontWeight": "normal"
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Iypxp",
+          "name": "footerDark7",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "r04bd",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "JP16l",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "HclaM",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "XAxXq",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -9550,6 +10404,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "j2HBf",
+          "name": "footerTerms",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Xs1tE",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "QmzFS",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "t77KI",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "QxyYR",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -10639,6 +11554,67 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "uOq15",
+          "name": "footerDark8",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "0vfKT",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1BFAj",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "5hsU6",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "nSVQC",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -11872,6 +12848,67 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "VIQtI",
+          "name": "footerPrivacy",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FAFAFA",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EFEFEF"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "xV0bF",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mj2A2",
+                  "name": "termsLink",
+                  "fill": "#71717A",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "5fmWp",
+                  "name": "separator",
+                  "fill": "#D4D4D8",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "O74hk",
+                  "name": "privacyLink",
+                  "fill": "#71717A",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -13098,6 +14135,67 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Zoaye",
+          "name": "footerDark9",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#3F3F46",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#52525B"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "JZ3LJ",
+              "name": "footerLinks",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zzA6E",
+                  "name": "termsLink",
+                  "fill": "#A1A1AA",
+                  "content": "利用規約",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "k9d1a",
+                  "name": "separator",
+                  "fill": "#52525B",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "7aMdo",
+                  "name": "privacyLink",
+                  "fill": "#A1A1AA",
+                  "content": "プライバシーポリシー",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
