@@ -1,5 +1,7 @@
 'use client'
 
+import { AlertCircle } from 'lucide-react'
+import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +18,7 @@ type Props = {
   userEmail: string
   isDeleting: boolean
   isDialogOpen: boolean
+  error: string | null
   onDeleteRequest: () => void
   onDeleteConfirm: () => void
   onDeleteCancel: () => void
@@ -25,6 +28,7 @@ export function SettingsContentPresenter({
   userEmail,
   isDeleting,
   isDialogOpen,
+  error,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
@@ -34,6 +38,14 @@ export function SettingsContentPresenter({
       <div className="space-y-6">
         {/* ページタイトル */}
         <h1 className="text-2xl font-bold text-zinc-700 dark:text-zinc-200">設定</h1>
+
+        {/* エラー表示 */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* 区切り線 */}
         <div className="h-px bg-zinc-200 dark:bg-zinc-800" />

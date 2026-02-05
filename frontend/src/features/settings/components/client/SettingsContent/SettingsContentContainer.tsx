@@ -8,14 +8,21 @@ type Props = {
 }
 
 export function SettingsContentContainer({ userEmail }: Props) {
-  const { isDeleting, isDialogOpen, handleDeleteRequest, handleDeleteConfirm, handleDeleteCancel } =
-    useSettingsContent()
+  const {
+    isDeleting,
+    isDialogOpen,
+    error,
+    handleDeleteRequest,
+    handleDeleteConfirm,
+    handleDeleteCancel,
+  } = useSettingsContent()
 
   return (
     <SettingsContentPresenter
       userEmail={userEmail}
       isDeleting={isDeleting}
       isDialogOpen={isDialogOpen}
+      error={error}
       onDeleteRequest={handleDeleteRequest}
       onDeleteConfirm={handleDeleteConfirm}
       onDeleteCancel={handleDeleteCancel}
