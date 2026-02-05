@@ -18,6 +18,9 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.string(),
     NEXT_PUBLIC_APP_ENV: z.enum(['dev', 'prd']).default('dev'),
+    NEXT_PUBLIC_CONTACT_FORM_URL: z
+      .string()
+      .url('NEXT_PUBLIC_CONTACT_FORM_URL must be a valid URL'),
   },
 
   runtimeEnv: {
@@ -30,6 +33,7 @@ export const env = createEnv({
     PLAYWRIGHT_E2E_MODE: process.env.PLAYWRIGHT_E2E_MODE,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
+    NEXT_PUBLIC_CONTACT_FORM_URL: process.env.NEXT_PUBLIC_CONTACT_FORM_URL,
   },
 
   // ビルド時は検証をスキップ、ランタイムでは検証を実行
