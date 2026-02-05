@@ -17,9 +17,7 @@ export default function TermsPage() {
         </p>
 
         <section className="mt-8">
-          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            第1条（適用）
-          </h2>
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">第1条（適用）</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-6 text-zinc-600 dark:text-zinc-400">
             <li>
               本規約は、ユーザーとSubsQ運営事務局（以下「運営者」といいます。）との間の本サービスの利用に関わる一切の関係に適用されるものとします。
@@ -99,9 +97,7 @@ export default function TermsPage() {
             <li>他のユーザーに関する個人情報等を収集または蓄積する行為</li>
             <li>不正アクセスをし、またはこれを試みる行為</li>
             <li>他のユーザーに成りすます行為</li>
-            <li>
-              本サービスに関連して、反社会的勢力に対して直接または間接に利益を供与する行為
-            </li>
+            <li>本サービスに関連して、反社会的勢力に対して直接または間接に利益を供与する行為</li>
             <li>その他、運営者が不適切と判断する行為</li>
           </ol>
         </section>
@@ -145,9 +141,7 @@ export default function TermsPage() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            第8条（退会）
-          </h2>
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">第8条（退会）</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-6 text-zinc-600 dark:text-zinc-400">
             <li>
               ユーザーは、本サービス内の所定の退会手続（設定画面の「退会」ボタンから手続き可能）を経て、いつでも本サービスから退会することができます。
@@ -155,9 +149,7 @@ export default function TermsPage() {
             <li>
               退会手続が完了した場合、ユーザーが本サービス上で登録・保存した全てのデータ（サブスクリプション情報、支払い方法、アカウント情報等）は、本サービスから完全に削除され、復元することはできません。
             </li>
-            <li>
-              ユーザーは、退会前に必要なデータを自己の責任において控えておくものとします。
-            </li>
+            <li>ユーザーは、退会前に必要なデータを自己の責任において控えておくものとします。</li>
           </ol>
         </section>
 
@@ -195,9 +187,7 @@ export default function TermsPage() {
             <li>
               運営者は、必要と判断した場合には、ユーザーに通知することなくいつでも本規約を変更することができるものとします。
             </li>
-            <li>
-              変更後の利用規約は、本サービス上に表示した時点より効力を生じるものとします。
-            </li>
+            <li>変更後の利用規約は、本サービス上に表示した時点より効力を生じるものとします。</li>
             <li>
               本規約の変更後、本サービスの利用を継続した場合には、当該ユーザーは変更後の規約に同意したものとみなします。
             </li>
