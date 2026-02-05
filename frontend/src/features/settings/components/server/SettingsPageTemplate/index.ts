@@ -1,0 +1,1 @@
+export { SettingsPageTemplate } from './SettingsPageTemplate'
