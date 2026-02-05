@@ -89,6 +89,7 @@ jobs:
           BETTER_AUTH_URL: http://localhost:3000
           NEXT_PUBLIC_APP_URL: http://localhost:3000
           NEXT_PUBLIC_APP_ENV: dev
+          NEXT_PUBLIC_CONTACT_FORM_URL: ${{ secrets.NEXT_PUBLIC_CONTACT_FORM_URL }}
           E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
 
       - name: Upload Playwright Report
