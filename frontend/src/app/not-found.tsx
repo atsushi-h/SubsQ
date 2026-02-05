@@ -6,9 +6,7 @@ export default function NotFound() {
       <div className="max-w-md text-center">
         <div className="mb-6">
           <h1 className="mb-2 text-6xl font-bold text-zinc-900 dark:text-zinc-50">404</h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400">
-            ページが見つかりません
-          </p>
+          <p className="text-xl text-zinc-600 dark:text-zinc-400">ページが見つかりません</p>
         </div>
 
         <p className="mb-8 text-sm text-zinc-500 dark:text-zinc-400">

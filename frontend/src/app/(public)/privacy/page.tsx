@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { env } from '@/shared/lib/env'
 
 export const metadata: Metadata = {
   title: 'プライバシーポリシー - SubsQ',
@@ -258,7 +259,7 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-4">
             <a
-              href="https://forms.gle/xxxxx"
+              href={env.NEXT_PUBLIC_CONTACT_FORM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"

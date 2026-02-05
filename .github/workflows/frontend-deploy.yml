@@ -65,11 +65,12 @@ jobs:
       - name: Build Docker image
         working-directory: frontend
         run: |
-          # NEXT_PUBLIC_APP_URL は公開情報なのでビルド時に渡してOK
+          # NEXT_PUBLIC_* は公開情報なのでビルド時に渡してOK
           # DATABASE_URL はダミー値で検証をパス（実際の値はランタイムで渡す）
           # その他の機密情報（GOOGLE_CLIENT_SECRET等）はビルド時に含めない（セキュリティベストプラクティス）
           docker build \
             --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
+            --build-arg NEXT_PUBLIC_CONTACT_FORM_URL=${{ secrets.NEXT_PUBLIC_CONTACT_FORM_URL }} \
             --build-arg DATABASE_URL="postgresql://build-dummy:dummy@localhost:5432/dummy" \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }} \
             .
@@ -98,7 +99,7 @@ jobs:
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }} \
             --region=${{ env.REGION }} \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }},BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }},NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }},NEXT_PUBLIC_APP_ENV=${{ secrets.NEXT_PUBLIC_APP_ENV }},NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1"
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }},BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }},NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }},NEXT_PUBLIC_APP_ENV=${{ secrets.NEXT_PUBLIC_APP_ENV }},NEXT_PUBLIC_CONTACT_FORM_URL=${{ secrets.NEXT_PUBLIC_CONTACT_FORM_URL }},NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1"
 
           # Get service URL
           SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \

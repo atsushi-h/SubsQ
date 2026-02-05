@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {
@@ -20,9 +20,7 @@ export default function Error({
       <div className="max-w-md text-center">
         <div className="mb-6">
           <h1 className="mb-2 text-6xl font-bold text-zinc-900 dark:text-zinc-50">エラー</h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400">
-            予期しないエラーが発生しました
-          </p>
+          <p className="text-xl text-zinc-600 dark:text-zinc-400">予期しないエラーが発生しました</p>
         </div>
 
         <p className="mb-8 text-sm text-zinc-500 dark:text-zinc-400">
@@ -33,6 +31,7 @@ export default function Error({
 
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
           <button
+            type="button"
             onClick={reset}
             className="rounded-md bg-zinc-900 px-6 py-3 text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
