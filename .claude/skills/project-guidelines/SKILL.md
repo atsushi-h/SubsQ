@@ -516,6 +516,17 @@ NEXT_PUBLIC_APP_URL=https://...
 
 ---
 
+## ブランチ命名規則
+
+詳細は`CLAUDE.md`を参照してください。
+
+要約:
+- 新機能: `feat/`（`feature/`は使用しない）
+- バグ修正: `fix/`
+- その他: `chore/`, `refactor/`, `test/`, `docs/`
+
+---
+
 ## 関連スキル
 
 - `coding-standards.md` - TypeScript/Reactベストプラクティス
