@@ -54,6 +54,15 @@ export function HeaderPresenter({ userName, userEmail, userImage, pathname, onSi
             >
               支払い方法
             </Link>
+            <Link
+              href="/settings"
+              className={cn(
+                'text-sm text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+                pathname === '/settings' && 'font-medium',
+              )}
+            >
+              設定
+            </Link>
           </nav>
         </div>
 
