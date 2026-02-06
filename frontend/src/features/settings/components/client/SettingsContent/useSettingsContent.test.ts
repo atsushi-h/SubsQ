@@ -1,16 +1,31 @@
 import { act, renderHook } from '@testing-library/react'
+import { useRouter } from 'next/navigation'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
+import { signOut } from '@/features/auth/lib/better-auth-client'
 import { useSettingsContent } from './useSettingsContent'
+
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+}))
+
+vi.mock('@/features/auth/lib/better-auth-client', () => ({
+  signOut: vi.fn(),
+}))
+
+vi.mock('@/external/handler/user/user.command.action', () => ({
+  deleteUserAccountCommandAction: vi.fn(),
+}))
 
 describe('useSettingsContent', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
-    vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
-    vi.useRealTimers()
   })
 
   it('初期状態ではisDeletingとisDialogOpenがfalse、errorがnull', () => {
@@ -56,27 +71,20 @@ describe('useSettingsContent', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('handleDeleteConfirmを呼ぶとコンソールに出力され、ダイアログが閉じる', async () => {
+  it('退会処理が成功した場合、ログアウトしてログインページに遷移する', async () => {
     // Arrange
-    const { result } = renderHook(() => useSettingsContent())
-
-    act(() => {
-      result.current.handleDeleteRequest()
+    const pushMock = vi.fn()
+    vi.mocked(useRouter).mockReturnValue({
+      push: pushMock,
+      replace: vi.fn(),
+      prefetch: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+      refresh: vi.fn(),
     })
+    vi.mocked(deleteUserAccountCommandAction).mockResolvedValue(undefined)
+    vi.mocked(signOut).mockResolvedValue(undefined)
 
-    // Act
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-
-    // Assert
-    expect(console.log).toHaveBeenCalledWith('退会処理が呼び出されました')
-    expect(result.current.isDialogOpen).toBe(false)
-    expect(result.current.error).toBeNull()
-  })
-
-  it('handleDeleteConfirm呼び出し中はisDeletingがtrue', async () => {
-    // Arrange
     const { result } = renderHook(() => useSettingsContent())
 
     // Act
@@ -85,11 +93,17 @@ describe('useSettingsContent', () => {
     })
 
     // Assert
-    expect(result.current.isDeleting).toBe(true)
+    expect(deleteUserAccountCommandAction).toHaveBeenCalledTimes(1)
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(pushMock).toHaveBeenCalledWith('/login')
+    expect(result.current.error).toBeNull()
   })
 
-  it('500ms後にisDeletingがfalseに戻る', async () => {
+  it('退会処理が失敗した場合、エラーメッセージを表示する', async () => {
     // Arrange
+    const errorMessage = '削除に失敗しました'
+    vi.mocked(deleteUserAccountCommandAction).mockRejectedValue(new Error(errorMessage))
+
     const { result } = renderHook(() => useSettingsContent())
 
     // Act
@@ -97,56 +111,36 @@ describe('useSettingsContent', () => {
       await result.current.handleDeleteConfirm()
     })
 
-    expect(result.current.isDeleting).toBe(true)
-
-    act(() => {
-      vi.advanceTimersByTime(500)
-    })
-
     // Assert
+    expect(deleteUserAccountCommandAction).toHaveBeenCalledTimes(1)
+    expect(signOut).not.toHaveBeenCalled() // エラー時はログアウトしない
+    expect(result.current.error).toBe(errorMessage)
     expect(result.current.isDeleting).toBe(false)
-    expect(result.current.error).toBeNull()
   })
 
-  it('複数回確認しても正しく動作する', async () => {
+  it('退会処理中はisDeletingがtrue', async () => {
     // Arrange
+    let resolveDelete: () => void
+    const deletePromise = new Promise<void>((resolve) => {
+      resolveDelete = resolve
+    })
+    vi.mocked(deleteUserAccountCommandAction).mockReturnValue(deletePromise)
+
     const { result } = renderHook(() => useSettingsContent())
 
-    // Act - 1回目
+    // Act - 削除処理を開始
+    let handleDeletePromise: Promise<void>
     act(() => {
-      result.current.handleDeleteRequest()
+      handleDeletePromise = result.current.handleDeleteConfirm()
     })
-    expect(result.current.isDialogOpen).toBe(true)
 
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-    expect(result.current.isDeleting).toBe(true)
-    expect(result.current.isDialogOpen).toBe(false)
-
-    act(() => {
-      vi.advanceTimersByTime(500)
-    })
-    expect(result.current.isDeleting).toBe(false)
-
-    // Act - 2回目
-    act(() => {
-      result.current.handleDeleteRequest()
-    })
-    expect(result.current.isDialogOpen).toBe(true)
-
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
+    // Assert - 処理中はisDeletingがtrue
     expect(result.current.isDeleting).toBe(true)
 
-    act(() => {
-      vi.advanceTimersByTime(500)
+    // Cleanup - Promise を解決
+    await act(async () => {
+      resolveDelete?.()
+      await handleDeletePromise
     })
-
-    // Assert
-    expect(result.current.isDeleting).toBe(false)
-    expect(result.current.error).toBeNull()
-    expect(console.log).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,8 +1,12 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
+import { signOut } from '@/features/auth/lib/better-auth-client'
 
 export function useSettingsContent() {
+  const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,19 +32,12 @@ export function useSettingsContent() {
     setIsDialogOpen(false)
 
     try {
-      // 要件: コンソール出力のみ（実際の削除処理は未実装）
-      console.log('退会処理が呼び出されました')
+      // アカウント削除を実行
+      await deleteUserAccountCommandAction()
 
-      // TODO: 実際の削除処理を実装する際は以下のコードを使用
-      // const result = await deleteUserAccountCommandAction()
-      // if (!result.success) {
-      //   throw new Error(result.error || '退会処理に失敗しました')
-      // }
-
-      // フィードバック用にローディング状態を解除
-      timeoutRef.current = setTimeout(() => {
-        setIsDeleting(false)
-      }, 500)
+      // 削除成功後、ログアウトしてログインページへリダイレクト
+      await signOut()
+      router.push('/login')
     } catch (err) {
       setIsDeleting(false)
       setError(err instanceof Error ? err.message : '退会処理に失敗しました')
