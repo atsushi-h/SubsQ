@@ -118,6 +118,41 @@ describe('useSettingsContent', () => {
     expect(result.current.isDeleting).toBe(false)
   })
 
+  it('アカウント削除成功後、signOutが失敗してもログインページに遷移する', async () => {
+    // Arrange
+    const pushMock = vi.fn()
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.mocked(useRouter).mockReturnValue({
+      push: pushMock,
+      replace: vi.fn(),
+      prefetch: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+      refresh: vi.fn(),
+    })
+    vi.mocked(deleteUserAccountCommandAction).mockResolvedValue(undefined)
+    vi.mocked(signOut).mockRejectedValue(new Error('ログアウト失敗'))
+
+    const { result } = renderHook(() => useSettingsContent())
+
+    // Act
+    await act(async () => {
+      await result.current.handleDeleteConfirm()
+    })
+
+    // Assert
+    expect(deleteUserAccountCommandAction).toHaveBeenCalledTimes(1)
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'ログアウト処理に失敗しましたが、アカウントは削除されました',
+      expect.any(Error),
+    )
+    expect(pushMock).toHaveBeenCalledWith('/login') // signOut失敗でもリダイレクト
+    expect(result.current.error).toBeNull() // アカウント削除は成功しているのでエラーなし
+
+    consoleErrorSpy.mockRestore()
+  })
+
   it('退会処理中はisDeletingがtrue', async () => {
     // Arrange
     let resolveDelete: () => void

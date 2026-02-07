@@ -22,13 +22,21 @@ export function useSettingsContent() {
     setIsDialogOpen(false)
 
     try {
-      // アカウント削除を実行
+      // Phase 1: アカウント削除
       await deleteUserAccountCommandAction()
 
-      // 削除成功後、ログアウトしてログインページへリダイレクト
-      await signOut()
+      // Phase 2: クリーンアップ（削除成功後）
+      // signOutが失敗してもログインページへ遷移
+      try {
+        await signOut()
+      } catch (signOutErr) {
+        console.error('ログアウト処理に失敗しましたが、アカウントは削除されました', signOutErr)
+      }
+
+      // 削除成功後は必ずログインページへ遷移
       router.push('/login')
     } catch (err) {
+      // アカウント削除に失敗した場合のみエラー表示
       setIsDeleting(false)
       setError(err instanceof Error ? err.message : '退会処理に失敗しました')
     }
