@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
 import { signOut } from '@/features/auth/lib/better-auth-client'
 
@@ -10,16 +10,6 @@ export function useSettingsContent() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // クリーンアップ: コンポーネントアンマウント時にタイムアウトをクリア
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
 
   const handleDeleteRequest = () => {
     setIsDialogOpen(true)
