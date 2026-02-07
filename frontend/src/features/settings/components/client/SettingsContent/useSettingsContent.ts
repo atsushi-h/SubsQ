@@ -11,9 +11,9 @@ export function useSettingsContent() {
     setIsDialogOpen(true)
   }
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     setIsDialogOpen(false)
-    await deleteAccountMutation.mutateAsync()
+    deleteAccountMutation.mutate()
   }
 
   const handleDeleteCancel = () => {

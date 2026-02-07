@@ -7,9 +7,9 @@ import { useSettingsContent } from './useSettingsContent'
 vi.mock('@/features/settings/hooks/useDeleteUserAccountMutation')
 
 describe('useSettingsContent', () => {
-  const mockMutateAsync = vi.fn()
+  const mockMutate = vi.fn()
   const mockMutation: Partial<UseMutationResult<void, Error, void, unknown>> = {
-    mutateAsync: mockMutateAsync,
+    mutate: mockMutate,
     isPending: false,
     error: null,
   }
@@ -66,9 +66,8 @@ describe('useSettingsContent', () => {
     expect(result.current.isDialogOpen).toBe(false)
   })
 
-  it('handleDeleteConfirmを呼ぶとmutateAsyncが実行され、ダイアログが閉じる', async () => {
+  it('handleDeleteConfirmを呼ぶとmutateが実行され、ダイアログが閉じる', () => {
     // Arrange
-    mockMutateAsync.mockResolvedValue(undefined)
     const { result } = renderHook(() => useSettingsContent())
 
     act(() => {
@@ -77,12 +76,12 @@ describe('useSettingsContent', () => {
     expect(result.current.isDialogOpen).toBe(true)
 
     // Act
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
+    act(() => {
+      result.current.handleDeleteConfirm()
     })
 
     // Assert
-    expect(mockMutateAsync).toHaveBeenCalledTimes(1)
+    expect(mockMutate).toHaveBeenCalledTimes(1)
     expect(result.current.isDialogOpen).toBe(false)
   })
 
