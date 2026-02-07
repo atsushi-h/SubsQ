@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
 import { signOut } from '@/features/auth/lib/better-auth-client'
@@ -18,6 +19,14 @@ vi.mock('@/features/auth/lib/better-auth-client', () => ({
 
 vi.mock('@/external/handler/user/user.command.action', () => ({
   deleteUserAccountCommandAction: vi.fn(),
+}))
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  },
 }))
 
 const createWrapper = () => {
@@ -61,6 +70,7 @@ describe('useDeleteUserAccountMutation', () => {
     // Assert
     expect(deleteUserAccountCommandAction).toHaveBeenCalledTimes(1)
     expect(signOut).toHaveBeenCalledTimes(1)
+    expect(toast.success).toHaveBeenCalledWith('アカウントを削除しました')
     expect(pushMock).toHaveBeenCalledWith('/login')
   })
 
@@ -91,16 +101,18 @@ describe('useDeleteUserAccountMutation', () => {
     // Assert
     expect(deleteUserAccountCommandAction).toHaveBeenCalledTimes(1)
     expect(signOut).toHaveBeenCalledTimes(1)
+    expect(toast.success).toHaveBeenCalledWith('アカウントを削除しました')
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'ログアウト処理に失敗しましたが、アカウントは削除されました',
       expect.any(Error),
     )
+    expect(toast.warning).toHaveBeenCalledWith('ブラウザを閉じてログアウトを完了してください')
     expect(pushMock).toHaveBeenCalledWith('/login')
 
     consoleErrorSpy.mockRestore()
   })
 
-  it('削除が失敗した場合、エラーがスローされる', async () => {
+  it('削除が失敗した場合、エラーがスローされ、トーストが表示される', async () => {
     // Arrange
     const errorMessage = 'アカウント削除に失敗しました'
     vi.mocked(deleteUserAccountCommandAction).mockRejectedValue(new Error(errorMessage))
@@ -109,14 +121,20 @@ describe('useDeleteUserAccountMutation', () => {
       wrapper: createWrapper(),
     })
 
-    // Act & Assert
-    await expect(
-      act(async () => {
+    // Act
+    try {
+      await act(async () => {
         await result.current.mutateAsync()
-      }),
-    ).rejects.toThrow(errorMessage)
+      })
+    } catch (error) {
+      // エラーがスローされることを確認
+      expect(error).toBeInstanceOf(Error)
+      expect((error as Error).message).toBe(errorMessage)
+    }
 
+    // Assert
     expect(deleteUserAccountCommandAction).toHaveBeenCalledTimes(1)
     expect(signOut).not.toHaveBeenCalled()
+    expect(toast.error).toHaveBeenCalledWith(errorMessage)
   })
 })
