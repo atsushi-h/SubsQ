@@ -97,6 +97,7 @@ describe('useSettingsContent', () => {
     expect(signOut).toHaveBeenCalledTimes(1)
     expect(pushMock).toHaveBeenCalledWith('/login')
     expect(result.current.error).toBeNull()
+    expect(result.current.isDeleting).toBe(false) // finallyブロックでリセットされる
   })
 
   it('退会処理が失敗した場合、エラーメッセージを表示する', async () => {
@@ -149,6 +150,7 @@ describe('useSettingsContent', () => {
     )
     expect(pushMock).toHaveBeenCalledWith('/login') // signOut失敗でもリダイレクト
     expect(result.current.error).toBeNull() // アカウント削除は成功しているのでエラーなし
+    expect(result.current.isDeleting).toBe(false) // finallyブロックでリセットされる
 
     consoleErrorSpy.mockRestore()
   })

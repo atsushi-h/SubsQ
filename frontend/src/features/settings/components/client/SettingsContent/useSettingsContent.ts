@@ -37,8 +37,10 @@ export function useSettingsContent() {
       router.push('/login')
     } catch (err) {
       // アカウント削除に失敗した場合のみエラー表示
-      setIsDeleting(false)
       setError(err instanceof Error ? err.message : '退会処理に失敗しました')
+    } finally {
+      // 成功・失敗に関わらず必ずリセット
+      setIsDeleting(false)
     }
   }
 
