@@ -1,16 +1,28 @@
+import type { UseMutationResult } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { useDeleteUserAccountMutation } from '@/features/settings/hooks/useDeleteUserAccountMutation'
 import { useSettingsContent } from './useSettingsContent'
 
+vi.mock('@/features/settings/hooks/useDeleteUserAccountMutation')
+
 describe('useSettingsContent', () => {
+  const mockMutate = vi.fn()
+  const mockMutation: Partial<UseMutationResult<void, Error, void, unknown>> = {
+    mutate: mockMutate,
+    isPending: false,
+    error: null,
+  }
+
   beforeEach(() => {
-    vi.useFakeTimers()
-    vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.clearAllMocks()
+    vi.mocked(useDeleteUserAccountMutation).mockReturnValue(
+      mockMutation as UseMutationResult<void, Error, void, unknown>,
+    )
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
-    vi.useRealTimers()
   })
 
   it('初期状態ではisDeletingとisDialogOpenがfalse、errorがnull', () => {
@@ -23,7 +35,7 @@ describe('useSettingsContent', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('handleDeleteRequestを呼ぶとダイアログが開き、エラーがクリアされる', () => {
+  it('handleDeleteRequestを呼ぶとダイアログが開く', () => {
     // Arrange
     const { result } = renderHook(() => useSettingsContent())
 
@@ -34,10 +46,9 @@ describe('useSettingsContent', () => {
 
     // Assert
     expect(result.current.isDialogOpen).toBe(true)
-    expect(result.current.error).toBeNull()
   })
 
-  it('handleDeleteCancelを呼ぶとダイアログが閉じ、エラーがクリアされる', () => {
+  it('handleDeleteCancelを呼ぶとダイアログが閉じる', () => {
     // Arrange
     const { result } = renderHook(() => useSettingsContent())
 
@@ -53,100 +64,67 @@ describe('useSettingsContent', () => {
 
     // Assert
     expect(result.current.isDialogOpen).toBe(false)
-    expect(result.current.error).toBeNull()
   })
 
-  it('handleDeleteConfirmを呼ぶとコンソールに出力され、ダイアログが閉じる', async () => {
+  it('handleDeleteConfirmを呼ぶとmutateが実行され、ダイアログが閉じる', () => {
     // Arrange
     const { result } = renderHook(() => useSettingsContent())
 
-    act(() => {
-      result.current.handleDeleteRequest()
-    })
-
-    // Act
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-
-    // Assert
-    expect(console.log).toHaveBeenCalledWith('退会処理が呼び出されました')
-    expect(result.current.isDialogOpen).toBe(false)
-    expect(result.current.error).toBeNull()
-  })
-
-  it('handleDeleteConfirm呼び出し中はisDeletingがtrue', async () => {
-    // Arrange
-    const { result } = renderHook(() => useSettingsContent())
-
-    // Act
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-
-    // Assert
-    expect(result.current.isDeleting).toBe(true)
-  })
-
-  it('500ms後にisDeletingがfalseに戻る', async () => {
-    // Arrange
-    const { result } = renderHook(() => useSettingsContent())
-
-    // Act
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-
-    expect(result.current.isDeleting).toBe(true)
-
-    act(() => {
-      vi.advanceTimersByTime(500)
-    })
-
-    // Assert
-    expect(result.current.isDeleting).toBe(false)
-    expect(result.current.error).toBeNull()
-  })
-
-  it('複数回確認しても正しく動作する', async () => {
-    // Arrange
-    const { result } = renderHook(() => useSettingsContent())
-
-    // Act - 1回目
     act(() => {
       result.current.handleDeleteRequest()
     })
     expect(result.current.isDialogOpen).toBe(true)
 
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-    expect(result.current.isDeleting).toBe(true)
-    expect(result.current.isDialogOpen).toBe(false)
-
+    // Act
     act(() => {
-      vi.advanceTimersByTime(500)
-    })
-    expect(result.current.isDeleting).toBe(false)
-
-    // Act - 2回目
-    act(() => {
-      result.current.handleDeleteRequest()
-    })
-    expect(result.current.isDialogOpen).toBe(true)
-
-    await act(async () => {
-      await result.current.handleDeleteConfirm()
-    })
-    expect(result.current.isDeleting).toBe(true)
-
-    act(() => {
-      vi.advanceTimersByTime(500)
+      result.current.handleDeleteConfirm()
     })
 
     // Assert
-    expect(result.current.isDeleting).toBe(false)
+    expect(mockMutate).toHaveBeenCalledTimes(1)
+    expect(result.current.isDialogOpen).toBe(false)
+  })
+
+  it('isPendingがtrueの場合、isDeletingがtrueになる', () => {
+    // Arrange
+    vi.mocked(useDeleteUserAccountMutation).mockReturnValue({
+      ...mockMutation,
+      isPending: true,
+    } as unknown as UseMutationResult<void, Error, void, unknown>)
+
+    // Act
+    const { result } = renderHook(() => useSettingsContent())
+
+    // Assert
+    expect(result.current.isDeleting).toBe(true)
+  })
+
+  it('mutationにエラーがある場合、errorメッセージが返される', () => {
+    // Arrange
+    const errorMessage = '削除に失敗しました'
+    vi.mocked(useDeleteUserAccountMutation).mockReturnValue({
+      ...mockMutation,
+      error: new Error(errorMessage),
+    } as unknown as UseMutationResult<void, Error, void, unknown>)
+
+    // Act
+    const { result } = renderHook(() => useSettingsContent())
+
+    // Assert
+    expect(result.current.error).toBe(errorMessage)
+  })
+
+  it('mutationのerrorがnullの場合、errorはnull', () => {
+    // Arrange
+    vi.mocked(useDeleteUserAccountMutation).mockReturnValue({
+      ...mockMutation,
+      error: null,
+    } as unknown as UseMutationResult<void, Error, void, unknown>)
+
+    // Act
+    const { result } = renderHook(() => useSettingsContent())
+
+    // Assert
     expect(result.current.error).toBeNull()
-    expect(console.log).toHaveBeenCalledTimes(2)
   })
 })
