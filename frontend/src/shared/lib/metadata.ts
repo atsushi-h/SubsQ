@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
+import { METADATA_CONSTANTS, PAGE_METADATA } from '@/shared/constants/metadata'
 
 export type MetadataOptions = {
   /** ページタイトル (テンプレートと組み合わされる) */
@@ -106,10 +106,9 @@ export function generateViewport(): Viewport {
  * ```
  */
 export function generatePageMetadata(
-  pageKey: keyof typeof import('@/shared/constants/metadata').PAGE_METADATA,
+  pageKey: keyof typeof PAGE_METADATA,
   options: Omit<MetadataOptions, 'title' | 'description'> = {},
 ): Metadata {
-  const { PAGE_METADATA } = require('@/shared/constants/metadata')
   const pageTemplate = PAGE_METADATA[pageKey]
 
   return generateMetadata({
