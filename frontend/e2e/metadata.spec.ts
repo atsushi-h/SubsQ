@@ -190,22 +190,20 @@ test.describe('動的ページのメタデータパターン検証', () => {
 })
 
 test.describe('エラーページのメタデータ', () => {
-  test('存在しないサブスクIDでアクセス - フォールバックタイトル', async ({ page }) => {
+  test('存在しないサブスクIDでアクセス - データが見つからない場合のタイトル', async ({ page }) => {
     // 存在しないIDでアクセス
     await page.goto('/subscriptions/00000000-0000-0000-0000-000000000000')
 
-    // ページタイトルを確認
-    const title = await page.title()
-
-    // 404ページまたはフォールバックタイトルが表示される
-    // （実装によってはエラーページにリダイレクトされる可能性もある）
-    expect(title).toMatch(/サブスク詳細|Not Found|SubsQ/)
+    // データが見つからない場合のタイトルが表示される
+    await expect(page).toHaveTitle('サブスクが見つかりません | SubsQ')
   })
 
-  test('存在しない支払い方法IDでアクセス - フォールバックタイトル', async ({ page }) => {
+  test('存在しない支払い方法IDでアクセス - データが見つからない場合のタイトル', async ({
+    page,
+  }) => {
     await page.goto('/payment-methods/00000000-0000-0000-0000-000000000000/edit')
 
-    const title = await page.title()
-    expect(title).toMatch(/支払い方法を編集|Not Found|SubsQ/)
+    // データが見つからない場合のタイトルが表示される
+    await expect(page).toHaveTitle('支払い方法が見つかりません | SubsQ')
   })
 })
