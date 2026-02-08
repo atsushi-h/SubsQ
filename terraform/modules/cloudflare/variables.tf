@@ -49,3 +49,9 @@ variable "domain_name" {
   description = "ドメイン名 (例: 'example.com')"
   type        = string
 }
+
+variable "enable_cache_rules" {
+  description = "キャッシュルールを作成するか（同一zoneで複数環境がある場合、1つの環境のみtrueにする）"
+  type        = bool
+  default     = true
+}
