@@ -95,9 +95,9 @@ describe('generateMetadata', () => {
     // Assert
     expect(metadata.title).toBe('ログイン')
     expect(metadata.description).toBe('アカウントにログインする')
-    expect(metadata.openGraph?.title).toBe('ログイン')
+    expect(metadata.openGraph?.title).toBe('ログイン | SubsQ')
     expect(metadata.openGraph?.description).toBe('アカウントにログインする')
-    expect(metadata.twitter?.title).toBe('ログイン')
+    expect(metadata.twitter?.title).toBe('ログイン | SubsQ')
     expect(metadata.twitter?.description).toBe('アカウントにログインする')
   })
 
@@ -191,7 +191,7 @@ describe('generateMetadata', () => {
       height: number
       alt: string
     }>
-    expect(images?.[0].alt).toBe('マイページ')
+    expect(images?.[0].alt).toBe('マイページ | SubsQ')
   })
 
   it('すべてのオプションを組み合わせてメタデータを生成する', () => {
@@ -215,18 +215,18 @@ describe('generateMetadata', () => {
         canonical: 'https://example.com/subscriptions',
       },
       openGraph: expect.objectContaining({
-        title: 'サブスクリプション一覧',
+        title: 'サブスクリプション一覧 | SubsQ',
         description: '登録されているサブスクリプションの一覧を表示します',
         url: 'https://example.com/subscriptions',
         images: [
           expect.objectContaining({
             url: 'https://example.com/subscriptions-og.png',
-            alt: 'サブスクリプション一覧',
+            alt: 'サブスクリプション一覧 | SubsQ',
           }),
         ],
       }),
       twitter: expect.objectContaining({
-        title: 'サブスクリプション一覧',
+        title: 'サブスクリプション一覧 | SubsQ',
         description: '登録されているサブスクリプションの一覧を表示します',
         images: ['https://example.com/subscriptions-og.png'],
       }),
