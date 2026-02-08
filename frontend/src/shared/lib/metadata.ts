@@ -37,6 +37,11 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
 
   const url = `${METADATA_CONSTANTS.APP_URL}${path}`
 
+  // OG/Twitter用のタイトル（テンプレートを手動適用）
+  const fullTitle = title
+    ? `${title} | ${METADATA_CONSTANTS.APP_NAME}`
+    : METADATA_CONSTANTS.APP_NAME
+
   return {
     title,
     description,
@@ -49,7 +54,7 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
     openGraph: {
       type: 'website',
       siteName: METADATA_CONSTANTS.SITE_NAME,
-      title: title || METADATA_CONSTANTS.APP_NAME,
+      title: fullTitle,
       description,
       url,
       locale: METADATA_CONSTANTS.LOCALE,
@@ -58,7 +63,7 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
           url: ogImage,
           width: METADATA_CONSTANTS.OG_IMAGE_WIDTH,
           height: METADATA_CONSTANTS.OG_IMAGE_HEIGHT,
-          alt: title || METADATA_CONSTANTS.APP_NAME,
+          alt: fullTitle,
         },
       ],
     },
@@ -66,7 +71,7 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
     // Twitter Card
     twitter: {
       card: 'summary_large_image',
-      title: title || METADATA_CONSTANTS.APP_NAME,
+      title: fullTitle,
       description,
       images: [ogImage],
     },
