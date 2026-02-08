@@ -75,4 +75,8 @@ module "cloudflare" {
   domain_name   = var.cloudflare_domain
   cloud_run_url = replace(module.cloud_run.service_url, "https://", "")
   environment   = "prd"
+
+  # Cache Rulesはzoneレベルで適用されるため、dev環境で管理済み
+  # Cloudflare無料プランではzone rulesetは1つのみ作成可能
+  enable_cache_rules = false
 }

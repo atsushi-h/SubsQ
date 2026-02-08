@@ -5,15 +5,15 @@ output "dns_record_id" {
 
 output "dns_record_name" {
   description = "完全なDNS名"
-  value       = "${cloudflare_dns_record.app.name}.${var.domain_name}"
+  value       = var.subdomain != "" ? "${cloudflare_dns_record.app.name}.${var.domain_name}" : var.domain_name
 }
 
 output "cloudflare_url" {
   description = "完全なCloudflare URL"
-  value       = "https://${cloudflare_dns_record.app.name}.${var.domain_name}"
+  value       = var.subdomain != "" ? "https://${cloudflare_dns_record.app.name}.${var.domain_name}" : "https://${var.domain_name}"
 }
 
 output "cache_ruleset_id" {
   description = "キャッシュルールセットのID"
-  value       = cloudflare_ruleset.cache_rules.id
+  value       = var.enable_cache_rules ? cloudflare_ruleset.cache_rules[0].id : null
 }

@@ -11,7 +11,7 @@
 # Cloud Runを指すDNSレコード
 resource "cloudflare_dns_record" "app" {
   zone_id = var.zone_id
-  name    = var.subdomain
+  name    = var.subdomain != "" ? var.subdomain : "@"
   type    = "CNAME"
   content = "ghs.googlehosted.com"
   proxied = true
@@ -63,7 +63,11 @@ resource "cloudflare_zone_setting" "brotli" {
 }
 
 # 静的アセット用のキャッシュルール
+# 注意: Cloudflare無料プランでは1ゾーンあたり1つのhttp_request_cache_settingsルールセットのみ許可
+# dev環境とprd環境で同じゾーンを使用している場合、いずれか1つの環境でのみ作成可能
 resource "cloudflare_ruleset" "cache_rules" {
+  count = var.enable_cache_rules ? 1 : 0
+
   zone_id     = var.zone_id
   name        = "${var.environment}-cache-rules"
   description = "${var.environment}環境用のキャッシュルール"
