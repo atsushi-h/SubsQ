@@ -35,9 +35,12 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'PLAYWRIGHT_E2E_MODE=true npx next dev',
+    command: 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      PLAYWRIGHT_E2E_MODE: 'true',
+    },
   },
 })
