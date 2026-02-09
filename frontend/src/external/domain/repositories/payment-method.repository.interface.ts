@@ -1,3 +1,5 @@
+import type { DbClient } from '../../repository/transaction-manager'
+import type { Subscription } from '../entities'
 import type { PaymentMethod, PaymentMethodId, UserId } from '../entities/payment-method'
 
 /**
@@ -15,9 +17,19 @@ export interface IPaymentMethodRepository {
    * IDで支払い方法を取得
    *
    * @param id 支払い方法ID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns 支払い方法（存在しない場合はnull）
    */
-  findById(id: PaymentMethodId): Promise<PaymentMethod | null>
+  findById(id: PaymentMethodId, client?: DbClient): Promise<PaymentMethod | null>
+
+  /**
+   * 複数のIDで支払い方法を一括取得
+   *
+   * @param ids 支払い方法IDの配列
+   * @param client DBクライアントまたはトランザクション（オプション）
+   * @returns 支払い方法の配列（存在しないIDは含まれない）
+   */
+  findByIds(ids: PaymentMethodId[], client?: DbClient): Promise<PaymentMethod[]>
 
   /**
    * ユーザーIDで全支払い方法を取得
@@ -32,9 +44,10 @@ export interface IPaymentMethodRepository {
    * （削除処理などで使用）
    *
    * @param userId ユーザーID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns 支払い方法IDの配列
    */
-  findIdsByUserId(userId: UserId): Promise<PaymentMethodId[]>
+  findIdsByUserId(userId: UserId, client?: DbClient): Promise<PaymentMethodId[]>
 
   /**
    * 支払い方法を保存（作成または更新）
@@ -48,15 +61,17 @@ export interface IPaymentMethodRepository {
    * 支払い方法を削除
    *
    * @param id 削除する支払い方法ID
+   * @param client DBクライアントまたはトランザクション（オプション）
    */
-  delete(id: PaymentMethodId): Promise<void>
+  delete(id: PaymentMethodId, client?: DbClient): Promise<void>
 
   /**
    * 複数の支払い方法を一括削除
    *
    * @param ids 削除する支払い方法IDの配列
+   * @param client DBクライアントまたはトランザクション（オプション）
    */
-  deleteMany(ids: PaymentMethodId[]): Promise<void>
+  deleteMany(ids: PaymentMethodId[], client?: DbClient): Promise<void>
 
   /**
    * 支払い方法の存在確認
@@ -75,4 +90,28 @@ export interface IPaymentMethodRepository {
    * @returns 存在する場合の支払い方法（存在しない場合はnull）
    */
   findByUserIdAndName(userId: UserId, name: string): Promise<PaymentMethod | null>
+
+  /**
+   * 支払い方法IDでサブスクリプションを取得
+   *
+   * @param paymentMethodId 支払い方法ID
+   * @param client DBクライアントまたはトランザクション（オプション）
+   * @returns サブスクリプションの配列
+   */
+  getSubscriptionsForPaymentMethod(
+    paymentMethodId: PaymentMethodId,
+    client?: DbClient,
+  ): Promise<Subscription[]>
+
+  /**
+   * 複数の支払い方法IDでサブスクリプションを一括取得
+   *
+   * @param paymentMethodIds 支払い方法IDの配列
+   * @param client DBクライアントまたはトランザクション（オプション）
+   * @returns サブスクリプションの配列
+   */
+  getSubscriptionsForPaymentMethods(
+    paymentMethodIds: PaymentMethodId[],
+    client?: DbClient,
+  ): Promise<Subscription[]>
 }

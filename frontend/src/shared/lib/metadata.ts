@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
+import { METADATA_CONSTANTS, PAGE_METADATA } from '@/shared/constants/metadata'
 
 export type MetadataOptions = {
   /** ページタイトル (テンプレートと組み合わされる) */
@@ -37,6 +37,11 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
 
   const url = `${METADATA_CONSTANTS.APP_URL}${path}`
 
+  // OG/Twitter用のタイトル（テンプレートを手動適用）
+  const fullTitle = title
+    ? `${title} | ${METADATA_CONSTANTS.APP_NAME}`
+    : METADATA_CONSTANTS.APP_NAME
+
   return {
     title,
     description,
@@ -49,7 +54,7 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
     openGraph: {
       type: 'website',
       siteName: METADATA_CONSTANTS.SITE_NAME,
-      title: title || METADATA_CONSTANTS.APP_NAME,
+      title: fullTitle,
       description,
       url,
       locale: METADATA_CONSTANTS.LOCALE,
@@ -58,7 +63,7 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
           url: ogImage,
           width: METADATA_CONSTANTS.OG_IMAGE_WIDTH,
           height: METADATA_CONSTANTS.OG_IMAGE_HEIGHT,
-          alt: title || METADATA_CONSTANTS.APP_NAME,
+          alt: fullTitle,
         },
       ],
     },
@@ -66,7 +71,7 @@ export function generateMetadata(options: MetadataOptions = {}): Metadata {
     // Twitter Card
     twitter: {
       card: 'summary_large_image',
-      title: title || METADATA_CONSTANTS.APP_NAME,
+      title: fullTitle,
       description,
       images: [ogImage],
     },
@@ -101,10 +106,9 @@ export function generateViewport(): Viewport {
  * ```
  */
 export function generatePageMetadata(
-  pageKey: keyof typeof import('@/shared/constants/metadata').PAGE_METADATA,
+  pageKey: keyof typeof PAGE_METADATA,
   options: Omit<MetadataOptions, 'title' | 'description'> = {},
 ): Metadata {
-  const { PAGE_METADATA } = require('@/shared/constants/metadata')
   const pageTemplate = PAGE_METADATA[pageKey]
 
   return generateMetadata({

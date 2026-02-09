@@ -1,3 +1,4 @@
+import type { DbClient } from '../../repository/transaction-manager'
 import type { User, UserId } from '../entities/user'
 import type { Email } from '../value-objects/email'
 
@@ -50,8 +51,9 @@ export interface IUserRepository {
    * ユーザーを削除
    *
    * @param id 削除するユーザーID
+   * @param client DBクライアントまたはトランザクション（オプション）
    */
-  delete(id: UserId): Promise<void>
+  delete(id: UserId, client?: DbClient): Promise<void>
 
   /**
    * ユーザーの存在確認

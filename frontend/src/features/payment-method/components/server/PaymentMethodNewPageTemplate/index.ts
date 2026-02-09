@@ -1,0 +1,1 @@
+export { PaymentMethodNewPageTemplate } from './PaymentMethodNewPageTemplate'

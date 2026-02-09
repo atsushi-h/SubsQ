@@ -12,6 +12,13 @@
 
 # testing
 /coverage
+.nyc_output/
+
+# Playwright
+/playwright/.auth/
+/playwright-report/
+/playwright/.cache/
+/test-results/
 
 # next.js
 /.next/

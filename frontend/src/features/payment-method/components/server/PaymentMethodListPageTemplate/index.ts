@@ -1,0 +1,1 @@
+export { PaymentMethodListPageTemplate } from './PaymentMethodListPageTemplate'

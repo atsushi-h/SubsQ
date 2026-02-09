@@ -1,0 +1,157 @@
+name: Terraform Deploy
+run-name: Terraform ${{ inputs.action }} on ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prd
+      action:
+        description: 'Terraform action to run'
+        required: true
+        type: choice
+        default: plan
+        options:
+          - plan
+          - apply
+          - destroy
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    name: ${{ inputs.action }} (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+
+    defaults:
+      run:
+        working-directory: terraform/environments/${{ inputs.environment }}
+
+    env:
+      TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # 注意: TF_VAR_cloud_run_imageは意図的に指定していません
+      #
+      # 理由:
+      # 1. variables.tfのデフォルト値（Google公式Helloイメージ）を使用
+      # 2. 初回作成後、イメージはdeploy-frontend.ymlで管理される
+      # 3. Terraformはlifecycle ignore_changesによりイメージを変更しない
+      #
+      # このワークフローの役割はインフラ設定（CPU、メモリ、スケーリング等）の
+      # 管理であり、アプリケーションイメージの管理ではありません。
+      TF_VAR_database_url: ${{ secrets.DATABASE_URL }}
+      TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
+      TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      TF_VAR_better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
+      TF_VAR_better_auth_url: ${{ secrets.BETTER_AUTH_URL }}
+      TF_VAR_next_public_app_url: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.TERRAFORM_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+        with:
+          terraform_version: 1.14.3
+
+      - name: Terraform Format Check
+        if: inputs.action == 'plan'
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TFSTATE_BUCKET_NAME }}"
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        id: plan
+        run: |
+          if [ "${{ inputs.environment }}" == "dev" ]; then
+            terraform plan -no-color -input=false -out=tfplan \
+              -var='cloudflare_access_allowed_emails=${{ secrets.CLOUDFLARE_ACCESS_ALLOWED_EMAILS }}'
+          else
+            terraform plan -no-color -input=false -out=tfplan
+          fi
+        continue-on-error: true
+
+      - name: Show Plan in Summary
+        if: inputs.action == 'plan' && steps.plan.outcome == 'success'
+        run: |
+          echo "## Terraform Plan Result" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Format Check:** ${{ steps.fmt.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Plan Output" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Check Plan Status
+        if: inputs.action == 'plan' && steps.plan.outcome == 'failure'
+        run: |
+          echo "::error::Terraform plan failed"
+          exit 1
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        run: |
+          terraform apply -auto-approve tfplan
+
+      - name: Show Outputs
+        if: inputs.action == 'apply' && success()
+        run: |
+          echo "## Terraform Apply Result" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Outputs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          terraform output -json | jq -r 'to_entries[] | "**\(.key):** \(.value.value)"' >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        run: |
+          if [ "${{ inputs.environment }}" == "dev" ]; then
+            terraform destroy -auto-approve \
+              -var='cloudflare_access_allowed_emails=${{ secrets.CLOUDFLARE_ACCESS_ALLOWED_EMAILS }}'
+          else
+            terraform destroy -auto-approve
+          fi
+
+      - name: Report Success
+        if: success()
+        run: |
+          echo "::notice::Terraform ${{ inputs.action }} completed successfully for ${{ inputs.environment }} environment"
+
+      - name: Report Failure
+        if: failure()
+        run: |
+          echo "::error::Terraform ${{ inputs.action }} failed for ${{ inputs.environment }} environment"

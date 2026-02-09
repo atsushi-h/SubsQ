@@ -1,0 +1,1 @@
+export { SubscriptionDetailPageTemplate } from './SubscriptionDetailPageTemplate'

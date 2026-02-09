@@ -1,4 +1,4 @@
-import { env } from '@/shared/lib/env'
+import { env, isProduction } from '@/shared/lib/env'
 
 /**
  * アプリケーション全体で使用するメタデータ定数
@@ -23,11 +23,11 @@ export const METADATA_CONSTANTS = {
 
   // Robots 設定
   DEFAULT_ROBOTS: {
-    index: true,
-    follow: true,
+    index: isProduction(),
+    follow: isProduction(),
     googleBot: {
-      index: true,
-      follow: true,
+      index: isProduction(),
+      follow: isProduction(),
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
@@ -42,5 +42,25 @@ export const PAGE_METADATA = {
   LOGIN: {
     title: 'ログイン',
     description: 'SubsQにログインして毎月のサブスクリプションを管理しましょう',
+  },
+  SUBSCRIPTIONS: {
+    title: 'サブスク一覧',
+    description: '契約中のサブスクリプションを一覧で管理',
+  },
+  SUBSCRIPTION_NEW: {
+    title: 'サブスク追加',
+    description: '新しいサブスクリプションを追加',
+  },
+  PAYMENT_METHODS: {
+    title: '支払い方法',
+    description: '登録した支払い方法を管理',
+  },
+  PAYMENT_METHOD_NEW: {
+    title: '支払い方法を追加',
+    description: '新しい支払い方法を追加',
+  },
+  SETTINGS: {
+    title: '設定',
+    description: 'アカウント設定と退会',
   },
 } as const

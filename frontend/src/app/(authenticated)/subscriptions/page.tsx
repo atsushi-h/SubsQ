@@ -1,12 +1,11 @@
-import { getSessionServer } from '@/features/auth/servers/auth.server'
+import type { Metadata } from 'next'
+import { SubscriptionListPageTemplate } from '@/features/subscription/components/server/SubscriptionListPageTemplate'
+import { generatePageMetadata } from '@/shared/lib/metadata'
 
-export default async function SubscriptionsPage() {
-  const session = await getSessionServer()
+export const metadata: Metadata = generatePageMetadata('SUBSCRIPTIONS', {
+  path: '/subscriptions',
+})
 
-  return (
-    <div>
-      <h1>Subscriptions</h1>
-      <p>Welcome, {session?.user?.name}!</p>
-    </div>
-  )
+export default function SubscriptionsPage() {
+  return <SubscriptionListPageTemplate />
 }

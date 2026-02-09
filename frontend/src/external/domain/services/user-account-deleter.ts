@@ -1,3 +1,4 @@
+import type { DbClient } from '../../repository/transaction-manager'
 import type { UserId } from '../entities'
 import type {
   IPaymentMethodRepository,
@@ -31,41 +32,46 @@ export class UserAccountDeleter {
    * ユーザーアカウントと関連データを全て削除
    *
    * @param userId 削除対象のユーザーID
+   * @param client DBクライアントまたはトランザクション
    *
    * 注意:
    * - この処理は呼び出し側でトランザクション管理が必要
    * - 途中で失敗した場合はロールバックされるべき
    */
-  async delete(userId: UserId): Promise<void> {
+  async delete(userId: UserId, client: DbClient): Promise<void> {
     // 1. ユーザーの全サブスクリプションを削除
-    const subscriptionIds = await this.subscriptionRepository.findIdsByUserId(userId)
+    const subscriptionIds = await this.subscriptionRepository.findIdsByUserId(userId, client)
     if (subscriptionIds.length > 0) {
-      await this.subscriptionRepository.deleteMany(subscriptionIds)
+      await this.subscriptionRepository.deleteMany(subscriptionIds, client)
     }
 
     // 2. ユーザーの全支払い方法を削除
-    const paymentMethodIds = await this.paymentMethodRepository.findIdsByUserId(userId)
+    const paymentMethodIds = await this.paymentMethodRepository.findIdsByUserId(userId, client)
     if (paymentMethodIds.length > 0) {
-      await this.paymentMethodRepository.deleteMany(paymentMethodIds)
+      await this.paymentMethodRepository.deleteMany(paymentMethodIds, client)
     }
 
     // 3. ユーザーを削除
-    await this.userRepository.delete(userId)
+    await this.userRepository.delete(userId, client)
   }
 
   /**
    * 削除前の確認情報を取得
    *
    * @param userId 確認対象のユーザーID
+   * @param client DBクライアントまたはトランザクション（オプション）
    * @returns 削除される件数の情報
    */
-  async getDeletionInfo(userId: UserId): Promise<{
+  async getDeletionInfo(
+    userId: UserId,
+    client?: DbClient,
+  ): Promise<{
     subscriptionCount: number
     paymentMethodCount: number
   }> {
     const [subscriptionIds, paymentMethodIds] = await Promise.all([
-      this.subscriptionRepository.findIdsByUserId(userId),
-      this.paymentMethodRepository.findIdsByUserId(userId),
+      this.subscriptionRepository.findIdsByUserId(userId, client),
+      this.paymentMethodRepository.findIdsByUserId(userId, client),
     ])
 
     return {

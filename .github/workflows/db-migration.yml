@@ -1,0 +1,90 @@
+name: Database Migration
+run-name: Database Migration on ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for migration'
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prd
+
+jobs:
+  migrate:
+    name: Run Migration (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: ${{ inputs.environment }}
+    env:
+      # マイグレーションには直接接続（Direct connection）を使用
+      # - DATABASE_URL_DIRECT: スキーマ変更など特殊な操作に適した直接接続（poolerなし）
+      # - DATABASE_URL: アプリケーション実行時に使用するPooled connection（APIサーバーなど）
+      DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup mise
+        uses: jdx/mise-action@v3.6.1
+        with:
+          install: true
+          cache: true
+          working_directory: frontend
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v5.0.3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate DATABASE_URL
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::DATABASE_URL is not set for ${{ inputs.environment }} environment"
+            echo "::error::Please ensure DATABASE_URL_DIRECT secret is configured in ${{ inputs.environment }} environment"
+            exit 1
+          fi
+          echo "::notice::DATABASE_URL (direct connection) is configured for ${{ inputs.environment }} environment"
+
+      - name: Display migration files
+        run: |
+          echo "=== Migration files to be applied ==="
+          ls -lh drizzle/*.sql || echo "No SQL files found"
+          echo ""
+          echo "=== Migration journal ==="
+          cat drizzle/meta/_journal.json
+
+      - name: Run migrations
+        run: |
+          echo "Starting migration for ${{ inputs.environment }} environment..."
+          pnpm db:migrate
+          echo "Migration completed successfully"
+
+      - name: Report success
+        if: success()
+        run: |
+          echo "::notice::Migration to ${{ inputs.environment }} environment completed successfully"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "::error::Migration to ${{ inputs.environment }} environment failed"

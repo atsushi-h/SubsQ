@@ -1,6 +1,10 @@
 import { User } from '../../domain/entities/user'
+import type { ITransactionManager } from '../../domain/repositories/transaction-manager.interface'
+import type { IUserRepository } from '../../domain/repositories/user.repository.interface'
+import { userAccountDeleter } from '../../domain/services'
 import { Email } from '../../domain/value-objects/email'
-import { UserRepository } from '../../repository/user.repository'
+import { type DbClient, transactionManager } from '../../repository/transaction-manager'
+import { userRepository } from '../../repository/user.repository'
 
 export interface CreateUserInput {
   email: string
@@ -16,11 +20,10 @@ export interface UpdateUserInput {
 }
 
 export class UserService {
-  private userRepository: UserRepository
-
-  constructor() {
-    this.userRepository = new UserRepository()
-  }
+  constructor(
+    private userRepository: IUserRepository,
+    private transactionManager: ITransactionManager<DbClient>,
+  ) {}
 
   async findByProvider(provider: string, providerAccountId: string): Promise<User | null> {
     return this.userRepository.findByProviderAccount(provider, providerAccountId)
@@ -109,7 +112,33 @@ export class UserService {
     // 更新されたユーザーを保存
     return this.userRepository.save(updatedUser)
   }
+
+  /**
+   * ユーザーアカウントと関連データを全て削除
+   *
+   * 処理内容:
+   * 1. ユーザーの存在確認
+   * 2. UserAccountDeleterを使用してトランザクション内で削除
+   *    - Subscriptions削除
+   *    - PaymentMethods削除
+   *    - User削除
+   *
+   * @param userId 削除対象のユーザーID
+   * @throws Error ユーザーが存在しない場合
+   */
+  async deleteAccount(userId: string): Promise<void> {
+    return this.transactionManager.execute(async (tx) => {
+      // ユーザーの存在確認
+      const user = await this.userRepository.findById(userId)
+      if (!user) {
+        throw new Error(`User not found: ${userId}`)
+      }
+
+      // UserAccountDeleterを使用してアカウント削除
+      await userAccountDeleter.delete(userId, tx)
+    })
+  }
 }
 
 // シングルトンインスタンスをエクスポート
-export const userService = new UserService()
+export const userService = new UserService(userRepository, transactionManager)

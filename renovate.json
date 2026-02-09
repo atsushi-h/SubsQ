@@ -1,0 +1,59 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "labels": ["dependencies", "major"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "labels": ["dependencies", "minor"]
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "labels": ["dependencies", "patch"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "automerge": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "addLabels": ["devDependencies"]
+    },
+    {
+      "matchPackageNames": ["@biomejs/biome"],
+      "postUpgradeTasks": {
+        "commands": [
+          "sed -i.bak 's|\"https://biomejs.dev/schemas/[0-9.]*/schema.json\"|\"https://biomejs.dev/schemas/{{{newVersion}}}/schema.json\"|g' frontend/biome.json && rm -f frontend/biome.json.bak"
+        ],
+        "fileFilters": ["frontend/biome.json"],
+        "executionMode": "update"
+      }
+    }
+  ],
+  "prConcurrentLimit": 30,
+  "prHourlyLimit": 10,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "semanticCommitScope": "deps",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security"],
+    "automerge": false
+  },
+  "postUpdateOptions": ["pnpmDedupe"],
+  "npm": {
+    "minimumReleaseAge": "3 days"
+  },
+  "allowedPostUpgradeCommands": [
+    "^sed -i\\.bak 's\\|.*\\|.*\\|g' .* && rm -f .*\\.bak$"
+  ]
+}

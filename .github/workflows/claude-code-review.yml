@@ -1,0 +1,109 @@
+name: Claude Code Review
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    # PRコメントで @claude を含む場合のみ実行
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude')
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: |
+            https://github.com/anthropics/claude-plugins-official.git
+          plugins: |
+            pr-review-toolkit@claude-plugins-official
+            code-review@claude-plugins-official
+            security-guidance@claude-plugins-official
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.issue.number }}
+            COMMENT_ID: ${{ github.event.comment.id }}
+
+            以下の手順でPRレビューを実行してください。リポジトリのCLAUDE.mdも参照し、技術スタックや規約に関するガイダンスに従ってください。
+
+            ## 1. PRの包括的なレビューを実行
+            以下の観点でコードレビューを実行してください：
+            - コメントと文書化の品質
+            - テストカバレッジと品質
+            - エラーハンドリング（サイレントエラーの検出）
+            - 型設計の適切さ
+            - コード品質とベストプラクティス
+            - コードの簡素化可能性
+            - セキュリティ上の懸念
+
+            ## 2. レビュー結果をPR概要欄に記入
+            レビュー結果を以下のテンプレート形式でPR概要欄に追記してください。
+
+            ### 手順
+            1. 現在のPR概要を取得: `gh pr view [PR番号] --json body -q .body`
+            2. 概要内に `<!-- CLAUDE_REVIEW_START -->` と `<!-- CLAUDE_REVIEW_END -->` のマーカーがあれば、その間の内容を新しいレビューで置換
+            3. マーカーがなければ、概要の末尾に追加
+            4. PR概要を更新: `gh pr edit [PR番号] --body "更新後の全文"`
+
+            ### テンプレート
+            ```markdown
+            <!-- CLAUDE_REVIEW_START -->
+            ---
+            ## 🤖 Claude Code Review
+
+            ### 📋 概要
+            [変更内容の簡潔な要約を1-2文で]
+
+            ### 📝 変更内容の詳細
+            **変更ファイル一覧:**
+            - `ファイルパス`: 変更内容の簡潔な説明
+
+            **重要な変更:**
+            [特に重要なファイルや変更について詳しく説明]
+
+            ### ✅ 良い点
+            - [コード品質やベストプラクティスの観点から良い点をリストで記述]
+
+            ### ⚠️ 改善提案
+            - **[カテゴリ]** `ファイル名` L行番号: [具体的な指摘内容]
+
+            *(カテゴリ: [規約違反], [バグ可能性], [可読性], [パフォーマンス], [セキュリティ], [テスト], [重複実装] など)*
+
+            ### 🐛 潜在的な問題
+            - [バグ、セキュリティ、パフォーマンスの懸念をリストで記述]
+
+            ### 📊 総合評価
+            **マージ推奨度: X/10**
+            [全体的な評価を1-2文で。スコアの理由も簡潔に説明]
+
+            <!-- CLAUDE_REVIEW_END -->
+            ```
+
+            ## 3. 完了後、依頼コメントにリアクション
+            ```bash
+            gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions -f content='+1'
+            ```
+
+            ## 重要な注意事項
+            - 各指摘には必ずファイル名と行番号を付与する
+            - 該当がないセクションは「特になし」と記載
+            - レビューは日本語で行う
+
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          claude_args: '--allowedTools "Bash(gh issue view:*)" "Bash(gh search:*)" "Bash(gh issue list:*)" "Bash(gh pr diff:*)" "Bash(gh pr view:*)" "Bash(gh pr list:*)" "Bash(gh pr edit:*)" "Bash(gh api:*)"'

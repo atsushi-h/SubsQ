@@ -1,6 +1,5 @@
 import 'server-only'
 
-import type { User } from '../../domain/entities/user'
 import {
   type CreateOrGetUserRequest,
   CreateOrGetUserRequestSchema,
@@ -8,23 +7,9 @@ import {
   type UpdateUserRequest,
   UpdateUserRequestSchema,
   type UpdateUserResponse,
-  UserResponseSchema,
 } from '../../dto/user.dto'
 import { userService } from '../../service/user/user.service'
-
-function toUserResponse(user: User): CreateOrGetUserResponse {
-  const plainUser = user.toPlainObject()
-  const response = {
-    id: plainUser.id,
-    email: plainUser.email,
-    name: plainUser.name,
-    thumbnail: plainUser.thumbnail,
-    createdAt: plainUser.createdAt.toISOString(),
-    updatedAt: plainUser.updatedAt.toISOString(),
-  }
-
-  return UserResponseSchema.parse(response)
-}
+import { toUserResponse } from './user.converter'
 
 /**
  * OAuth認証時に呼ばれるため、認証チェックなし
@@ -57,4 +42,19 @@ export async function updateUserCommand(
   const updatedUser = await userService.update(validated.id, validated)
 
   return toUserResponse(updatedUser)
+}
+
+/**
+ * ユーザーアカウント削除コマンド
+ *
+ * 認証済みユーザーのアカウントを完全に削除する
+ * - 関連する全てのSubscriptionsを削除
+ * - 関連する全てのPaymentMethodsを削除
+ * - Userレコードを削除
+ *
+ * @param userId 削除対象のユーザーID（withAuthから取得）
+ * @throws Error ユーザーが存在しない場合、またはトランザクション失敗時
+ */
+export async function deleteUserAccountCommand(userId: string): Promise<void> {
+  await userService.deleteAccount(userId)
 }
