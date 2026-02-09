@@ -79,6 +79,7 @@ export function PaymentMethodFormPresenter({
                 onChange={(e) => onChange('name', e.target.value)}
                 placeholder="例: メインクレジットカード"
                 disabled={isSubmitting}
+                data-testid="payment-method-form-name"
               />
               {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
             </div>
@@ -109,10 +110,20 @@ export function PaymentMethodFormPresenter({
                 )}
               </div>
               <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isSubmitting}
+                  data-testid="payment-method-form-cancel"
+                >
                   キャンセル
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  data-testid="payment-method-form-submit"
+                >
                   {isSubmitting
                     ? mode === 'create'
                       ? '作成中...'

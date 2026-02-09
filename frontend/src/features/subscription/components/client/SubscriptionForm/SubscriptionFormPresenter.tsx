@@ -73,6 +73,7 @@ export function SubscriptionFormPresenter({
                 onChange={(e) => onChange('serviceName', e.target.value)}
                 placeholder="例: Netflix"
                 disabled={isSubmitting}
+                data-testid="subscription-form-service-name"
               />
               {errors.serviceName && <p className="text-sm text-red-500">{errors.serviceName}</p>}
             </div>
@@ -87,6 +88,7 @@ export function SubscriptionFormPresenter({
                 onChange={(e) => onChange('amount', e.target.value)}
                 placeholder="例: 1980"
                 disabled={isSubmitting}
+                data-testid="subscription-form-amount"
               />
               {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
             </div>
@@ -100,6 +102,7 @@ export function SubscriptionFormPresenter({
                 onChange={(e) => onChange('billingCycle', e.target.value)}
                 disabled={isSubmitting}
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                data-testid="subscription-form-billing-cycle"
               >
                 <option value="monthly">月額</option>
                 <option value="yearly">年額</option>
@@ -116,6 +119,7 @@ export function SubscriptionFormPresenter({
                 value={formData.baseDate}
                 onChange={(e) => onChange('baseDate', e.target.value)}
                 disabled={isSubmitting}
+                data-testid="subscription-form-base-date"
               />
               {errors.baseDate && <p className="text-sm text-red-500">{errors.baseDate}</p>}
             </div>
@@ -130,7 +134,7 @@ export function SubscriptionFormPresenter({
                 }
                 disabled={isSubmitting || isLoadingPaymentMethods || isErrorPaymentMethods}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="subscription-form-payment-method">
                   <SelectValue placeholder="未設定" />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,16 +165,23 @@ export function SubscriptionFormPresenter({
                 onChange={(e) => onChange('memo', e.target.value)}
                 placeholder="メモを入力してください（任意）"
                 disabled={isSubmitting}
+                data-testid="subscription-form-memo"
               />
               {errors.memo && <p className="text-sm text-red-500">{errors.memo}</p>}
             </div>
 
             {/* ボタン */}
             <div className="flex gap-4 justify-end">
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                data-testid="subscription-form-cancel"
+              >
                 キャンセル
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} data-testid="subscription-form-submit">
                 {isSubmitting
                   ? mode === 'create'
                     ? '作成中...'
