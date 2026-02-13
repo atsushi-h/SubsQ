@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.0.0...frontend-v1.1.0) (2026-02-13)
+
+
+### Features
+
+* **e2e:** サブスクリプション作成と支払い方法追加のE2Eテストを追加 ([#94](https://github.com/atsushi-h/SubsQ/issues/94)) ([ebdddcb](https://github.com/atsushi-h/SubsQ/commit/ebdddcba8cac1017d64b12796a76072731964a2b))
+
+
+### Bug Fixes
+
+* ページがインデックスされない問題を修正 ([#112](https://github.com/atsushi-h/SubsQ/issues/112)) ([aded390](https://github.com/atsushi-h/SubsQ/commit/aded390a9387f53cad3583f21362d61f2b16007b))
+
 ## 1.0.0 (2026-02-08)
 
 
