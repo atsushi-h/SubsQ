@@ -4,20 +4,20 @@ import { env } from '@/shared/lib/env'
 /**
  * sitemap.xmlを動的に生成
  *
- * 現在は静的ページのみを含むが、将来的に以下のような動的ページを追加可能：
- * - サブスク詳細ページ (`/subscriptions/[id]`)
- * - 支払い方法詳細ページ (`/payment-methods/[id]`)
+ * 【含めるページの方針】
+ * - 認証不要で公開アクセス可能なページのみ
+ * - 認証が必要なページ（/subscriptions, /payment-methods等）は除外
+ *   （クローラーがアクセスできないため）
  *
- * 動的ページの追加例：
+ * 【将来的な拡張】
+ * 公開ページが追加された場合（プライバシーポリシー、利用規約等）は追加可能：
  * ```ts
- * // データベースから取得
- * const subscriptions = await db.select().from(subscriptionsTable)
- * const dynamicPages = subscriptions.map(sub => ({
- *   url: `${appUrl}/subscriptions/${sub.id}`,
- *   lastModified: new Date(sub.updatedAt),
- *   changeFrequency: 'weekly' as const,
- *   priority: 0.5,
- * }))
+ * {
+ *   url: `${appUrl}/privacy`,
+ *   lastModified: now,
+ *   changeFrequency: 'yearly' as const,
+ *   priority: 0.3,
+ * }
  * ```
  *
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
@@ -26,24 +26,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const appUrl = env.NEXT_PUBLIC_APP_URL
   const now = new Date()
 
-  // 静的ページ
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: appUrl,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 1,
-    },
+  // 認証不要の公開ページのみ含める
+  const publicPages: MetadataRoute.Sitemap = [
     {
       url: `${appUrl}/login`,
       lastModified: now,
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 1.0,
     },
   ]
 
-  // TODO: 将来的に動的ページを追加
-  // const dynamicPages = await fetchDynamicPages()
-
-  return [...staticPages]
+  return publicPages
 }
