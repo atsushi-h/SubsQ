@@ -70,6 +70,7 @@ jobs:
           # その他の機密情報（GOOGLE_CLIENT_SECRET等）はビルド時に含めない（セキュリティベストプラクティス）
           docker build \
             --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
+            --build-arg NEXT_PUBLIC_APP_ENV=${{ secrets.NEXT_PUBLIC_APP_ENV }} \
             --build-arg NEXT_PUBLIC_CONTACT_FORM_URL=${{ secrets.NEXT_PUBLIC_CONTACT_FORM_URL }} \
             --build-arg DATABASE_URL="postgresql://build-dummy:dummy@localhost:5432/dummy" \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.image_tag.outputs.tag }} \
