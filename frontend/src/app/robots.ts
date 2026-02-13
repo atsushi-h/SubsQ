@@ -1,25 +1,20 @@
 import type { MetadataRoute } from 'next'
-import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
-import { isProduction } from '@/shared/lib/env'
+import { env } from '@/shared/lib/env'
 
+/**
+ * robots.txtを動的に生成
+ *
+ * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots
+ */
 export default function robots(): MetadataRoute.Robots {
-  if (!isProduction()) {
-    // dev環境: 全クローラーをブロック
-    return {
-      rules: {
-        userAgent: '*',
-        disallow: '/',
-      },
-    }
-  }
+  const appUrl = env.NEXT_PUBLIC_APP_URL
 
-  // production環境: 全ページを許可
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/api/',
+      disallow: ['/api/', '/_next/', '/static/'],
     },
-    sitemap: `${METADATA_CONSTANTS.APP_URL}/sitemap.xml`,
+    sitemap: `${appUrl}/sitemap.xml`,
   }
 }
