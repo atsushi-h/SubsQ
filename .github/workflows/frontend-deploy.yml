@@ -1,5 +1,5 @@
 name: Frontend Deploy
-run-name: Deploy to ${{ inputs.environment }}
+run-name: Deploy to ${{ inputs.environment }}${{ inputs.git_tag && format(' ({0})', inputs.git_tag) || '' }}
 
 on:
   workflow_dispatch:
@@ -35,6 +35,19 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Validate git tag
+        if: inputs.git_tag != ''
+        env:
+          GIT_TAG: ${{ inputs.git_tag }}
+        run: |
+          if ! echo "$GIT_TAG" | grep -qE '^frontend-v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid git_tag format: '$GIT_TAG'"
+            echo "::error::Expected format: frontend-v{major}.{minor}.{patch}"
+            echo "::error::Example: frontend-v1.2.3"
+            exit 1
+          fi
+          echo "::notice::Git tag format validated: $GIT_TAG"
+
       - name: Checkout repository
         uses: actions/checkout@v6.0.2
         with:
