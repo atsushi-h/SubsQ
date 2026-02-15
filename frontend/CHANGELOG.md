@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.1.0...frontend-v1.1.1) (2026-02-15)
+
+
+### Bug Fixes
+
+* セッション有効期限を明示的に設定 ([#113](https://github.com/atsushi-h/SubsQ/issues/113)) ([c66388d](https://github.com/atsushi-h/SubsQ/commit/c66388d20bd9d7e609d80dc76a1b20fbd2677ceb))
+
 ## [1.1.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.0.0...frontend-v1.1.0) (2026-02-13)
 
 
