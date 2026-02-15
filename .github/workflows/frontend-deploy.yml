@@ -12,6 +12,10 @@ on:
         options:
           - dev
           - prd
+      git_tag:
+        description: 'Git tag to deploy (optional, e.g., frontend-v1.1.0)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -33,6 +37,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ inputs.git_tag || github.ref }}
 
       - name: Set image tag
         id: image_tag
@@ -144,6 +150,9 @@ jobs:
           echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ inputs.git_tag }}" ]; then
+            echo "**Git Tag:** ${{ inputs.git_tag }}" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "**Image Tag:** ${{ steps.image_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Service URL:** ${{ env.SERVICE_URL }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
