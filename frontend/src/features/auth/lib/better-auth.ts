@@ -39,7 +39,7 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
  */
 
 // customSessionは毎回実行されるため、Next.jsのunstable_cacheでキャッシング
-// キャッシュ期間: 5分（セッションの有効期間と同等）
+// キャッシュ期間: 5分（cookieCache.maxAgeと同等）
 // NOTE: unstable_cacheは関数の引数も自動的にキャッシュキーに含まれる
 const getCachedUser = unstable_cache(
   async (email: string): Promise<UserResponse | null> => {
@@ -56,9 +56,11 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   // データベース設定なし = stateless mode (sessionsテーブル不要)
   session: {
+    expiresIn: 60 * 60 * 24 * 7, // セッション有効期限: 7日間
+    updateAge: 60 * 60 * 24, // セッション更新間隔: 1日（アクティブ時に自動更新）
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5分間キャッシュ
+      maxAge: 5 * 60, // customSessionのキャッシュ: 5分間
     },
   },
   socialProviders: {
