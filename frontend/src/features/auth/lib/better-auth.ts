@@ -182,7 +182,10 @@ export const auth = betterAuth({
 
         // DB保存後、再度取得（キャッシュを経由せずに）
         dbUser = await getUserByEmailQuery({ email: user.email })
-        console.log('[customSession] fallback getUserByEmailQuery result:', dbUser ? 'found' : 'NULL')
+        console.log(
+          '[customSession] fallback getUserByEmailQuery result:',
+          dbUser ? 'found' : 'NULL',
+        )
 
         if (!dbUser) {
           throw new Error('Failed to create user')
