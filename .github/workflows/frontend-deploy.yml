@@ -61,7 +61,9 @@ jobs:
           # 形式: v{package.jsonのバージョン}-{コミットハッシュの最初の7文字}
           # 例: v1.2.3-abc1234
           #   - v1.2.3: package.jsonのversionフィールドから取得
-          #   - abc1234: チェックアウト後の実際のコミットハッシュ（一意性を保証）
+          #   - abc1234: チェックアウト後のHEADのコミットハッシュ（git rev-parse HEAD）
+          #             - git_tag未指定時: 現在のブランチのコミット
+          #             - git_tag指定時: 指定されたタグのコミット
           VERSION=$(jq -r '.version' package.json)
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
           TAG="v${VERSION}-${SHORT_SHA}"
