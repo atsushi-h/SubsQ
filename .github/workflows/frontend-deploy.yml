@@ -1,5 +1,5 @@
 name: Frontend Deploy
-run-name: Deploy to ${{ inputs.environment }}
+run-name: Deploy to ${{ inputs.environment }}${{ inputs.git_tag && format(' ({0})', inputs.git_tag) || '' }}
 
 on:
   workflow_dispatch:
@@ -12,6 +12,10 @@ on:
         options:
           - dev
           - prd
+      git_tag:
+        description: 'Git tag to deploy (optional, e.g., frontend-v1.1.0)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -31,8 +35,23 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Validate git tag
+        if: inputs.git_tag != ''
+        env:
+          GIT_TAG: ${{ inputs.git_tag }}
+        run: |
+          if ! echo "$GIT_TAG" | grep -qE '^frontend-v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid git_tag format: '$GIT_TAG'"
+            echo "::error::Expected format: frontend-v{major}.{minor}.{patch}"
+            echo "::error::Example: frontend-v1.2.3"
+            exit 1
+          fi
+          echo "::notice::Git tag format validated: $GIT_TAG"
+
       - name: Checkout repository
         uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ inputs.git_tag || github.ref }}
 
       - name: Set image tag
         id: image_tag
@@ -42,9 +61,11 @@ jobs:
           # 形式: v{package.jsonのバージョン}-{コミットハッシュの最初の7文字}
           # 例: v1.2.3-abc1234
           #   - v1.2.3: package.jsonのversionフィールドから取得
-          #   - abc1234: 現在のコミットハッシュ（一意性を保証）
+          #   - abc1234: チェックアウト後のHEADのコミットハッシュ（git rev-parse HEAD）
+          #             - git_tag未指定時: 現在のブランチのコミット
+          #             - git_tag指定時: 指定されたタグのコミット
           VERSION=$(jq -r '.version' package.json)
-          SHORT_SHA=${GITHUB_SHA:0:7}
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
           TAG="v${VERSION}-${SHORT_SHA}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "::notice::Image tag: $TAG"
@@ -140,11 +161,18 @@ jobs:
 
       - name: Deployment Summary
         if: success()
+        env:
+          GIT_TAG: ${{ inputs.git_tag }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
         run: |
           echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Image Tag:** ${{ steps.image_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$GIT_TAG" ]; then
+            echo "**Git Tag:** $GIT_TAG" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "**Image Tag:** $IMAGE_TAG" >> $GITHUB_STEP_SUMMARY
           echo "**Service URL:** ${{ env.SERVICE_URL }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Deployment Details" >> $GITHUB_STEP_SUMMARY
