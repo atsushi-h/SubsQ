@@ -38,6 +38,12 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
  * - session: { id, expiresAt, token, ... } ← better-auth が自動で作成
  */
 
+// セッション設定の定数
+const SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7 // 7日間
+const SESSION_UPDATE_AGE_SECONDS = 60 * 60 * 24 // 1日
+const COOKIE_CACHE_MAX_AGE_SECONDS = 5 * 60 // 5分
+const USER_CACHE_REVALIDATE_SECONDS = 5 * 60 // 5分
+
 // customSessionは毎回実行されるため、Next.jsのunstable_cacheでキャッシング
 // キャッシュ期間: 5分（cookieCache無効化後のDB再取得を抑制）
 // NOTE: unstable_cacheは関数の引数も自動的にキャッシュキーに含まれる
@@ -47,7 +53,7 @@ const getCachedUser = unstable_cache(
   },
   ['user-by-email'], // 引数emailは自動的にキャッシュキーに含まれる
   {
-    revalidate: 300, // 5分間キャッシュ
+    revalidate: USER_CACHE_REVALIDATE_SECONDS,
     tags: ['user'],
   },
 )
@@ -56,11 +62,11 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   // データベース設定なし = stateless mode (sessionsテーブル不要)
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // セッション有効期限: 7日間
-    updateAge: 60 * 60 * 24, // セッション更新間隔: 1日（アクティブ時に自動更新）
+    expiresIn: SESSION_EXPIRES_IN_SECONDS,
+    updateAge: SESSION_UPDATE_AGE_SECONDS,
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // cookieCache有効期間: 5分間（この間customSessionは呼ばれない）
+      maxAge: COOKIE_CACHE_MAX_AGE_SECONDS,
     },
   },
   socialProviders: {
