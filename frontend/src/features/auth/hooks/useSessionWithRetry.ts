@@ -19,7 +19,10 @@ export function useSessionWithRetry() {
       return
     }
 
-    const hasSessionToken = document.cookie.includes('better-auth.session_token')
+    // HTTPSとHTTPの両方のCookie名に対応
+    const hasSessionToken =
+      document.cookie.includes('better-auth.session_token') ||
+      document.cookie.includes('__Secure-better-auth.session_token')
 
     if (!hasSessionToken) {
       router.replace('/login')
