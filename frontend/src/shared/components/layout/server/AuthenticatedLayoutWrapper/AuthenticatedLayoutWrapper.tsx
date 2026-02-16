@@ -12,26 +12,7 @@ type Props = {
 export async function AuthenticatedLayoutWrapper({ children }: Props) {
   const session = await getSessionServer()
 
-  // SSRでセッションが取得できない場合、クライアント側でリトライする
-  if (!session?.user?.id) {
-    return (
-      <AuthRetryFallback>
-        <div className="flex h-screen flex-col bg-background">
-          <Suspense fallback={<div className="h-14 border-b" />}>
-            <Header />
-          </Suspense>
-          <main className="flex-1 overflow-y-auto bg-muted/10 p-6">
-            <div className="mx-auto max-w-7xl">{children}</div>
-          </main>
-          <Footer />
-          <Toaster />
-        </div>
-      </AuthRetryFallback>
-    )
-  }
-
-  // 正常時は今まで通り
-  return (
+  const layout = (
     <div className="flex h-screen flex-col bg-background">
       <Suspense fallback={<div className="h-14 border-b" />}>
         <Header />
@@ -43,4 +24,11 @@ export async function AuthenticatedLayoutWrapper({ children }: Props) {
       <Toaster />
     </div>
   )
+
+  // SSRでセッションが取得できない場合、クライアント側でリトライする
+  if (!session?.user?.id) {
+    return <AuthRetryFallback>{layout}</AuthRetryFallback>
+  }
+
+  return layout
 }
