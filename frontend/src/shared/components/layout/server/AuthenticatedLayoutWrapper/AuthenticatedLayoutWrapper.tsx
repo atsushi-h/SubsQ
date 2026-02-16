@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
-import { requireAuthServer } from '@/features/auth/servers/redirect.server'
+import { AuthRetryFallback } from '@/features/auth/components/client/AuthRetryFallback'
+import { getSessionServer } from '@/features/auth/servers/auth.server'
 import { Header } from '@/shared/components/layout/client/Header'
 import { Footer } from '@/shared/components/layout/server/Footer'
 import { Toaster } from '@/shared/components/ui/sonner'
@@ -9,8 +10,27 @@ type Props = {
 }
 
 export async function AuthenticatedLayoutWrapper({ children }: Props) {
-  await requireAuthServer()
+  const session = await getSessionServer()
 
+  // SSRでセッションが取得できない場合、クライアント側でリトライする
+  if (!session?.user?.id) {
+    return (
+      <AuthRetryFallback>
+        <div className="flex h-screen flex-col bg-background">
+          <Suspense fallback={<div className="h-14 border-b" />}>
+            <Header />
+          </Suspense>
+          <main className="flex-1 overflow-y-auto bg-muted/10 p-6">
+            <div className="mx-auto max-w-7xl">{children}</div>
+          </main>
+          <Footer />
+          <Toaster />
+        </div>
+      </AuthRetryFallback>
+    )
+  }
+
+  // 正常時は今まで通り
   return (
     <div className="flex h-screen flex-col bg-background">
       <Suspense fallback={<div className="h-14 border-b" />}>
