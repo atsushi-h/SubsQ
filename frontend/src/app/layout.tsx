@@ -5,6 +5,7 @@ import { METADATA_CONSTANTS } from '@/shared/constants/metadata'
 import { generateMetadata, generateViewport } from '@/shared/lib/metadata'
 import { QueryProvider } from '@/shared/providers/QueryProvider'
 import { ThemeProvider } from '@/shared/providers/ThemeProvider'
+import pkg from '../../package.json'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,6 +32,11 @@ export const metadata: Metadata = {
 
   // 相対 URL の基準
   metadataBase: new URL(METADATA_CONSTANTS.APP_URL),
+
+  // デプロイバージョンを確認できるようにカスタムメタタグを追加
+  other: {
+    'app-version': pkg.version,
+  },
 }
 
 export const viewport = generateViewport()
