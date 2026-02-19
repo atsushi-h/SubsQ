@@ -39,6 +39,14 @@ function stripCookieDeletionHeaders(response: Response): Response {
     }
   }
 
+  // Max-Age=0 のヘッダーのみ除去し、正当な Set-Cookie（CSRF トークン更新など）は維持する
+  const filteredCookies = setCookieHeaders.filter(
+    (cookie) => !cookie.includes('Max-Age=0') && !cookie.includes('max-age=0'),
+  )
+  for (const cookie of filteredCookies) {
+    newHeaders.append('set-cookie', cookie)
+  }
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -54,21 +62,31 @@ export const GET = async (req: Request) => {
 
   console.log('[auth-route] GET:', url.pathname, new Date().toISOString())
 
-  const response = await originalGET(req)
+  try {
+    const response = await originalGET(req)
+    console.log('[auth-route] GET response:', response.status, new Date().toISOString())
 
-  console.log('[auth-route] GET response:', response.status, new Date().toISOString())
+    if (isGetSession && hasSessionToken) {
+      return stripCookieDeletionHeaders(response)
+    }
 
-  if (isGetSession && hasSessionToken) {
-    return stripCookieDeletionHeaders(response)
+    return response
+  } catch (error) {
+    console.error('[auth-route] GET error:', error, new Date().toISOString())
+    throw error
   }
-
-  return response
 }
 
 export const POST = async (req: Request) => {
   const url = new URL(req.url)
   console.log('[auth-route] POST:', url.pathname, new Date().toISOString())
-  const response = await originalPOST(req)
-  console.log('[auth-route] POST response:', response.status, new Date().toISOString())
-  return response
+
+  try {
+    const response = await originalPOST(req)
+    console.log('[auth-route] POST response:', response.status, new Date().toISOString())
+    return response
+  } catch (error) {
+    console.error('[auth-route] POST error:', error, new Date().toISOString())
+    throw error
+  }
 }
