@@ -148,18 +148,10 @@ export const auth = betterAuth({
      *            ここでは user.id を DBのユーザーIDで上書きしている
      */
     customSession(async ({ user, session }) => {
-      console.log('[customSession] START:', {
-        email: user.email,
-        sessionId: session.id,
-        timestamp: new Date().toISOString(),
-      })
-
       let dbUser = await getCachedUser(user.email)
-      console.log('[customSession] getCachedUser result:', dbUser ? 'found' : 'NULL')
 
       // dbUserが存在する場合は、セッションのuserにidを追加して返す
       if (dbUser) {
-        console.log('[customSession] returning with userId:', dbUser.id)
         // user.idをDBのユーザーIDで上書き
         return { user: { ...user, id: dbUser.id }, session }
       }
@@ -182,19 +174,12 @@ export const auth = betterAuth({
 
         // DB保存後、再度取得（キャッシュを経由せずに）
         dbUser = await getUserByEmailQuery({ email: user.email })
-        console.log(
-          '[customSession] fallback getUserByEmailQuery result:',
-          dbUser ? 'found' : 'NULL',
-        )
-
         if (!dbUser) {
           throw new Error('Failed to create user')
         }
-        console.log('[customSession] returning with userId:', dbUser.id)
 
         return { user: { ...user, id: dbUser.id }, session }
       } catch (error) {
-        console.error('[customSession] Fallback path error:', error)
         console.error('[better-auth] Failed to create user:', error)
         throw new Error('Failed to create user')
       }
