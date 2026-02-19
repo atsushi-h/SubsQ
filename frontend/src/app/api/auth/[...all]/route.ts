@@ -23,7 +23,7 @@ function stripCookieDeletionHeaders(response: Response): Response {
   }
 
   const hasDeletionCookie = setCookieHeaders.some(
-    (cookie) => cookie.includes('Max-Age=0') || cookie.includes('max-age=0')
+    (cookie) => cookie.includes('Max-Age=0') || cookie.includes('max-age=0'),
   )
 
   if (!hasDeletionCookie) {
