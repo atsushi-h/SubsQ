@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.2](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.1.1...frontend-v1.1.2) (2026-02-19)
+
+
+### Bug Fixes
+
+* customSessionコールバックにデバッグログを追加 ([#116](https://github.com/atsushi-h/SubsQ/issues/116)) ([0d4175c](https://github.com/atsushi-h/SubsQ/commit/0d4175c4d6c46c8170eddd61b3712da9fb764d36))
+* コールドスタート時のCookie破壊防止をauth routeハンドラに追加 ([#120](https://github.com/atsushi-h/SubsQ/issues/120)) ([ce0ffab](https://github.com/atsushi-h/SubsQ/commit/ce0ffab7d8ab8313661625f5f31bbce07d46772f))
+* コールドスタート時のセッション消失対策を実装 ([#119](https://github.com/atsushi-h/SubsQ/issues/119)) ([ebb447b](https://github.com/atsushi-h/SubsQ/commit/ebb447be45374fd58ec0f2ac20657054dc6e7126))
+* 認証リクエスト到達確認ログを追加 ([#118](https://github.com/atsushi-h/SubsQ/issues/118)) ([4c3a926](https://github.com/atsushi-h/SubsQ/commit/4c3a9269762860458ba89749fb5456b4aeec3583))
+
 ## [1.1.1](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.1.0...frontend-v1.1.1) (2026-02-15)
 
 
