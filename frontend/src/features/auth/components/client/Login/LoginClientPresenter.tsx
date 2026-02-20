@@ -17,7 +17,13 @@ export function LoginClientPresenter({ onGoogleLogin }: Props) {
         </CardHeader>
         <CardContent>
           <Button type="button" variant="secondary" className="w-full" onClick={onGoogleLogin}>
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              className="w-5 h-5 mr-2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-label="Google logo"
+            >
+              <title>Google logo</title>
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -34,7 +40,6 @@ export function LoginClientPresenter({ onGoogleLogin }: Props) {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 fill="#EA4335"
               />
-              <title>Google logo</title>
             </svg>
             Googleでログイン
           </Button>
