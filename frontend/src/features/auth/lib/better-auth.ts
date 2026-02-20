@@ -30,8 +30,9 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
  *
  * 【認証済みリクエスト時】
  * 1. Cookieから user, session を復元（better-auth が自動で行う）
- * 2. cookieCacheが有効な間（5分間）はcustomSessionは呼ばれない
+ * 2. cookieCacheが有効な間（7日間）はcustomSessionは呼ばれない
  * 3. キャッシュ切れ時にcustomSessionが呼ばれ、DBからユーザーを取得してIDを更新
+ *    ※ DB接続失敗時はCookie内のデータで継続（ログアウトしない）
  *
  * 【セッション構造】
  * - user: { id, email, name, image, ... }  ← better-auth が作成、customSessionでidを上書き
@@ -41,15 +42,31 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
 // セッション設定の定数
 const SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7 // 7日間
 const SESSION_UPDATE_AGE_SECONDS = 60 * 60 * 24 // 1日
-const COOKIE_CACHE_MAX_AGE_SECONDS = 5 * 60 // 5分
+const COOKIE_CACHE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 // 7日間（SESSION_EXPIRES_IN_SECONDSと同じ）
 const USER_CACHE_REVALIDATE_SECONDS = 5 * 60 // 5分
 
 // customSessionは毎回実行されるため、Next.jsのunstable_cacheでキャッシング
-// キャッシュ期間: 5分（cookieCache無効化後のDB再取得を抑制）
+// キャッシュ期間: 5分（cookieCache(7日間)無効化後のDB再取得を抑制）
 // NOTE: unstable_cacheは関数の引数も自動的にキャッシュキーに含まれる
+// ※ DB接続失敗時はエラーをthrowし、customSessionでCookieデータにフォールバック
 const getCachedUser = unstable_cache(
   async (email: string): Promise<UserResponse | null> => {
-    return await getUserByEmailQuery({ email })
+    console.log('[getCachedUser] DB query executing (cache miss)', { email })
+    const startTime = Date.now()
+    try {
+      const result = await getUserByEmailQuery({ email })
+      console.log('[getCachedUser] DB query success', {
+        found: !!result,
+        elapsed: `${Date.now() - startTime}ms`,
+      })
+      return result
+    } catch (error) {
+      console.error('[getCachedUser] DB query FAILED', {
+        elapsed: `${Date.now() - startTime}ms`,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      throw error // customSessionでキャッチする
+    }
   },
   ['user-by-email'], // 引数emailは自動的にキャッシュキーに含まれる
   {
@@ -145,43 +162,58 @@ export const auth = betterAuth({
      * @param session - better-auth が自動で作成した基本セッション情報
      *               { id, userId, expiresAt, token, ipAddress, userAgent, ... }
      * @returns - return で返した値がセッションに反映される
-     *            ここでは user.id を DBのユーザーIDで上書きしている
+     *            通常時: user.id を DBのユーザーIDで上書きして返す
+     *            DB接続失敗時: Cookieの user, session をそのまま返す（ログアウトしない）
      */
     customSession(async ({ user, session }) => {
-      let dbUser = await getCachedUser(user.email)
+      console.log('[customSession] START', { email: user.email })
+      const startTime = Date.now()
 
-      // dbUserが存在する場合は、セッションのuserにidを追加して返す
-      if (dbUser) {
-        // user.idをDBのユーザーIDで上書き
-        return { user: { ...user, id: dbUser.id }, session }
-      }
-
-      // dbUserが存在しない場合は、DB保存を試みる（初回ログイン時のフォールバック）
       try {
-        // NOTE: ここではプロバイダー情報がないため、デフォルトでgoogleを使用
-        // 通常はhooks.afterで保存されるため、このフォールバックが実行されることはほぼない
-        // ⚠️ 注意: E2E認証（credentials）でもこのフォールバックが実行されると
-        // 誤ったprovider（google）が保存される可能性がある
-        // 実際にはhooks.afterで正しいproviderで保存されるため問題ないが、
-        // このフォールバックに依存しないことが重要
-        await createOrGetUserCommand({
-          email: user.email,
-          name: user.name || user.email,
-          provider: 'google',
-          providerAccountId: user.id,
-          thumbnail: user.image || undefined,
+        let dbUser = await getCachedUser(user.email)
+        console.log('[customSession] getCachedUser result', {
+          found: !!dbUser,
+          elapsed: `${Date.now() - startTime}ms`,
         })
 
-        // DB保存後、再度取得（キャッシュを経由せずに）
-        dbUser = await getUserByEmailQuery({ email: user.email })
-        if (!dbUser) {
-          throw new Error('Failed to create user')
+        if (dbUser) {
+          return { user: { ...user, id: dbUser.id }, session }
         }
 
-        return { user: { ...user, id: dbUser.id }, session }
+        // dbUserが存在しない場合のフォールバック
+        try {
+          await createOrGetUserCommand({
+            email: user.email,
+            name: user.name || user.email,
+            provider: 'google',
+            providerAccountId: user.id,
+            thumbnail: user.image || undefined,
+          })
+
+          dbUser = await getUserByEmailQuery({ email: user.email })
+          if (!dbUser) {
+            console.error(
+              '[customSession] User creation succeeded but retrieval failed, using cookie data',
+            )
+            return { user, session }
+          }
+
+          return { user: { ...user, id: dbUser.id }, session }
+        } catch (error) {
+          const elapsed = Date.now() - startTime
+          console.error('[customSession] Failed to create/get user, using cookie data:', {
+            elapsed: `${elapsed}ms`,
+            error: error instanceof Error ? error.message : String(error),
+          })
+          return { user, session }
+        }
       } catch (error) {
-        console.error('[better-auth] Failed to create user:', error)
-        throw new Error('Failed to create user')
+        const elapsed = Date.now() - startTime
+        console.error('[customSession] DB error, using cookie data:', {
+          elapsed: `${elapsed}ms`,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return { user, session }
       }
     }),
   ],
