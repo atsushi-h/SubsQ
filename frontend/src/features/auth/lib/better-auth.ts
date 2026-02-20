@@ -30,7 +30,7 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
  *
  * 【認証済みリクエスト時】
  * 1. Cookieから user, session を復元（better-auth が自動で行う）
- * 2. cookieCacheが有効な間（7日間）はcustomSessionは呼ばれない
+ * 2. cookieCacheが有効な間（5分間）はcustomSessionは呼ばれない
  * 3. キャッシュ切れ時にcustomSessionが呼ばれ、DBからユーザーを取得してIDを更新
  *    ※ DB接続失敗時はCookie内のデータで継続（ログアウトしない）
  *
@@ -42,11 +42,11 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
 // セッション設定の定数
 const SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7 // 7日間
 const SESSION_UPDATE_AGE_SECONDS = 60 * 60 * 24 // 1日
-const COOKIE_CACHE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 // 7日間（SESSION_EXPIRES_IN_SECONDSと同じ）
+const COOKIE_CACHE_MAX_AGE_SECONDS = 5 * 60 // 5分
 const USER_CACHE_REVALIDATE_SECONDS = 5 * 60 // 5分
 
 // customSessionは毎回実行されるため、Next.jsのunstable_cacheでキャッシング
-// キャッシュ期間: 5分（cookieCache(7日間)無効化後のDB再取得を抑制）
+// キャッシュ期間: 5分（cookieCache無効化後のDB再取得を抑制）
 // NOTE: unstable_cacheは関数の引数も自動的にキャッシュキーに含まれる
 // ※ DB接続失敗時はエラーをthrowし、customSessionでCookieデータにフォールバック
 const getCachedUser = unstable_cache(
