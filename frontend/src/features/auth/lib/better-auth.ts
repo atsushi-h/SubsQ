@@ -39,6 +39,56 @@ import { env, isE2EAuthEnabled } from '@/shared/lib/env'
  * - session: { id, expiresAt, token, ... } ← better-auth が自動で作成
  */
 
+/**
+ * ログ用メールマスキング（例: ats***@gmail.com）
+ * PII（個人識別情報）保護のため、メールアドレスの一部を伏せ字にする
+ */
+const maskEmail = (email: string): string => email.replace(/(?<=.{3}).(?=.*@)/g, '*')
+
+/**
+ * customSession内でdbUserが存在しない場合のフォールバック処理
+ * ユーザー作成を試み、作成後にDBから取得して返す
+ *
+ * @returns DBから取得したユーザー情報、または失敗時はnull
+ */
+async function fallbackCreateUser(
+  email: string,
+  name: string,
+  providerId: string,
+  image?: string,
+): Promise<UserResponse | null> {
+  try {
+    // NOTE: ここではプロバイダー情報がないため、デフォルトでgoogleを使用
+    // 通常はhooks.afterで保存されるため、このフォールバックが実行されることはほぼない
+    // ⚠️ 注意: E2E認証（credentials）でもこのフォールバックが実行されると
+    // 誤ったprovider（google）が保存される可能性がある
+    // 実際にはhooks.afterで正しいproviderで保存されるため問題ないが、
+    // このフォールバックに依存しないことが重要
+    await createOrGetUserCommand({
+      email,
+      name: name || email,
+      provider: 'google',
+      providerAccountId: providerId,
+      thumbnail: image || undefined,
+    })
+
+    const dbUser = await getUserByEmailQuery({ email })
+    if (!dbUser) {
+      console.error(
+        '[customSession] User creation succeeded but retrieval failed, using cookie data',
+      )
+      return null
+    }
+
+    return dbUser
+  } catch (error) {
+    console.error('[customSession] Failed to create/get user, using cookie data:', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return null
+  }
+}
+
 // セッション設定の定数
 const SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7 // 7日間
 const SESSION_UPDATE_AGE_SECONDS = 60 * 60 * 24 // 1日
@@ -51,7 +101,7 @@ const USER_CACHE_REVALIDATE_SECONDS = 5 * 60 // 5分
 // ※ DB接続失敗時はエラーをthrowし、customSessionでCookieデータにフォールバック
 const getCachedUser = unstable_cache(
   async (email: string): Promise<UserResponse | null> => {
-    console.log('[getCachedUser] DB query executing (cache miss)', { email })
+    console.log('[getCachedUser] DB query executing (cache miss)', { email: maskEmail(email) })
     const startTime = Date.now()
     try {
       const result = await getUserByEmailQuery({ email })
@@ -166,7 +216,7 @@ export const auth = betterAuth({
      *            DB接続失敗時: Cookieの user, session をそのまま返す（ログアウトしない）
      */
     customSession(async ({ user, session }) => {
-      console.log('[customSession] START', { email: user.email })
+      console.log('[customSession] START', { email: maskEmail(user.email) })
       const startTime = Date.now()
 
       try {
@@ -181,38 +231,27 @@ export const auth = betterAuth({
         }
 
         // dbUserが存在しない場合のフォールバック
-        try {
-          await createOrGetUserCommand({
-            email: user.email,
-            name: user.name || user.email,
-            provider: 'google',
-            providerAccountId: user.id,
-            thumbnail: user.image || undefined,
-          })
+        dbUser = await fallbackCreateUser(user.email, user.name, user.id, user.image || undefined)
 
-          dbUser = await getUserByEmailQuery({ email: user.email })
-          if (!dbUser) {
-            console.error(
-              '[customSession] User creation succeeded but retrieval failed, using cookie data',
-            )
-            return { user, session }
-          }
-
+        if (dbUser) {
           return { user: { ...user, id: dbUser.id }, session }
-        } catch (error) {
-          const elapsed = Date.now() - startTime
-          console.error('[customSession] Failed to create/get user, using cookie data:', {
-            elapsed: `${elapsed}ms`,
-            error: error instanceof Error ? error.message : String(error),
-          })
-          return { user, session }
         }
+
+        // NOTE: この時のuser.idはbetter-auth内部ID（OAuth provider ID）であり、
+        // DBのアプリ固有ユーザーIDではない。下流のDB操作でデータ取得に失敗する可能性があるが、
+        // Cookie削除（強制ログアウト）よりは許容できるトレードオフ。
+        // cookieCache(5分)が有効な間はこのパスに到達しない。
+        return { user, session }
       } catch (error) {
         const elapsed = Date.now() - startTime
         console.error('[customSession] DB error, using cookie data:', {
           elapsed: `${elapsed}ms`,
           error: error instanceof Error ? error.message : String(error),
         })
+        // NOTE: この時のuser.idはbetter-auth内部ID（OAuth provider ID）であり、
+        // DBのアプリ固有ユーザーIDではない。下流のDB操作でデータ取得に失敗する可能性があるが、
+        // Cookie削除（強制ログアウト）よりは許容できるトレードオフ。
+        // cookieCache(5分)が有効な間はこのパスに到達しない。
         return { user, session }
       }
     }),
