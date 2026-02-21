@@ -2,6 +2,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from '@/features/auth/lib/better-auth-client'
+import { clearServiceWorkerCache } from '@/shared/lib/clearServiceWorkerCache'
 
 export function useHeader() {
   const { data: session } = useSession()
@@ -11,8 +12,13 @@ export function useHeader() {
 
   const handleSignOut = async () => {
     await signOut()
-    // キャッシュをすべてクリア
+
+    // TanStack Queryキャッシュをクリア
     queryClient.clear()
+
+    // Service Workerキャッシュをクリア（セキュリティ対策）
+    await clearServiceWorkerCache()
+
     router.push('/login')
   }
 

@@ -33,6 +33,18 @@ export const metadata: Metadata = {
   // 相対 URL の基準
   metadataBase: new URL(METADATA_CONSTANTS.APP_URL),
 
+  // PWA設定
+  manifest: '/manifest.webmanifest',
+  applicationName: METADATA_CONSTANTS.APP_NAME,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: METADATA_CONSTANTS.APP_NAME,
+  },
+  formatDetection: {
+    telephone: false,
+  },
+
   // デプロイバージョンを確認できるようにカスタムメタタグを追加
   other: {
     'app-version': pkg.version,
@@ -48,6 +60,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <QueryProvider>{children}</QueryProvider>

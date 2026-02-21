@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
 import { signOut } from '@/features/auth/lib/better-auth-client'
+import { clearServiceWorkerCache } from '@/shared/lib/clearServiceWorkerCache'
 
 export function useDeleteUserAccountMutation() {
   const router = useRouter()
@@ -18,6 +19,9 @@ export function useDeleteUserAccountMutation() {
       // signOutが失敗してもログインページへ遷移
       try {
         await signOut()
+
+        // Service Workerキャッシュをクリア（セキュリティ対策）
+        await clearServiceWorkerCache()
       } catch (signOutErr) {
         console.error('ログアウト処理に失敗しましたが、アカウントは削除されました', signOutErr)
         toast.warning('ブラウザを閉じてログアウトを完了してください')
