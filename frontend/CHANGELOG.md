@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.2.0...frontend-v1.3.0) (2026-02-21)
+
+
+### Features
+
+* Serwistを導入してインストール可能なPWAを実装 ([#136](https://github.com/atsushi-h/SubsQ/issues/136)) ([fdc78d9](https://github.com/atsushi-h/SubsQ/commit/fdc78d99bd81a98c507c998144a9024dc2185af6))
+
+
+### Bug Fixes
+
+* **auth:** Auth Route Handlerを常に動的に実行するよう設定 ([#134](https://github.com/atsushi-h/SubsQ/issues/134)) ([ccf78a3](https://github.com/atsushi-h/SubsQ/commit/ccf78a316c8413edd69937a7fc792b79f1bc2f1a))
+
 ## [1.2.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.1.1...frontend-v1.2.0) (2026-02-19)
 
 
