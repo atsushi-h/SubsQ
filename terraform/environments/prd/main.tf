@@ -80,3 +80,12 @@ module "cloudflare" {
   # Cloudflare無料プランではzone rulesetは1つのみ作成可能
   enable_cache_rules = false
 }
+
+# GCP予算アラート
+module "budget_alert" {
+  source = "../../modules/budget-alert"
+
+  billing_account_id = var.billing_account_id
+  gcp_project_id     = var.gcp_project_id
+  budget_amount      = 1000
+}

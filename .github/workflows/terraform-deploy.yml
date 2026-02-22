@@ -57,6 +57,7 @@ jobs:
       TF_VAR_better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
       TF_VAR_better_auth_url: ${{ secrets.BETTER_AUTH_URL }}
       TF_VAR_next_public_app_url: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+      TF_VAR_billing_account_id: ${{ secrets.BILLING_ACCOUNT_ID }}
 
     steps:
       - name: Checkout repository
