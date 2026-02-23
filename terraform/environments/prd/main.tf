@@ -60,8 +60,9 @@ module "cloud_run" {
     GOOGLE_CLIENT_ID        = var.google_client_id
     GOOGLE_CLIENT_SECRET    = var.google_client_secret
     BETTER_AUTH_SECRET      = var.better_auth_secret
-    BETTER_AUTH_URL         = var.better_auth_url
-    NEXT_PUBLIC_APP_URL     = var.next_public_app_url
+    BETTER_AUTH_URL              = var.better_auth_url
+    NEXT_PUBLIC_APP_URL          = var.next_public_app_url
+    NEXT_PUBLIC_CONTACT_FORM_URL = var.next_public_contact_form_url
   }
 }
 
