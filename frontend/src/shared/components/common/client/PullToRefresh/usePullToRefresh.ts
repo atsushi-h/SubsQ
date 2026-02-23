@@ -8,7 +8,7 @@ const THRESHOLD = 80
 
 export function usePullToRefresh() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const indicatorRef = useRef<HTMLDivElement>(null)
+  const indicatorRef = useRef<HTMLOutputElement>(null)
   const queryClient = useQueryClient()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const startY = useRef(0)
