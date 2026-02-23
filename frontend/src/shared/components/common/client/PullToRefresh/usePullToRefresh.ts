@@ -17,10 +17,16 @@ export function usePullToRefresh() {
   const rafId = useRef<number | null>(null)
 
   // React の style prop に height/opacity を置かないため、初期値を直接セット
+  // cleanup でアンマウント時の RAF をキャンセルしメモリリークを防ぐ
   useLayoutEffect(() => {
     if (indicatorRef.current) {
       indicatorRef.current.style.height = '0px'
       indicatorRef.current.style.opacity = '0'
+    }
+    return () => {
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current)
+      }
     }
   }, [])
 
