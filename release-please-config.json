@@ -23,6 +23,11 @@
       "release-type": "go",
       "component": "backend",
       "changelog-path": "CHANGELOG.md"
+    },
+    "api-schema": {
+      "release-type": "node",
+      "component": "api-schema",
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }
