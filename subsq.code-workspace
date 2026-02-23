@@ -9,6 +9,10 @@
 			"name": "📚 Docs"
 		},
 		{
+			"path": "./api-schema",
+			"name": "📐 API Schema"
+		},
+		{
 			"path": "./frontend/",
 			"name": "💻 Frontend"
 		},
