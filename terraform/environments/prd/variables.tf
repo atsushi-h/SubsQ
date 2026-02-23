@@ -112,3 +112,18 @@ variable "next_public_app_url" {
   description = "Next.jsパブリックアプリケーションURL (例: https://subsq-app.com)"
   type        = string
 }
+
+variable "next_public_contact_form_url" {
+  description = "お問い合わせフォームURL (Google Forms等)"
+  type        = string
+}
+
+# ===========================
+# 予算アラート設定
+# ===========================
+
+variable "billing_account_id" {
+  description = "GCP請求先アカウントID"
+  type        = string
+  sensitive   = true
+}
