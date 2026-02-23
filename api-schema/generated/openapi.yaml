@@ -324,13 +324,9 @@ components:
     Models.BadRequestError:
       type: object
       required:
-        - type
         - title
         - status
-        - detail
       properties:
-        type:
-          type: string
         title:
           type: string
           enum:
@@ -339,10 +335,8 @@ components:
           type: number
           enum:
             - 400
-        detail:
-          type: string
-        instance:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Bad Request エラー
     Models.BillingCycle:
       type: string
@@ -353,13 +347,9 @@ components:
     Models.ConflictError:
       type: object
       required:
-        - type
         - title
         - status
-        - detail
       properties:
-        type:
-          type: string
         title:
           type: string
           enum:
@@ -368,10 +358,8 @@ components:
           type: number
           enum:
             - 409
-        detail:
-          type: string
-        instance:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Conflict エラー
     Models.CreatePaymentMethodRequest:
       type: object
@@ -449,13 +437,9 @@ components:
     Models.ForbiddenError:
       type: object
       required:
-        - type
         - title
         - status
-        - detail
       properties:
-        type:
-          type: string
         title:
           type: string
           enum:
@@ -464,10 +448,8 @@ components:
           type: number
           enum:
             - 403
-        detail:
-          type: string
-        instance:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Forbidden エラー
     Models.ListSubscriptionsResponse:
       type: object
@@ -488,13 +470,9 @@ components:
     Models.NotFoundError:
       type: object
       required:
-        - type
         - title
         - status
-        - detail
       properties:
-        type:
-          type: string
         title:
           type: string
           enum:
@@ -503,10 +481,8 @@ components:
           type: number
           enum:
             - 404
-        detail:
-          type: string
-        instance:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Not Found エラー
     Models.PaymentMethodResponse:
       type: object
@@ -642,13 +618,9 @@ components:
     Models.UnauthorizedError:
       type: object
       required:
-        - type
         - title
         - status
-        - detail
       properties:
-        type:
-          type: string
         title:
           type: string
           enum:
@@ -657,10 +629,8 @@ components:
           type: number
           enum:
             - 401
-        detail:
-          type: string
-        instance:
-          type: string
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Unauthorized エラー
     Models.UpdatePaymentMethodRequest:
       type: object

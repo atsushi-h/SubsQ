@@ -25,51 +25,31 @@ model ErrorResponse {
 }
 
 /** Not Found エラー */
-@error
-model NotFoundError {
-  type: string;
+model NotFoundError extends ErrorResponse {
   title: "Not Found";
   status: 404;
-  detail: string;
-  instance?: string;
 }
 
 /** Unauthorized エラー */
-@error
-model UnauthorizedError {
-  type: string;
+model UnauthorizedError extends ErrorResponse {
   title: "Unauthorized";
   status: 401;
-  detail: string;
-  instance?: string;
 }
 
 /** Forbidden エラー */
-@error
-model ForbiddenError {
-  type: string;
+model ForbiddenError extends ErrorResponse {
   title: "Forbidden";
   status: 403;
-  detail: string;
-  instance?: string;
 }
 
 /** Bad Request エラー */
-@error
-model BadRequestError {
-  type: string;
+model BadRequestError extends ErrorResponse {
   title: "Bad Request";
   status: 400;
-  detail: string;
-  instance?: string;
 }
 
 /** Conflict エラー */
-@error
-model ConflictError {
-  type: string;
+model ConflictError extends ErrorResponse {
   title: "Conflict";
   status: 409;
-  detail: string;
-  instance?: string;
 }
