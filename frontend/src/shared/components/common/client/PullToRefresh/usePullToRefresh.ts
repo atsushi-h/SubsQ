@@ -1,15 +1,12 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
+import type React from 'react'
 import { useRef, useState } from 'react'
-
-type Props = {
-  children: React.ReactNode
-}
 
 const THRESHOLD = 80
 
-export function PullToRefresh({ children }: Props) {
+export function usePullToRefresh() {
   const containerRef = useRef<HTMLDivElement>(null)
   const queryClient = useQueryClient()
   const [pullDistance, setPullDistance] = useState(0)
@@ -54,31 +51,15 @@ export function PullToRefresh({ children }: Props) {
   const indicatorOpacity = Math.min(pullDistance / (THRESHOLD * 0.5), 1)
   const showIndicator = pullDistance > 0 || isRefreshing
 
-  return (
-    <>
-      {showIndicator && (
-        <div
-          className="fixed inset-x-0 top-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
-          style={{
-            height: `${indicatorHeight}px`,
-            opacity: pullDistance > 0 ? indicatorOpacity : 1,
-            transition: pullDistance === 0 ? 'height 0.3s ease, opacity 0.3s ease' : 'none',
-          }}
-        >
-          <span className="mb-2 text-sm text-muted-foreground">
-            {isRefreshing ? '更新中...' : '↓ 引っ張って更新'}
-          </span>
-        </div>
-      )}
-      <div
-        ref={containerRef}
-        className="h-full overflow-y-auto overscroll-y-contain"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {children}
-      </div>
-    </>
-  )
+  return {
+    containerRef,
+    indicatorHeight,
+    indicatorOpacity,
+    isRefreshing,
+    pullDistance,
+    showIndicator,
+    handleTouchEnd,
+    handleTouchMove,
+    handleTouchStart,
+  }
 }

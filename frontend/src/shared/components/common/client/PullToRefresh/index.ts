@@ -1,1 +1,1 @@
-export { PullToRefresh } from './PullToRefresh'
+export { PullToRefreshContainer as PullToRefresh } from './PullToRefreshContainer'
