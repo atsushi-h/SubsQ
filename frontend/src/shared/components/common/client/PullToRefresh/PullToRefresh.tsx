@@ -52,29 +52,33 @@ export function PullToRefresh({ children }: Props) {
 
   const indicatorHeight = pullDistance > 0 ? pullDistance : isRefreshing ? 40 : 0
   const indicatorOpacity = Math.min(pullDistance / (THRESHOLD * 0.5), 1)
+  const showIndicator = pullDistance > 0 || isRefreshing
 
   return (
-    <div
-      ref={containerRef}
-      className="h-full overflow-y-auto overscroll-y-contain"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <>
+      {showIndicator && (
+        <div
+          className="fixed inset-x-0 top-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
+          style={{
+            height: `${indicatorHeight}px`,
+            opacity: pullDistance > 0 ? indicatorOpacity : 1,
+            transition: pullDistance === 0 ? 'height 0.3s ease, opacity 0.3s ease' : 'none',
+          }}
+        >
+          <span className="mb-2 text-sm text-muted-foreground">
+            {isRefreshing ? '更新中...' : '↓ 引っ張って更新'}
+          </span>
+        </div>
+      )}
       <div
-        style={{
-          height: `${indicatorHeight}px`,
-          opacity: pullDistance > 0 ? indicatorOpacity : 1,
-          transition: pullDistance === 0 ? 'height 0.3s ease, opacity 0.3s ease' : 'none',
-          overflow: 'hidden',
-        }}
-        className="flex items-center justify-center"
+        ref={containerRef}
+        className="h-full overflow-y-auto overscroll-y-contain"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        <span className="text-sm text-muted-foreground">
-          {isRefreshing ? '更新中...' : '↓ 引っ張って更新'}
-        </span>
+        {children}
       </div>
-      {children}
-    </div>
+    </>
   )
 }
