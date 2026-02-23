@@ -40,6 +40,7 @@ export function usePullToRefresh() {
   }
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isRefreshing) return
     if (containerRef.current?.scrollTop === 0) {
       startY.current = e.touches[0].clientY
       isPulling.current = true
