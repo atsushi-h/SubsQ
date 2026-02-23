@@ -10,11 +10,8 @@ type Props = {
 export function PullToRefreshContainer({ children }: Props) {
   const {
     containerRef,
-    indicatorHeight,
-    indicatorOpacity,
+    indicatorRef,
     isRefreshing,
-    pullDistance,
-    showIndicator,
     handleTouchEnd,
     handleTouchMove,
     handleTouchStart,
@@ -23,11 +20,8 @@ export function PullToRefreshContainer({ children }: Props) {
   return (
     <PullToRefreshPresenter
       containerRef={containerRef}
-      indicatorHeight={indicatorHeight}
-      indicatorOpacity={indicatorOpacity}
+      indicatorRef={indicatorRef}
       isRefreshing={isRefreshing}
-      pullDistance={pullDistance}
-      showIndicator={showIndicator}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
       onTouchStart={handleTouchStart}
