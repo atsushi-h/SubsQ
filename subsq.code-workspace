@@ -17,6 +17,10 @@
 			"name": "💻 Frontend"
 		},
 		{
+			"path": "./backend/",
+			"name": "⚡ Backend"
+		},
+		{
 			"path": "./terraform/",
 			"name": "🏗️ Terraform"
 		}
