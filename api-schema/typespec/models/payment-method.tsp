@@ -34,8 +34,4 @@ model CreatePaymentMethodRequest {
 }
 
 /** 支払い方法更新リクエスト */
-model UpdatePaymentMethodRequest {
-  /** 支払い方法名 */
-  @minLength(1)
-  name: string;
-}
+model UpdatePaymentMethodRequest extends CreatePaymentMethodRequest {}

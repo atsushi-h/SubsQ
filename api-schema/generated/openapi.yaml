@@ -649,13 +649,8 @@ components:
       description: Unauthorized エラー
     Models.UpdatePaymentMethodRequest:
       type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-          description: 支払い方法名
+      allOf:
+        - $ref: '#/components/schemas/Models.CreatePaymentMethodRequest'
       description: 支払い方法更新リクエスト
     Models.UpdateSubscriptionRequest:
       type: object
