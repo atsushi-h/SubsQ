@@ -33,9 +33,3 @@ model UserResponse {
   /** 更新日時 */
   updatedAt: utcDateTime;
 }
-
-/** ユーザー削除レスポンス */
-model DeleteUserResponse {
-  /** 削除されたユーザーID */
-  id: uuid;
-}

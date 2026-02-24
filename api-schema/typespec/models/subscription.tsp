@@ -112,7 +112,11 @@ model CreateSubscriptionRequest {
   memo?: string;
 }
 
-/** サブスクリプション更新リクエスト */
+/**
+ * サブスクリプション更新リクエスト
+ * @note 未指定（undefined）と「nullに更新（解除）」の区別ができないため、
+ *       paymentMethodId / memo の解除はバックエンド側で別途考慮が必要。
+ */
 model UpdateSubscriptionRequest {
   /** サービス名 */
   @minLength(1)

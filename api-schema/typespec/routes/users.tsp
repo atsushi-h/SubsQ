@@ -21,5 +21,5 @@ interface Users {
   @delete
   @route("/me")
   @summary("Delete current user")
-  deleteCurrentUser(): DeleteUserResponse | UnauthorizedError;
+  deleteCurrentUser(): void | UnauthorizedError;
 }

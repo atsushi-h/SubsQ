@@ -305,12 +305,8 @@ paths:
       description: 現在のユーザーを削除
       parameters: []
       responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Models.DeleteUserResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
         default:
           description: An unexpected error response.
           content:
@@ -407,16 +403,6 @@ components:
           type: string
           description: メモ
       description: サブスクリプション作成リクエスト
-    Models.DeleteUserResponse:
-      type: object
-      required:
-        - id
-      properties:
-        id:
-          allOf:
-            - $ref: '#/components/schemas/Models.uuid'
-          description: 削除されたユーザーID
-      description: ユーザー削除レスポンス
     Models.ErrorResponse:
       type: object
       required:
