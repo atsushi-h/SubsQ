@@ -11,6 +11,7 @@ model UserResponse {
   id: uuid;
 
   /** メールアドレス */
+  @format("email")
   email: string;
 
   /** 表示名 */
@@ -23,6 +24,7 @@ model UserResponse {
   providerAccountId: string;
 
   /** プロフィール画像URL */
+  @format("uri")
   thumbnail?: string;
 
   /** 作成日時 */

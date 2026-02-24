@@ -21,7 +21,7 @@ interface Subscriptions {
   @route("/{id}")
   @summary("Get subscription by ID")
   getSubscription(
-    @path id: string
+    @path id: uuid
   ): SubscriptionResponse | NotFoundError | UnauthorizedError;
 
   /** サブスクリプションを作成 */
@@ -36,7 +36,7 @@ interface Subscriptions {
   @route("/{id}")
   @summary("Update subscription")
   updateSubscription(
-    @path id: string,
+    @path id: uuid,
     @body request: UpdateSubscriptionRequest
   ): SubscriptionResponse | BadRequestError | NotFoundError | UnauthorizedError;
 
@@ -45,6 +45,6 @@ interface Subscriptions {
   @route("/{id}")
   @summary("Delete subscription")
   deleteSubscription(
-    @path id: string
+    @path id: uuid
   ): void | NotFoundError | UnauthorizedError;
 }

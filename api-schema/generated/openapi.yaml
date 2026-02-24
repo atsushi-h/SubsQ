@@ -68,7 +68,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/Models.uuid'
       responses:
         '200':
           description: The request has succeeded.
@@ -95,7 +95,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/Models.uuid'
       responses:
         '200':
           description: The request has succeeded.
@@ -129,7 +129,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/Models.uuid'
       responses:
         '204':
           description: 'There is no content to send for this request, but the headers may be useful. '
@@ -203,7 +203,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/Models.uuid'
       responses:
         '200':
           description: The request has succeeded.
@@ -230,7 +230,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/Models.uuid'
       responses:
         '200':
           description: The request has succeeded.
@@ -264,7 +264,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/Models.uuid'
       responses:
         '204':
           description: 'There is no content to send for this request, but the headers may be useful. '
@@ -700,6 +700,7 @@ components:
           description: ユーザーID
         email:
           type: string
+          format: email
           description: メールアドレス
         name:
           type: string
@@ -712,6 +713,7 @@ components:
           description: プロバイダー側のアカウントID
         thumbnail:
           type: string
+          format: uri
           description: プロフィール画像URL
         createdAt:
           type: string

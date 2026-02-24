@@ -21,7 +21,7 @@ interface PaymentMethods {
   @route("/{id}")
   @summary("Get payment method by ID")
   getPaymentMethod(
-    @path id: string
+    @path id: uuid
   ): PaymentMethodResponse | NotFoundError | UnauthorizedError;
 
   /** 支払い方法を作成 */
@@ -36,7 +36,7 @@ interface PaymentMethods {
   @route("/{id}")
   @summary("Update payment method")
   updatePaymentMethod(
-    @path id: string,
+    @path id: uuid,
     @body request: UpdatePaymentMethodRequest
   ): PaymentMethodResponse | BadRequestError | NotFoundError | UnauthorizedError;
 
@@ -45,6 +45,6 @@ interface PaymentMethods {
   @route("/{id}")
   @summary("Delete payment method")
   deletePaymentMethod(
-    @path id: string
+    @path id: uuid
   ): void | ConflictError | NotFoundError | UnauthorizedError;
 }
