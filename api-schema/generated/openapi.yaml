@@ -1,0 +1,726 @@
+openapi: 3.0.0
+info:
+  title: SubsQ API
+  version: 0.0.0
+tags:
+  - name: Users
+  - name: Subscriptions
+  - name: PaymentMethods
+paths:
+  /api/v1/payment-methods:
+    get:
+      operationId: PaymentMethods_listPaymentMethods
+      summary: List payment methods
+      description: 支払い方法一覧を取得
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Models.PaymentMethodResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - PaymentMethods
+    post:
+      operationId: PaymentMethods_createPaymentMethod
+      summary: Create payment method
+      description: 支払い方法を作成
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.PaymentMethodResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - PaymentMethods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.CreatePaymentMethodRequest'
+  /api/v1/payment-methods/{id}:
+    get:
+      operationId: PaymentMethods_getPaymentMethod
+      summary: Get payment method by ID
+      description: 支払い方法詳細を取得
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Models.uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.PaymentMethodResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - PaymentMethods
+    patch:
+      operationId: PaymentMethods_updatePaymentMethod
+      summary: Update payment method
+      description: 支払い方法を更新
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Models.uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.PaymentMethodResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - PaymentMethods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.UpdatePaymentMethodRequest'
+    delete:
+      operationId: PaymentMethods_deletePaymentMethod
+      summary: Delete payment method
+      description: 支払い方法を削除
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Models.uuid'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.ConflictError'
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - PaymentMethods
+  /api/v1/subscriptions:
+    get:
+      operationId: Subscriptions_listSubscriptions
+      summary: List subscriptions
+      description: サブスクリプション一覧を取得
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.ListSubscriptionsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Subscriptions
+    post:
+      operationId: Subscriptions_createSubscription
+      summary: Create subscription
+      description: サブスクリプションを作成
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.SubscriptionResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.CreateSubscriptionRequest'
+  /api/v1/subscriptions/{id}:
+    get:
+      operationId: Subscriptions_getSubscription
+      summary: Get subscription by ID
+      description: サブスクリプション詳細を取得
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Models.uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.SubscriptionResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Subscriptions
+    patch:
+      operationId: Subscriptions_updateSubscription
+      summary: Update subscription
+      description: サブスクリプションを更新
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Models.uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.SubscriptionResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.UpdateSubscriptionRequest'
+    delete:
+      operationId: Subscriptions_deleteSubscription
+      summary: Delete subscription
+      description: サブスクリプションを削除
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Models.uuid'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Subscriptions
+  /api/v1/users/me:
+    get:
+      operationId: Users_getCurrentUser
+      summary: Get current user
+      description: 現在のユーザー情報を取得
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UserResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Users
+    delete:
+      operationId: Users_deleteCurrentUser
+      summary: Delete current user
+      description: 現在のユーザーを削除
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Users
+components:
+  schemas:
+    Models.BadRequestError:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          enum:
+            - Bad Request
+        status:
+          type: number
+          enum:
+            - 400
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
+      description: Bad Request エラー
+    Models.BillingCycle:
+      type: string
+      enum:
+        - monthly
+        - yearly
+      description: 請求サイクル
+    Models.ConflictError:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          enum:
+            - Conflict
+        status:
+          type: number
+          enum:
+            - 409
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
+      description: Conflict エラー
+    Models.CreatePaymentMethodRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: 支払い方法名
+      description: 支払い方法作成リクエスト
+    Models.CreateSubscriptionRequest:
+      type: object
+      required:
+        - serviceName
+        - amount
+        - billingCycle
+        - baseDate
+      properties:
+        serviceName:
+          type: string
+          minLength: 1
+          description: サービス名
+        amount:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 1000000
+          description: 金額（円）
+        billingCycle:
+          allOf:
+            - $ref: '#/components/schemas/Models.BillingCycle'
+          description: 請求サイクル
+        baseDate:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 31
+          description: 基準日（1〜31）
+        paymentMethodId:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: 支払い方法ID
+        memo:
+          type: string
+          description: メモ
+      description: サブスクリプション作成リクエスト
+    Models.ErrorResponse:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: 'エラータイプの URI（RFC 7807: URI参照）'
+        title:
+          type: string
+          description: エラーの短い説明
+        status:
+          type: integer
+          format: int32
+          description: HTTP ステータスコード
+        detail:
+          type: string
+          description: 'エラーの詳細説明（RFC 7807: SHOULD include、必須ではない）'
+        instance:
+          type: string
+          description: エラーが発生したリソースの URI（オプション）
+      description: RFC 7807 Problem Details エラーレスポンス
+    Models.ForbiddenError:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          enum:
+            - Forbidden
+        status:
+          type: number
+          enum:
+            - 403
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
+      description: Forbidden エラー
+    Models.ListSubscriptionsResponse:
+      type: object
+      required:
+        - subscriptions
+        - summary
+      properties:
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Models.SubscriptionResponse'
+          description: サブスクリプション一覧
+        summary:
+          allOf:
+            - $ref: '#/components/schemas/Models.SubscriptionListSummary'
+          description: サマリー情報
+      description: サブスクリプション一覧レスポンス
+    Models.NotFoundError:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          enum:
+            - Not Found
+        status:
+          type: number
+          enum:
+            - 404
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
+      description: Not Found エラー
+    Models.PaymentMethodResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - name
+        - usageCount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: 支払い方法ID
+        userId:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: ユーザーID
+        name:
+          type: string
+          description: 支払い方法名
+        usageCount:
+          type: integer
+          format: int32
+          description: 使用中のサブスクリプション数
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+      description: 支払い方法レスポンス
+    Models.PaymentMethodSummary:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: 支払い方法ID
+        name:
+          type: string
+          description: 支払い方法名
+      description: 支払い方法の簡易情報（サブスクに埋め込まれる）
+    Models.SubscriptionListSummary:
+      type: object
+      required:
+        - monthlyTotal
+        - yearlyTotal
+        - count
+      properties:
+        monthlyTotal:
+          type: integer
+          format: int64
+          description: 月額合計（円）
+        yearlyTotal:
+          type: integer
+          format: int64
+          description: 年額合計（円）
+        count:
+          type: integer
+          format: int32
+          description: 件数
+      description: サブスクリプション一覧レスポンスのサマリー
+    Models.SubscriptionResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - serviceName
+        - amount
+        - billingCycle
+        - baseDate
+        - nextBillingDate
+        - monthlyAmount
+        - yearlyAmount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: サブスクリプションID
+        userId:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: ユーザーID
+        serviceName:
+          type: string
+          description: サービス名
+        amount:
+          type: integer
+          format: int64
+          description: 金額（円）
+        billingCycle:
+          allOf:
+            - $ref: '#/components/schemas/Models.BillingCycle'
+          description: 請求サイクル
+        baseDate:
+          type: integer
+          format: int32
+          description: 基準日（1〜31、月次の請求日）
+        nextBillingDate:
+          type: string
+          format: date
+          description: 次回請求日（YYYY-MM-DD、時刻を持たない日付のみの値）
+        paymentMethodId:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: 支払い方法ID
+        paymentMethod:
+          allOf:
+            - $ref: '#/components/schemas/Models.PaymentMethodSummary'
+          description: 支払い方法情報
+        memo:
+          type: string
+          description: メモ
+        monthlyAmount:
+          type: integer
+          format: int64
+          description: 月額換算金額（円）
+        yearlyAmount:
+          type: integer
+          format: int64
+          description: 年額換算金額（円）
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+      description: サブスクリプションレスポンス
+    Models.UnauthorizedError:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          enum:
+            - Unauthorized
+        status:
+          type: number
+          enum:
+            - 401
+      allOf:
+        - $ref: '#/components/schemas/Models.ErrorResponse'
+      description: Unauthorized エラー
+    Models.UpdatePaymentMethodRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: 支払い方法名
+      description: 支払い方法更新リクエスト
+    Models.UpdateSubscriptionRequest:
+      type: object
+      properties:
+        serviceName:
+          type: string
+          minLength: 1
+          description: サービス名
+        amount:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 1000000
+          description: 金額（円）
+        billingCycle:
+          allOf:
+            - $ref: '#/components/schemas/Models.BillingCycle'
+          description: 請求サイクル
+        baseDate:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 31
+          description: 基準日（1〜31）
+        paymentMethodId:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: 支払い方法ID
+        memo:
+          type: string
+          description: メモ
+      description: サブスクリプション更新リクエスト
+    Models.UserResponse:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - provider
+        - providerAccountId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: ユーザーID
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        name:
+          type: string
+          description: 表示名
+        provider:
+          type: string
+          description: 'OAuthプロバイダー（例: google）'
+        providerAccountId:
+          type: string
+          description: プロバイダー側のアカウントID
+        thumbnail:
+          type: string
+          format: uri
+          description: プロフィール画像URL
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+      description: ユーザー情報レスポンス
+    Models.uuid:
+      type: string
+      format: uuid
+      description: UUID形式の文字列（再利用可能な共通スカラー）
+servers:
+  - url: https://api.subsq-app.com
+    description: Production server
+    variables: {}
+  - url: http://localhost:8080
+    description: Development server
+    variables: {}

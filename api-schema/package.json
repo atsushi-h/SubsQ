@@ -1,0 +1,16 @@
+{
+  "name": "api-schema",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "generate": "pnpm run generate:openapi && pnpm run generate:ts",
+    "generate:openapi": "./scripts/generate-openapi.sh",
+    "generate:ts": "./scripts/generate-ts.sh"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.29.0",
+    "@typespec/compiler": "1.9.0",
+    "@typespec/http": "1.9.0",
+    "@typespec/openapi3": "1.9.0"
+  }
+}
