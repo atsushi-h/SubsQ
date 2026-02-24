@@ -14,7 +14,7 @@ enum BillingCycle {
 /** 支払い方法の簡易情報（サブスクに埋め込まれる） */
 model PaymentMethodSummary {
   /** 支払い方法ID */
-  id: string;
+  id: uuid;
 
   /** 支払い方法名 */
   name: string;
@@ -23,10 +23,10 @@ model PaymentMethodSummary {
 /** サブスクリプションレスポンス */
 model SubscriptionResponse {
   /** サブスクリプションID */
-  id: string;
+  id: uuid;
 
   /** ユーザーID */
-  userId: string;
+  userId: uuid;
 
   /** サービス名 */
   serviceName: string;
@@ -44,7 +44,7 @@ model SubscriptionResponse {
   nextBillingDate: plainDate;
 
   /** 支払い方法ID */
-  paymentMethodId?: string;
+  paymentMethodId?: uuid;
 
   /** 支払い方法情報 */
   paymentMethod?: PaymentMethodSummary;
@@ -89,19 +89,24 @@ model ListSubscriptionsResponse {
 /** サブスクリプション作成リクエスト */
 model CreateSubscriptionRequest {
   /** サービス名 */
+  @minLength(1)
   serviceName: string;
 
   /** 金額（円） */
+  @minValue(0)
+  @maxValue(1000000)
   amount: int64;
 
   /** 請求サイクル */
   billingCycle: BillingCycle;
 
   /** 基準日（1〜31） */
+  @minValue(1)
+  @maxValue(31)
   baseDate: int32;
 
   /** 支払い方法ID */
-  paymentMethodId?: string;
+  paymentMethodId?: uuid;
 
   /** メモ */
   memo?: string;
@@ -110,19 +115,24 @@ model CreateSubscriptionRequest {
 /** サブスクリプション更新リクエスト */
 model UpdateSubscriptionRequest {
   /** サービス名 */
+  @minLength(1)
   serviceName?: string;
 
   /** 金額（円） */
+  @minValue(0)
+  @maxValue(1000000)
   amount?: int64;
 
   /** 請求サイクル */
   billingCycle?: BillingCycle;
 
   /** 基準日（1〜31） */
+  @minValue(1)
+  @maxValue(31)
   baseDate?: int32;
 
   /** 支払い方法ID */
-  paymentMethodId?: string;
+  paymentMethodId?: uuid;
 
   /** メモ */
   memo?: string;

@@ -53,3 +53,7 @@ model ConflictError extends ErrorResponse {
   title: "Conflict";
   status: 409;
 }
+
+/** UUID形式の文字列（再利用可能な共通スカラー） */
+@format("uuid")
+scalar uuid extends string;

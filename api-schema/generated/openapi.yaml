@@ -368,6 +368,7 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           description: 支払い方法名
       description: 支払い方法作成リクエスト
     Models.CreateSubscriptionRequest:
@@ -380,10 +381,13 @@ components:
       properties:
         serviceName:
           type: string
+          minLength: 1
           description: サービス名
         amount:
           type: integer
           format: int64
+          minimum: 0
+          maximum: 1000000
           description: 金額（円）
         billingCycle:
           allOf:
@@ -392,9 +396,12 @@ components:
         baseDate:
           type: integer
           format: int32
+          minimum: 1
+          maximum: 31
           description: 基準日（1〜31）
         paymentMethodId:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: 支払い方法ID
         memo:
           type: string
@@ -406,7 +413,8 @@ components:
         - id
       properties:
         id:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: 削除されたユーザーID
       description: ユーザー削除レスポンス
     Models.ErrorResponse:
@@ -495,10 +503,12 @@ components:
         - updatedAt
       properties:
         id:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: 支払い方法ID
         userId:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: ユーザーID
         name:
           type: string
@@ -523,7 +533,8 @@ components:
         - name
       properties:
         id:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: 支払い方法ID
         name:
           type: string
@@ -565,10 +576,12 @@ components:
         - updatedAt
       properties:
         id:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: サブスクリプションID
         userId:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: ユーザーID
         serviceName:
           type: string
@@ -590,7 +603,8 @@ components:
           format: date
           description: 次回請求日（YYYY-MM-DD、時刻を持たない日付のみの値）
         paymentMethodId:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: 支払い方法ID
         paymentMethod:
           allOf:
@@ -640,6 +654,7 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           description: 支払い方法名
       description: 支払い方法更新リクエスト
     Models.UpdateSubscriptionRequest:
@@ -647,10 +662,13 @@ components:
       properties:
         serviceName:
           type: string
+          minLength: 1
           description: サービス名
         amount:
           type: integer
           format: int64
+          minimum: 0
+          maximum: 1000000
           description: 金額（円）
         billingCycle:
           allOf:
@@ -659,9 +677,12 @@ components:
         baseDate:
           type: integer
           format: int32
+          minimum: 1
+          maximum: 31
           description: 基準日（1〜31）
         paymentMethodId:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: 支払い方法ID
         memo:
           type: string
@@ -679,7 +700,8 @@ components:
         - updatedAt
       properties:
         id:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
           description: ユーザーID
         email:
           type: string
@@ -705,6 +727,10 @@ components:
           format: date-time
           description: 更新日時
       description: ユーザー情報レスポンス
+    Models.uuid:
+      type: string
+      format: uuid
+      description: UUID形式の文字列（再利用可能な共通スカラー）
 servers:
   - url: https://api.subsq-app.com
     description: Production server

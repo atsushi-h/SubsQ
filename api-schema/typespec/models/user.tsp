@@ -8,7 +8,7 @@ namespace SubsQ.Models;
 /** ユーザー情報レスポンス */
 model UserResponse {
   /** ユーザーID */
-  id: string;
+  id: uuid;
 
   /** メールアドレス */
   email: string;
@@ -35,5 +35,5 @@ model UserResponse {
 /** ユーザー削除レスポンス */
 model DeleteUserResponse {
   /** 削除されたユーザーID */
-  id: string;
+  id: uuid;
 }
