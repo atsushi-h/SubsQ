@@ -36,8 +36,8 @@ paths:
       description: 支払い方法を作成
       parameters: []
       responses:
-        '200':
-          description: The request has succeeded.
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
           content:
             application/json:
               schema:
@@ -171,8 +171,8 @@ paths:
       description: サブスクリプションを作成
       parameters: []
       responses:
-        '200':
-          description: The request has succeeded.
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
           content:
             application/json:
               schema:

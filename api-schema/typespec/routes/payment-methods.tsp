@@ -29,7 +29,7 @@ interface PaymentMethods {
   @summary("Create payment method")
   createPaymentMethod(
     @body request: CreatePaymentMethodRequest
-  ): PaymentMethodResponse | BadRequestError | UnauthorizedError;
+  ): CreatedResponse & PaymentMethodResponse | BadRequestError | UnauthorizedError;
 
   /** 支払い方法を更新 */
   @patch

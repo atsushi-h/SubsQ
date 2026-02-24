@@ -29,7 +29,7 @@ interface Subscriptions {
   @summary("Create subscription")
   createSubscription(
     @body request: CreateSubscriptionRequest
-  ): SubscriptionResponse | BadRequestError | UnauthorizedError;
+  ): CreatedResponse & SubscriptionResponse | BadRequestError | UnauthorizedError;
 
   /** サブスクリプションを更新 */
   @patch
