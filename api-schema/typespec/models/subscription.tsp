@@ -40,8 +40,8 @@ model SubscriptionResponse {
   /** 基準日（1〜31、月次の請求日） */
   baseDate: int32;
 
-  /** 次回請求日（ISO 8601形式） */
-  nextBillingDate: string;
+  /** 次回請求日（YYYY-MM-DD、時刻を持たない日付のみの値） */
+  nextBillingDate: plainDate;
 
   /** 支払い方法ID */
   paymentMethodId?: string;
