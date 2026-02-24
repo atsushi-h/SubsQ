@@ -32,7 +32,7 @@ interface Subscriptions {
   ): SubscriptionResponse | BadRequestError | UnauthorizedError;
 
   /** サブスクリプションを更新 */
-  @put
+  @patch
   @route("/{id}")
   @summary("Update subscription")
   updateSubscription(

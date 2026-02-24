@@ -86,7 +86,7 @@ paths:
                   - $ref: '#/components/schemas/Models.UnauthorizedError'
       tags:
         - PaymentMethods
-    put:
+    patch:
       operationId: PaymentMethods_updatePaymentMethod
       summary: Update payment method
       description: 支払い方法を更新
@@ -221,7 +221,7 @@ paths:
                   - $ref: '#/components/schemas/Models.UnauthorizedError'
       tags:
         - Subscriptions
-    put:
+    patch:
       operationId: Subscriptions_updateSubscription
       summary: Update subscription
       description: サブスクリプションを更新

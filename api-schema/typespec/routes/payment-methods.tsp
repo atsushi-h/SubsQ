@@ -32,7 +32,7 @@ interface PaymentMethods {
   ): PaymentMethodResponse | BadRequestError | UnauthorizedError;
 
   /** 支払い方法を更新 */
-  @put
+  @patch
   @route("/{id}")
   @summary("Update payment method")
   updatePaymentMethod(
