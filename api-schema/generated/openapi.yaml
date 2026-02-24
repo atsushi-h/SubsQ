@@ -409,11 +409,11 @@ components:
         - type
         - title
         - status
-        - detail
       properties:
         type:
           type: string
-          description: エラータイプの URI
+          format: uri
+          description: 'エラータイプの URI（RFC 7807: URI参照）'
         title:
           type: string
           description: エラーの短い説明
@@ -423,7 +423,7 @@ components:
           description: HTTP ステータスコード
         detail:
           type: string
-          description: エラーの詳細説明
+          description: 'エラーの詳細説明（RFC 7807: SHOULD include、必須ではない）'
         instance:
           type: string
           description: エラーが発生したリソースの URI（オプション）

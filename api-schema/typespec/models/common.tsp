@@ -8,7 +8,8 @@ namespace SubsQ.Models;
 /** RFC 7807 Problem Details エラーレスポンス */
 @error
 model ErrorResponse {
-  /** エラータイプの URI */
+  /** エラータイプの URI（RFC 7807: URI参照） */
+  @format("uri")
   type: string;
 
   /** エラーの短い説明 */
@@ -17,8 +18,8 @@ model ErrorResponse {
   /** HTTP ステータスコード */
   status: int32;
 
-  /** エラーの詳細説明 */
-  detail: string;
+  /** エラーの詳細説明（RFC 7807: SHOULD include、必須ではない） */
+  detail?: string;
 
   /** エラーが発生したリソースの URI（オプション） */
   instance?: string;
