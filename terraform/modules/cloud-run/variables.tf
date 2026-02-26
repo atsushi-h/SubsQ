@@ -88,3 +88,15 @@ variable "custom_domain" {
   type        = string
   default     = null
 }
+
+variable "health_check_path" {
+  description = "ヘルスチェックのパス"
+  type        = string
+  default     = "/api/health"
+}
+
+variable "health_check_port" {
+  description = "ヘルスチェックのポート番号"
+  type        = number
+  default     = 3000
+}

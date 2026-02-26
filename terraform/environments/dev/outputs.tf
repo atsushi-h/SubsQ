@@ -48,13 +48,29 @@ output "cloudflare_dns_name" {
 # サマリー
 # ===========================
 
+# ===========================
+# バックエンド Outputs
+# ===========================
+
+output "cloud_run_backend_service_url" {
+  description = "GoバックエンドCloud RunサービスのURL"
+  value       = module.cloud_run_backend.service_url
+}
+
+output "artifact_registry_backend_repository_url" {
+  description = "バックエンドArtifact RegistryリポジトリのURL"
+  value       = module.artifact_registry_backend.repository_url
+}
+
 output "deployment_summary" {
   description = "デプロイメントサマリー"
   value = {
-    environment       = "dev"
-    cloud_run_url     = module.cloud_run.service_url
-    public_url        = module.cloudflare.cloudflare_url
-    artifact_registry = module.artifact_registry.repository_url
-    region            = var.gcp_region
+    environment               = "dev"
+    cloud_run_url             = module.cloud_run.service_url
+    public_url                = module.cloudflare.cloudflare_url
+    artifact_registry         = module.artifact_registry.repository_url
+    cloud_run_backend_url     = module.cloud_run_backend.service_url
+    artifact_registry_backend = module.artifact_registry_backend.repository_url
+    region                    = var.gcp_region
   }
 }

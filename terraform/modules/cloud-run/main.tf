@@ -66,8 +66,8 @@ resource "google_cloud_run_v2_service" "app" {
         failure_threshold     = 3
 
         http_get {
-          path = "/api/health"
-          port = 3000
+          path = var.health_check_path
+          port = var.health_check_port
         }
       }
 
@@ -78,13 +78,13 @@ resource "google_cloud_run_v2_service" "app" {
         failure_threshold     = 3
 
         http_get {
-          path = "/api/health"
-          port = 3000
+          path = var.health_check_path
+          port = var.health_check_port
         }
       }
 
       ports {
-        container_port = 3000
+        container_port = var.health_check_port
       }
     }
 

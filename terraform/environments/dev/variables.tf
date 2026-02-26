@@ -118,3 +118,19 @@ variable "next_public_app_url" {
   description = "Next.jsパブリックアプリケーションURL (例: https://dev.subsq.example.com)"
   type        = string
 }
+
+# ===========================
+# バックエンド設定
+# ===========================
+
+variable "backend_cloud_run_image" {
+  description = "Goバックエンド用コンテナイメージ（初回はダミー）"
+  type        = string
+  default     = "us-docker.pkg.dev/cloudrun/container/hello"
+}
+
+variable "backend_database_url" {
+  description = "GoバックエンドのPostgreSQL接続URL"
+  type        = string
+  sensitive   = true
+}
