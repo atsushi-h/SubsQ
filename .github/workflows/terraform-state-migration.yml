@@ -170,7 +170,7 @@ jobs:
           terraform import \
             -var="cloudflare_access_allowed_emails=${ALLOWED_EMAILS}" \
             'module.cloudflare.cloudflare_zero_trust_access_application.app[0]' \
-            "${ACCOUNT_ID}/${APP_ID}"
+            "accounts/${ACCOUNT_ID}/${APP_ID}"
 
       - name: Import Zero Trust Access Policy
         if: steps.cf_ids.outputs.app_id != '' && steps.cf_ids.outputs.policy_id != ''
@@ -183,7 +183,7 @@ jobs:
           terraform import \
             -var="cloudflare_access_allowed_emails=${ALLOWED_EMAILS}" \
             'module.cloudflare.cloudflare_zero_trust_access_policy.email_policy[0]' \
-            "${ACCOUNT_ID}/${APP_ID}/${POLICY_ID}"
+            "accounts/${ACCOUNT_ID}/${APP_ID}/${POLICY_ID}"
 
       # -------------------------------------------------------
       # Step 4: planで差分ゼロを確認
