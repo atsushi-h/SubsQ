@@ -119,6 +119,15 @@ variable "next_public_contact_form_url" {
 }
 
 # ===========================
+# バックエンド設定
+# ===========================
+
+variable "backend_cloud_run_image" {
+  description = "Goバックエンド用コンテナイメージ（形式: region-docker.pkg.dev/project/repo/image:tag）"
+  type        = string
+}
+
+# ===========================
 # 予算アラート設定
 # ===========================
 
