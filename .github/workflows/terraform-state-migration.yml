@@ -158,7 +158,7 @@ jobs:
           terraform import \
             -var="cloudflare_access_allowed_emails=${ALLOWED_EMAILS}" \
             'module.cloudflare.cloudflare_ruleset.cache_rules[0]' \
-            "${ZONE_ID}/${RULESET_ID}"
+            "zones/${ZONE_ID}/${RULESET_ID}"
 
       - name: Import Zero Trust Access Application
         if: steps.cf_ids.outputs.app_id != ''
