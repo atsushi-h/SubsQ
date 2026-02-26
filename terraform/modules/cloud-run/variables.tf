@@ -96,7 +96,7 @@ variable "health_check_path" {
 }
 
 variable "health_check_port" {
-  description = "ヘルスチェックのポート番号"
+  description = "ヘルスチェックのポート番号（コンテナ公開ポート container_port としても兼用）"
   type        = number
   default     = 3000
 }

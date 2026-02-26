@@ -123,9 +123,8 @@ variable "next_public_contact_form_url" {
 # ===========================
 
 variable "backend_cloud_run_image" {
-  description = "Goバックエンド用コンテナイメージ（初回はダミー）"
+  description = "Goバックエンド用コンテナイメージ（形式: region-docker.pkg.dev/project/repo/image:tag）"
   type        = string
-  default     = "us-docker.pkg.dev/cloudrun/container/hello"
 }
 
 # ===========================
