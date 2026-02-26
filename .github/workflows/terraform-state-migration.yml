@@ -103,11 +103,23 @@ jobs:
       # -------------------------------------------------------
       - name: Remove Old Resources from State
         run: |
+          # 旧リソース型を削除
           terraform state rm 'module.cloudflare.cloudflare_record.app' || echo "not in state, skipping"
           terraform state rm 'module.cloudflare.cloudflare_zone_settings_override.app' || echo "not in state, skipping"
-          terraform state rm 'module.cloudflare.cloudflare_ruleset.cache_rules[0]' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_ruleset.cache_rules' || \
+            terraform state rm 'module.cloudflare.cloudflare_ruleset.cache_rules[0]' || \
+            echo "not in state, skipping"
           terraform state rm 'module.cloudflare.cloudflare_zero_trust_access_policy.email_policy[0]' || echo "not in state, skipping"
           terraform state rm 'module.cloudflare.cloudflare_zero_trust_access_application.app[0]' || echo "not in state, skipping"
+          # 前回の部分実行で新リソース型がすでにimportされている場合も削除（冪等性確保）
+          terraform state rm 'module.cloudflare.cloudflare_dns_record.app' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zone_setting.ssl' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zone_setting.always_use_https' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zone_setting.min_tls_version' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zone_setting.security_header' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zone_setting.brotli' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zero_trust_access_application.app[0]' || echo "not in state, skipping"
+          terraform state rm 'module.cloudflare.cloudflare_zero_trust_access_policy.email_policy[0]' || echo "not in state, skipping"
 
       # -------------------------------------------------------
       # Step 3: 新リソース型としてimport
