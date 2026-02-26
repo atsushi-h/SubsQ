@@ -128,9 +128,3 @@ variable "backend_cloud_run_image" {
   type        = string
   default     = "us-docker.pkg.dev/cloudrun/container/hello"
 }
-
-variable "backend_database_url" {
-  description = "GoバックエンドのPostgreSQL接続URL"
-  type        = string
-  sensitive   = true
-}

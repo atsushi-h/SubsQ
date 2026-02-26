@@ -105,9 +105,9 @@ module "cloud_run_backend" {
   health_check_path = "/health"
   health_check_port = 8080
 
-  # 環境変数（最低限）
+  # 環境変数（フロントエンドと同一DBを使用）
   env_vars = {
-    DATABASE_URL = var.backend_database_url
+    DATABASE_URL = var.database_url
   }
 }
 
