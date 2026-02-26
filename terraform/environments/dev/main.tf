@@ -97,8 +97,8 @@ module "cloud_run_backend" {
   min_instances = 0 # コスト削減
   max_instances = 10
 
-  cpu_always_allocated  = false
-  request_timeout       = 300
+  cpu_always_allocated = false
+  request_timeout      = 300
   # ブラウザからの直接アクセスを許可（Cloud Runレベルの認証は無効）
   # 認証はGoアプリの認証ミドルウェアで担保する
   allow_unauthenticated = true
