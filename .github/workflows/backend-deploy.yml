@@ -1,0 +1,200 @@
+name: Backend Deploy
+run-name: Deploy to ${{ inputs.environment }}${{ inputs.git_tag && format(' ({0})', inputs.git_tag) || '' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prd
+      git_tag:
+        description: 'Git tag to deploy (optional, e.g., backend-v1.1.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: asia-northeast1
+  SERVICE_NAME: subsq-backend-${{ inputs.environment }}
+  REPOSITORY: subsq-backend-${{ inputs.environment }}
+  IMAGE_NAME: app
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Validate git tag
+        if: inputs.git_tag != ''
+        env:
+          GIT_TAG: ${{ inputs.git_tag }}
+        run: |
+          if ! echo "$GIT_TAG" | grep -qE '^backend-v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid git_tag format: '$GIT_TAG'"
+            echo "::error::Expected format: backend-v{major}.{minor}.{patch}"
+            echo "::error::Example: backend-v1.2.3"
+            exit 1
+          fi
+          echo "::notice::Git tag format validated: $GIT_TAG"
+
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ inputs.git_tag || github.ref }}
+
+      - name: Set image tag
+        id: image_tag
+        working-directory: backend
+        run: |
+          # イメージタグの生成
+          # 形式: v{version.txtのバージョン}-{コミットハッシュの最初の7文字}
+          # 例: v0.1.0-abc1234
+          #   - v0.1.0: version.txtから取得
+          #   - abc1234: チェックアウト後のHEADのコミットハッシュ（git rev-parse HEAD）
+          #             - git_tag未指定時: 現在のブランチのコミット
+          #             - git_tag指定時: 指定されたタグのコミット
+          VERSION=$(cat version.txt)
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+          TAG="v${VERSION}-${SHORT_SHA}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "::notice::Image tag: $TAG"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.TERRAFORM_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3.0.1
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker "$REGION-docker.pkg.dev"
+
+      - name: Build Docker image
+        working-directory: backend
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+        run: |
+          docker build \
+            -t "$REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" \
+            .
+
+      - name: Push Docker image to Artifact Registry
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+        run: |
+          docker push "$REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG"
+
+      - name: Check if Cloud Run service exists
+        run: |
+          if ! gcloud run services describe "$SERVICE_NAME" \
+            --region="$REGION" \
+            --format='value(metadata.name)' 2>/dev/null; then
+            echo "::error::Cloud Run service '$SERVICE_NAME' does not exist."
+            echo "::error::Please create the service first by running 'terraform apply' with the terraform.yml workflow."
+            exit 1
+          fi
+          echo "::notice::Cloud Run service exists. Proceeding with deployment."
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          gcloud run deploy "$SERVICE_NAME" \
+            --image="$REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" \
+            --region="$REGION" \
+            --set-env-vars="DATABASE_URL=$DATABASE_URL,PORT=8080"
+
+          # Get service URL
+          SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
+            --region="$REGION" \
+            --format='value(status.url)')
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+      - name: Health Check
+        id: health_check
+        run: |
+          echo "Waiting for service to be ready..."
+          sleep 10
+
+          MAX_RETRIES=10
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Health check attempt $((RETRY_COUNT + 1))/$MAX_RETRIES"
+
+            if curl -f -s "$SERVICE_URL/health" > /dev/null; then
+              echo "✅ Health check passed!"
+              echo "status=success" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Health check failed, retrying in 10 seconds..."
+              sleep 10
+            fi
+          done
+
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          echo "status=failure" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Deployment Summary
+        if: success()
+        env:
+          GIT_TAG: ${{ inputs.git_tag }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$GIT_TAG" ]; then
+            echo "**Git Tag:** $GIT_TAG" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "**Image Tag:** $IMAGE_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "**Service URL:** $SERVICE_URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Deployment Details" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service Name:** $SERVICE_NAME" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region:** $REGION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** $REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+
+      - name: Report Success
+        if: success()
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+        run: |
+          echo "::notice::Deployment to ${{ inputs.environment }} environment completed successfully"
+          echo "::notice::Service URL: $SERVICE_URL"
+          echo "::notice::Image: $REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG"
+
+      - name: Report Failure
+        if: failure()
+        run: |
+          echo "::error::Deployment to ${{ inputs.environment }} environment failed"
