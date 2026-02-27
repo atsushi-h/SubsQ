@@ -1,0 +1,4 @@
+Dockerfile
+.dockerignore
+.mise.toml
+*.md
