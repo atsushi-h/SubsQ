@@ -118,8 +118,6 @@ jobs:
           terraform state rm 'module.cloudflare.cloudflare_zone_setting.min_tls_version' || echo "not in state, skipping"
           terraform state rm 'module.cloudflare.cloudflare_zone_setting.security_header' || echo "not in state, skipping"
           terraform state rm 'module.cloudflare.cloudflare_zone_setting.brotli' || echo "not in state, skipping"
-          terraform state rm 'module.cloudflare.cloudflare_zero_trust_access_application.app[0]' || echo "not in state, skipping"
-          terraform state rm 'module.cloudflare.cloudflare_zero_trust_access_policy.email_policy[0]' || echo "not in state, skipping"
 
       # -------------------------------------------------------
       # Step 3: 新リソース型としてimport
@@ -183,7 +181,7 @@ jobs:
           terraform import \
             -var="cloudflare_access_allowed_emails=${ALLOWED_EMAILS}" \
             'module.cloudflare.cloudflare_zero_trust_access_policy.email_policy[0]' \
-            "accounts/${ACCOUNT_ID}/${APP_ID}/${POLICY_ID}"
+            "accounts/${ACCOUNT_ID}/${POLICY_ID}"
 
       # -------------------------------------------------------
       # Step 4: planで差分ゼロを確認
