@@ -54,6 +54,14 @@ resource "cloudflare_zone_setting" "security_header" {
       nosniff            = true
     }
   })
+
+  # provider v5.17.0 のバグ回避: stateのvalue形式（v4ネイティブ型）と
+  # HCLのjsonencodeが異なるため更新時にpanicする。
+  # 設定値はCloudflare上で正しく適用済みのため変更を無視する。
+  # https://github.com/cloudflare/terraform-provider-cloudflare/issues
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
 resource "cloudflare_zone_setting" "brotli" {
