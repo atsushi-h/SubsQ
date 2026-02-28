@@ -22,7 +22,8 @@
     "backend": {
       "release-type": "go",
       "component": "backend",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": ["version.txt"]
     },
     "api-schema": {
       "release-type": "node",
