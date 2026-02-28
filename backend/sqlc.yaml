@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/adapter/gateway/db/sqlc/queries"
+    schema: "migrations"
+    gen:
+      go:
+        package: "sqlcdb"
+        out: "internal/adapter/gateway/db/sqlc"
+        emit_json_tags: true
+        emit_pointers_for_null_types: true
+        sql_package: "pgx/v5"
