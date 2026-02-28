@@ -93,12 +93,17 @@ func (a *AuthInteractor) HandleCallback(
 		return "", nil, fmt.Errorf("failed to parse user info: %w", err)
 	}
 
+	var thumbnail *string
+	if googleUser.Picture != "" {
+		thumbnail = &googleUser.Picture
+	}
+
 	u := &user.User{
 		Email:             user.Email(googleUser.Email),
 		Name:              googleUser.Name,
 		Provider:          "google",
 		ProviderAccountID: googleUser.ID,
-		Thumbnail:         &googleUser.Picture,
+		Thumbnail:         thumbnail,
 	}
 
 	savedUser, err := a.userRepo.UpsertUser(ctx, u)
