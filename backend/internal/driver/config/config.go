@@ -59,7 +59,7 @@ func Load() (*Config, error) {
 	if portStr := os.Getenv("API_PORT"); portStr != "" {
 		parsedPort, err := strconv.Atoi(portStr)
 		if err != nil {
-			return nil, errors.New("API_PORT must be a valid integ")
+			return nil, errors.New("API_PORT must be a valid integer")
 		}
 		port = parsedPort
 	}
@@ -80,7 +80,7 @@ func Load() (*Config, error) {
 
 func parseAllowedOrigins(fromEnv string) []string {
 	if strings.TrimSpace(fromEnv) == "" {
-		return []string{"http://localhost:3000", "http://127.0.0.1:300"}
+		return []string{"http://localhost:3000", "http://127.0.0.1:3000"}
 	}
 
 	parts := strings.Split(fromEnv, ",")
@@ -92,7 +92,7 @@ func parseAllowedOrigins(fromEnv string) []string {
 	}
 
 	if len(origins) == 0 {
-		return []string{"http://localhost:3000", "http://127.0.0.1:300"}
+		return []string{"http://localhost:3000", "http://127.0.0.1:3000"}
 	}
 
 	return origins
