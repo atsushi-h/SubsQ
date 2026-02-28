@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.3.0...frontend-v1.4.0) (2026-02-28)
+
+
+### Features
+
+* PWAモバイル体験向上のためPull to Refreshを実装 ([#138](https://github.com/atsushi-h/SubsQ/issues/138)) ([f32e6a7](https://github.com/atsushi-h/SubsQ/commit/f32e6a7ff667d6aae67262a82b88906ff2f34d5d))
+
 ## [1.3.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.2.0...frontend-v1.3.0) (2026-02-21)
 
 
