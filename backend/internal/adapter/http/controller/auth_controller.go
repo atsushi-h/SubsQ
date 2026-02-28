@@ -79,7 +79,10 @@ func (c *AuthController) GoogleCallback(ctx echo.Context) error {
 
 // GET /api/v1/auth/me
 func (c *AuthController) Me(ctx echo.Context) error {
-	userID := ctx.Get(middleware.UserIDKey).(string)
+	userID, ok := ctx.Get(middleware.UserIDKey).(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
 
 	u, err := c.authInteractor.GetCurrentUser(ctx.Request().Context(), userID)
 	if err != nil {
@@ -97,10 +100,13 @@ func (c *AuthController) Me(ctx echo.Context) error {
 // POST /api/v1/auth/logout
 func (c *AuthController) Logout(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
-		Name:   "subsq_token",
-		Value:  "",
-		MaxAge: -1,
-		Path:   "/",
+		Name:     "subsq_token",
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
 	})
 
 	return ctx.JSON(http.StatusOK, map[string]string{"message": "logged out"})
