@@ -10,3 +10,6 @@
 
 # Serena MCP
 .serena/
+
+# Backend plan docs (local only)
+backend/docs/plan/
