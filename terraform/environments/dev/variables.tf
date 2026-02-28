@@ -119,6 +119,11 @@ variable "next_public_app_url" {
   type        = string
 }
 
+variable "next_public_contact_form_url" {
+  description = "お問い合わせフォームURL (Google Forms等)"
+  type        = string
+}
+
 # ===========================
 # バックエンド設定
 # ===========================
