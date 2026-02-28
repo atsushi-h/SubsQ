@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -77,6 +78,10 @@ func (a *AuthInteractor) HandleCallback(
 		return "", nil, fmt.Errorf("failed to get user info: %w", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", nil, fmt.Errorf("userinfo request failed with status: %d", resp.StatusCode)
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
