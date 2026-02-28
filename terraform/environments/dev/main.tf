@@ -76,7 +76,7 @@ module "artifact_registry_backend" {
   cleanup_keep_count = 10
 }
 
-# Goバックエンド用Cloud Run（api.dev.subsq-app.com）
+# Goバックエンド用Cloud Run（api-dev.subsq-app.com）
 module "cloud_run_backend" {
   source = "../../modules/cloud-run"
 
@@ -85,9 +85,9 @@ module "cloud_run_backend" {
   image        = var.backend_cloud_run_image
   environment  = "dev"
 
-  # サブドメイン: api.dev.subsq-app.com
+  # サブドメイン: api-dev.subsq-app.com
   project_id    = var.gcp_project_id
-  custom_domain = "api.dev.${var.cloudflare_domain}"
+  custom_domain = "api-dev.${var.cloudflare_domain}"
 
   service_account_email = var.cloud_run_service_account_email
 
@@ -113,10 +113,10 @@ module "cloud_run_backend" {
   }
 }
 
-# Goバックエンド用のCloudflare DNSレコード（api.dev.subsq-app.com）
+# Goバックエンド用のCloudflare DNSレコード（api-dev.subsq-app.com）
 resource "cloudflare_dns_record" "backend" {
   zone_id = var.cloudflare_zone_id
-  name    = "api.dev"
+  name    = "api-dev"
   type    = "CNAME"
   content = "ghs.googlehosted.com"
   proxied = true
