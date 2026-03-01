@@ -152,6 +152,49 @@ func (r *paymentMethodRepository) CountSubscriptionsByPaymentMethodID(ctx contex
 	return r.queries.CountSubscriptionsByPaymentMethodID(ctx, id)
 }
 
+func (r *paymentMethodRepository) FindByIDs(ctx context.Context, ids []string, userID string) ([]*domain.PaymentMethod, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	uuids := make([]pgtype.UUID, len(ids))
+	for i, id := range ids {
+		uuids[i], err = parseUUID(id)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	rows, err := r.queries.FindPaymentMethodsByIDs(ctx, &generated.FindPaymentMethodsByIDsParams{
+		Column1: uuids,
+		UserID:  uid,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*domain.PaymentMethod, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, toPaymentMethodDomain(row))
+	}
+
+	return result, nil
+}
+
+func (r *paymentMethodRepository) CountSubscriptionsByPaymentMethodIDs(ctx context.Context, ids []string) (int64, error) {
+	uuids := make([]pgtype.UUID, len(ids))
+	for i, id := range ids {
+		var err error
+		uuids[i], err = parseUUID(id)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return r.queries.CountSubscriptionsByPaymentMethodIDs(ctx, uuids)
+}
+
 func parseUUID(s string) (pgtype.UUID, error) {
 	var id pgtype.UUID
 	if err := id.Scan(s); err != nil {

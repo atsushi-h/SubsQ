@@ -23,6 +23,18 @@ func (q *Queries) CountSubscriptionsByPaymentMethodID(ctx context.Context, payme
 	return count, err
 }
 
+const countSubscriptionsByPaymentMethodIDs = `-- name: CountSubscriptionsByPaymentMethodIDs :one
+SELECT COUNT(*) FROM subscriptions
+WHERE payment_method_id = ANY($1::uuid[])
+`
+
+func (q *Queries) CountSubscriptionsByPaymentMethodIDs(ctx context.Context, dollar_1 []pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countSubscriptionsByPaymentMethodIDs, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPaymentMethod = `-- name: CreatePaymentMethod :one
 INSERT INTO payment_methods (user_id, name, created_at, updated_at)
 VALUES ($1, $2, $3, $4)
@@ -82,6 +94,42 @@ type DeletePaymentMethodsParams struct {
 func (q *Queries) DeletePaymentMethods(ctx context.Context, arg *DeletePaymentMethodsParams) error {
 	_, err := q.db.Exec(ctx, deletePaymentMethods, arg.Column1, arg.UserID)
 	return err
+}
+
+const findPaymentMethodsByIDs = `-- name: FindPaymentMethodsByIDs :many
+SELECT id, user_id, name, created_at, updated_at FROM payment_methods
+WHERE id = ANY($1::uuid[]) AND user_id = $2
+`
+
+type FindPaymentMethodsByIDsParams struct {
+	Column1 []pgtype.UUID `db:"column_1" json:"column_1"`
+	UserID  pgtype.UUID   `db:"user_id" json:"user_id"`
+}
+
+func (q *Queries) FindPaymentMethodsByIDs(ctx context.Context, arg *FindPaymentMethodsByIDsParams) ([]*PaymentMethod, error) {
+	rows, err := q.db.Query(ctx, findPaymentMethodsByIDs, arg.Column1, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*PaymentMethod
+	for rows.Next() {
+		var i PaymentMethod
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getPaymentMethodByID = `-- name: GetPaymentMethodByID :one

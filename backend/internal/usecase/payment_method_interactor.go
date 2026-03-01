@@ -96,22 +96,22 @@ func (i *PaymentMethodInteractor) Delete(ctx context.Context, id, userID string)
 }
 
 func (i *PaymentMethodInteractor) DeleteMany(ctx context.Context, ids []string, userID string) error {
-	for _, id := range ids {
-		_, err := i.pmRepo.FindByID(ctx, id, userID)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return ErrPaymentMethodNotFound
-			}
-			return fmt.Errorf("failed to find payment method: %w", err)
-		}
+	// 所有権確認: 取得できた件数がids件数と一致しない場合、未所有のIDが含まれている
+	pms, err := i.pmRepo.FindByIDs(ctx, ids, userID)
+	if err != nil {
+		return fmt.Errorf("failed to find payment methods: %w", err)
+	}
+	if len(pms) != len(ids) {
+		return ErrPaymentMethodNotFound
+	}
 
-		count, err := i.pmRepo.CountSubscriptionsByPaymentMethodID(ctx, id)
-		if err != nil {
-			return fmt.Errorf("failed to count subscriptions: %w", err)
-		}
-		if count > 0 {
-			return ErrPaymentMethodInUse
-		}
+	// 使用中確認: 1件でもサブスクに紐づいていれば全体を失敗
+	count, err := i.pmRepo.CountSubscriptionsByPaymentMethodIDs(ctx, ids)
+	if err != nil {
+		return fmt.Errorf("failed to count subscriptions: %w", err)
+	}
+	if count > 0 {
+		return ErrPaymentMethodInUse
 	}
 
 	if err := i.pmRepo.DeleteMany(ctx, ids, userID); err != nil {
