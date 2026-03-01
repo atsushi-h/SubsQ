@@ -2,22 +2,24 @@
 # Config
 # -------------------------------------------------------------------
 
+BACKEND_CONTAINER_NAME ?= subsq-backend
+
 ENV_FILE       ?= .env
 MIGRATE        ?= migrate
 MIGRATIONS_DIR ?= migrations
 
-GOCACHE        ?= $(CURDIR)/.gocache
-GOMODCACHE     ?= $(CURDIR)/.gomodcache
-GO_TEST        ?= go test
-PKG            ?=
-FILE           ?=
-RUN            ?=
-TEST_FLAGS     ?= -count=1
+PKG        ?=
+FILE       ?=
+RUN        ?=
+NAME       ?=
+TEST_FLAGS ?= -count=1
 
 ifneq (,$(wildcard .env))
 include .env
 export $(shell grep -E '^[A-Za-z0-9_]+=' .env | cut -d= -f1)
 endif
+
+DOCKER_EXEC := docker exec -i $(BACKEND_CONTAINER_NAME)
 
 # -------------------------------------------------------------------
 # App
@@ -25,11 +27,11 @@ endif
 
 .PHONY: run
 run:
-	@go run ./cmd/api
+	$(DOCKER_EXEC) go run ./cmd/api
 
 .PHONY: build
 build:
-	@go build ./...
+	$(DOCKER_EXEC) go build ./...
 
 # -------------------------------------------------------------------
 # Test
@@ -37,14 +39,14 @@ build:
 
 .PHONY: test
 test:
-	@GOCACHE=$(GOCACHE) GOMODCACHE=$(GOMODCACHE) $(GO_TEST) $(TEST_FLAGS) ./...
+	$(DOCKER_EXEC) go test $(TEST_FLAGS) ./...
 
 # Run package-level tests. Example:
 #   make test-pkg PKG=./internal/domain/user
 .PHONY: test-pkg
 test-pkg:
 	@test -n "$(PKG)" || (echo "PKG is required, e.g. make test-pkg PKG=./internal/domain/user"; exit 1)
-	@GOCACHE=$(GOCACHE) GOMODCACHE=$(GOMODCACHE) $(GO_TEST) $(TEST_FLAGS) $(PKG)
+	$(DOCKER_EXEC) go test $(TEST_FLAGS) $(PKG)
 
 # Run a single test file. Example:
 #   make test-file FILE=internal/domain/user/entity_test.go
@@ -52,7 +54,7 @@ test-pkg:
 test-file:
 	@test -n "$(FILE)" || (echo "FILE is required, e.g. make test-file FILE=internal/domain/user/entity_test.go"; exit 1)
 	@dir=$$(dirname $(FILE)); \
-	GOCACHE=$(GOCACHE) GOMODCACHE=$(GOMODCACHE) $(GO_TEST) $(TEST_FLAGS) ./$$dir
+	$(DOCKER_EXEC) go test $(TEST_FLAGS) ./$$dir
 
 # Run a specific test (regexp). Example:
 #   make test-run PKG=./internal/domain/user RUN=TestValidateUser
@@ -60,7 +62,7 @@ test-file:
 test-run:
 	@test -n "$(PKG)" || (echo "PKG is required, e.g. make test-run PKG=./internal/domain/user RUN=TestValidateUser"; exit 1)
 	@test -n "$(RUN)" || (echo "RUN is required, e.g. make test-run PKG=./internal/domain/user RUN=TestValidateUser"; exit 1)
-	@GOCACHE=$(GOCACHE) GOMODCACHE=$(GOMODCACHE) $(GO_TEST) $(TEST_FLAGS) -run $(RUN) $(PKG)
+	$(DOCKER_EXEC) go test $(TEST_FLAGS) -run $(RUN) $(PKG)
 
 # -------------------------------------------------------------------
 # Migration
@@ -68,20 +70,16 @@ test-run:
 
 .PHONY: migrate-up
 migrate-up:
-	@bash -c 'set -a; if [ -f $(ENV_FILE) ]; then source $(ENV_FILE); fi; set +a; \
-	if [ -z "$$DATABASE_URL" ]; then echo "Set DATABASE_URL in $(ENV_FILE) or environment"; exit 1; fi; \
-	"$(MIGRATE)" -path "$(MIGRATIONS_DIR)" -database "$$DATABASE_URL" up'
+	$(DOCKER_EXEC) $(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" up
 
 .PHONY: migrate-down
 migrate-down:
-	@bash -c 'set -a; if [ -f $(ENV_FILE) ]; then source $(ENV_FILE); fi; set +a; \
-	if [ -z "$$DATABASE_URL" ]; then echo "Set DATABASE_URL in $(ENV_FILE) or environment"; exit 1; fi; \
-	"$(MIGRATE)" -path "$(MIGRATIONS_DIR)" -database "$$DATABASE_URL" down 1'
+	$(DOCKER_EXEC) $(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down 1
 
 .PHONY: migrate-new
 migrate-new:
 	@test -n "$(NAME)" || (echo "NAME is required, e.g. make migrate-new NAME=add_users"; exit 1)
-	$(MIGRATE) create -ext sql -dir $(MIGRATIONS_DIR) $(NAME)
+	$(DOCKER_EXEC) $(MIGRATE) create -ext sql -dir $(MIGRATIONS_DIR) $(NAME)
 
 # -------------------------------------------------------------------
 # Tools
@@ -89,16 +87,24 @@ migrate-new:
 
 .PHONY: sqlc-gen
 sqlc-gen:
-	@sqlc generate
+	$(DOCKER_EXEC) sqlc generate
 
 # -------------------------------------------------------------------
 # Docker
 # -------------------------------------------------------------------
 
+.PHONY: docker-build
+docker-build:
+	docker compose -f ../compose.yml build
+
 .PHONY: docker-up
 docker-up:
-	docker compose up -d
+	docker compose -f ../compose.yml up -d
 
 .PHONY: docker-down
 docker-down:
-	docker compose down
+	docker compose -f ../compose.yml down
+
+.PHONY: ssh
+ssh:
+	docker exec -it $(BACKEND_CONTAINER_NAME) sh
