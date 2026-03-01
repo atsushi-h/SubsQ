@@ -143,15 +143,6 @@ func (r *paymentMethodRepository) DeleteMany(ctx context.Context, ids []string, 
 	})
 }
 
-func (r *paymentMethodRepository) CountSubscriptionsByPaymentMethodID(ctx context.Context, pmID string) (int64, error) {
-	id, err := parseUUID(pmID)
-	if err != nil {
-		return 0, err
-	}
-
-	return r.queries.CountSubscriptionsByPaymentMethodID(ctx, id)
-}
-
 func (r *paymentMethodRepository) FindByIDs(ctx context.Context, ids []string, userID string) ([]*domain.PaymentMethod, error) {
 	uid, err := parseUUID(userID)
 	if err != nil {
@@ -180,19 +171,6 @@ func (r *paymentMethodRepository) FindByIDs(ctx context.Context, ids []string, u
 	}
 
 	return result, nil
-}
-
-func (r *paymentMethodRepository) CountSubscriptionsByPaymentMethodIDs(ctx context.Context, ids []string) (int64, error) {
-	uuids := make([]pgtype.UUID, len(ids))
-	for i, id := range ids {
-		var err error
-		uuids[i], err = parseUUID(id)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	return r.queries.CountSubscriptionsByPaymentMethodIDs(ctx, uuids)
 }
 
 func parseUUID(s string) (pgtype.UUID, error) {

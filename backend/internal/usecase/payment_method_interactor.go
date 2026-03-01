@@ -19,11 +19,12 @@ var (
 )
 
 type PaymentMethodInteractor struct {
-	pmRepo port.PaymentMethodRepository
+	pmRepo  port.PaymentMethodRepository
+	subRepo port.SubscriptionRepository
 }
 
-func NewPaymentMethodInteractor(pmRepo port.PaymentMethodRepository) *PaymentMethodInteractor {
-	return &PaymentMethodInteractor{pmRepo: pmRepo}
+func NewPaymentMethodInteractor(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository) *PaymentMethodInteractor {
+	return &PaymentMethodInteractor{pmRepo: pmRepo, subRepo: subRepo}
 }
 
 func (i *PaymentMethodInteractor) List(ctx context.Context, userID string) ([]*domain.PaymentMethod, error) {
@@ -82,7 +83,7 @@ func (i *PaymentMethodInteractor) Delete(ctx context.Context, id, userID string)
 		return fmt.Errorf("failed to find payment method: %w", err)
 	}
 
-	count, err := i.pmRepo.CountSubscriptionsByPaymentMethodID(ctx, id)
+	count, err := i.subRepo.CountByPaymentMethodID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to count subscriptions: %w", err)
 	}
@@ -110,7 +111,7 @@ func (i *PaymentMethodInteractor) DeleteMany(ctx context.Context, ids []string, 
 	}
 
 	// 使用中確認: 1件でもサブスクに紐づいていれば全体を失敗
-	count, err := i.pmRepo.CountSubscriptionsByPaymentMethodIDs(ctx, ids)
+	count, err := i.subRepo.CountByPaymentMethodIDs(ctx, ids)
 	if err != nil {
 		return fmt.Errorf("failed to count subscriptions: %w", err)
 	}

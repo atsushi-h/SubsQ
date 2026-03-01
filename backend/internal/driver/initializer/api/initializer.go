@@ -46,7 +46,7 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	authInteractor := usecase.NewAuthInteractor(userRepo, oauthConfig, cfg.JWTSecret)
 	authController := httpcontroller.NewAuthController(authInteractor, cfg.FrontendURL)
 	healthController := httpcontroller.NewHealthController()
-	pmInteractor := usecase.NewPaymentMethodInteractor(pmRepo)
+	pmInteractor := usecase.NewPaymentMethodInteractor(pmRepo, subRepo)
 	pmController := httpcontroller.NewPaymentMethodController(pmInteractor)
 	subInteractor := usecase.NewSubscriptionInteractor(subRepo, pmRepo)
 	subController := httpcontroller.NewSubscriptionController(subInteractor)
