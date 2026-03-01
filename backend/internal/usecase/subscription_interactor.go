@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	pmdomain "github.com/atsushi-h/subsq/backend/internal/domain/payment_method"
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/subscription"
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
@@ -55,8 +56,11 @@ func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, inpu
 		return nil, err
 	}
 
+	var pm *pmdomain.PaymentMethod
 	if input.PaymentMethodID != nil {
-		if _, err := i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID); err != nil {
+		var err error
+		pm, err = i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID)
+		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return nil, fmt.Errorf("%w: payment method not found", ErrInvalidInput)
 			}
@@ -75,6 +79,10 @@ func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, inpu
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create subscription: %w", err)
+	}
+
+	if pm != nil {
+		sub.PaymentMethodName = &pm.Name
 	}
 	return sub, nil
 }
@@ -100,8 +108,11 @@ func (i *SubscriptionInteractor) Update(ctx context.Context, id, userID string, 
 		return nil, fmt.Errorf("failed to find subscription: %w", err)
 	}
 
+	var pm *pmdomain.PaymentMethod
 	if input.PaymentMethodID != nil {
-		if _, err := i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID); err != nil {
+		var err error
+		pm, err = i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID)
+		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return nil, fmt.Errorf("%w: payment method not found", ErrInvalidInput)
 			}
@@ -121,6 +132,10 @@ func (i *SubscriptionInteractor) Update(ctx context.Context, id, userID string, 
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update subscription: %w", err)
+	}
+
+	if pm != nil {
+		sub.PaymentMethodName = &pm.Name
 	}
 	return sub, nil
 }

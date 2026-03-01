@@ -90,7 +90,7 @@ func (r *subscriptionRepository) Create(ctx context.Context, s *domain.Subscript
 		return nil, err
 	}
 
-	return r.FindByID(ctx, created.ID.String(), s.UserID)
+	return toSubscriptionDomainFromBase(created), nil
 }
 
 func (r *subscriptionRepository) Update(ctx context.Context, s *domain.Subscription) (*domain.Subscription, error) {
@@ -113,7 +113,7 @@ func (r *subscriptionRepository) Update(ctx context.Context, s *domain.Subscript
 
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	_, err = r.queries.UpdateSubscription(ctx, &generated.UpdateSubscriptionParams{
+	updated, err := r.queries.UpdateSubscription(ctx, &generated.UpdateSubscriptionParams{
 		ID:              subID,
 		UserID:          uid,
 		ServiceName:     s.ServiceName,
@@ -128,7 +128,7 @@ func (r *subscriptionRepository) Update(ctx context.Context, s *domain.Subscript
 		return nil, err
 	}
 
-	return r.FindByID(ctx, s.ID, s.UserID)
+	return toSubscriptionDomainFromBase(updated), nil
 }
 
 func (r *subscriptionRepository) Delete(ctx context.Context, id, userID string) error {
