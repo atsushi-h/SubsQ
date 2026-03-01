@@ -3,7 +3,7 @@
 //   sqlc v1.30.0
 // source: user.sql
 
-package sqlcdb
+package generated
 
 import (
 	"context"
@@ -15,7 +15,7 @@ const findUserByID = `-- name: FindUserByID :one
 SELECT id, email, name, provider, provider_account_id, thumbnail, created_at, updated_at FROM users WHERE id = $1
 `
 
-func (q *Queries) FindUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+func (q *Queries) FindUserByID(ctx context.Context, id pgtype.UUID) (*User, error) {
 	row := q.db.QueryRow(ctx, findUserByID, id)
 	var i User
 	err := row.Scan(
@@ -28,7 +28,7 @@ func (q *Queries) FindUserByID(ctx context.Context, id pgtype.UUID) (User, error
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const upsertUser = `-- name: UpsertUser :one
@@ -45,16 +45,16 @@ RETURNING id, email, name, provider, provider_account_id, thumbnail, created_at,
 `
 
 type UpsertUserParams struct {
-	Email             string  `json:"email"`
-	Name              string  `json:"name"`
-	Provider          string  `json:"provider"`
-	ProviderAccountID string  `json:"provider_account_id"`
-	Thumbnail         *string `json:"thumbnail"`
-	CreatedAt         int32   `json:"created_at"`
-	UpdatedAt         int32   `json:"updated_at"`
+	Email             string  `db:"email" json:"email"`
+	Name              string  `db:"name" json:"name"`
+	Provider          string  `db:"provider" json:"provider"`
+	ProviderAccountID string  `db:"provider_account_id" json:"provider_account_id"`
+	Thumbnail         *string `db:"thumbnail" json:"thumbnail"`
+	CreatedAt         int32   `db:"created_at" json:"created_at"`
+	UpdatedAt         int32   `db:"updated_at" json:"updated_at"`
 }
 
-func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
+func (q *Queries) UpsertUser(ctx context.Context, arg *UpsertUserParams) (*User, error) {
 	row := q.db.QueryRow(ctx, upsertUser,
 		arg.Email,
 		arg.Name,
@@ -75,5 +75,5 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

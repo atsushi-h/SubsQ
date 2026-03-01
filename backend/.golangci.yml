@@ -37,7 +37,7 @@ linters:
           disabled: true
   exclusions:
     paths:
-      - internal/adapter/gateway/db/sqlc
+      - internal/adapter/gateway/db/sqlc/generated
       - .gomodcache
       - internal/adapter/gateway/db/mock
       - internal/adapter/http/controller/mock

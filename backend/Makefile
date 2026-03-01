@@ -93,8 +93,8 @@ fmt:
 lint:
 	$(DOCKER_EXEC) golangci-lint run ./...
 
-.PHONY: sqlc-gen
-sqlc-gen:
+.PHONY: sqlc
+sqlc:
 	$(DOCKER_EXEC) sqlc generate
 
 # -------------------------------------------------------------------

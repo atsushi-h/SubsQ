@@ -7,23 +7,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	sqlcdb "github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc"
+	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	"github.com/atsushi-h/subsq/backend/internal/domain/user"
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
 type userRepository struct {
-	queries *sqlcdb.Queries
+	queries *generated.Queries
 }
 
 func NewUserRepository(pool *pgxpool.Pool) port.UserRepository {
-	return &userRepository{queries: sqlcdb.New(pool)}
+	return &userRepository{queries: generated.New(pool)}
 }
 
 func (r *userRepository) UpsertUser(ctx context.Context, u *user.User) (*user.User, error) {
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	row, err := r.queries.UpsertUser(ctx, sqlcdb.UpsertUserParams{
+	row, err := r.queries.UpsertUser(ctx, &generated.UpsertUserParams{
 		Email:             u.Email.String(),
 		Name:              u.Name,
 		Provider:          u.Provider,
@@ -53,7 +53,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*user.User, e
 	return toUserDomain(row), nil
 }
 
-func toUserDomain(row sqlcdb.User) *user.User {
+func toUserDomain(row *generated.User) *user.User {
 	return &user.User{
 		ID:                row.ID.String(),
 		Email:             user.Email(row.Email),
