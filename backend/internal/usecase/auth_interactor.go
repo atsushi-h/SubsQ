@@ -73,11 +73,15 @@ func (a *AuthInteractor) HandleCallback(
 	}
 
 	client := a.oauthConfig.Client(ctx, token)
-	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://www.googleapis.com/oauth2/v2/userinfo", nil)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to create userinfo request: %w", err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to get user info: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }() //nolint:errcheck // body is already read, close error is not actionable
 
 	if resp.StatusCode != http.StatusOK {
 		return "", nil, fmt.Errorf("userinfo request failed with status: %d", resp.StatusCode)

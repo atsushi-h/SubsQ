@@ -9,7 +9,7 @@ linters:
     - staticcheck
     - gosimple
     - ineffassign
-    - gofmt
+    - gofumpt
     - goimports
     - gocyclo
     - misspell
@@ -29,6 +29,12 @@ linters-settings:
     check-blank: true
   misspell:
     locale: US
+  revive:
+    rules:
+      - name: exported
+        disabled: true
+      - name: package-comments
+        disabled: true
 
 issues:
   exclude-dirs:
@@ -36,6 +42,9 @@ issues:
     - .gomodcache
   exclude-files:
     - ".*_test.go"
+    - "internal/adapter/gateway/db/mock/.*.go"
+    - "internal/adapter/http/controller/mock/.*.go"
+    - "internal/usecase/mock/.*.go"
   exclude-use-default: false
   max-same-issues: 3
   max-issues-per-linter: 0

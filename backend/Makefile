@@ -85,6 +85,14 @@ migrate-new:
 # Tools
 # -------------------------------------------------------------------
 
+.PHONY: fmt
+fmt:
+	$(DOCKER_EXEC) golangci-lint run --fix --enable-only gofumpt ./...
+
+.PHONY: lint
+lint:
+	$(DOCKER_EXEC) golangci-lint run ./...
+
 .PHONY: sqlc-gen
 sqlc-gen:
 	$(DOCKER_EXEC) sqlc generate

@@ -1,2 +1,4 @@
 tmp/
 .env
+.gocache/
+.gomodcache/

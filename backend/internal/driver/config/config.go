@@ -1,11 +1,11 @@
-package config                                                              
-														
-import (                                                                    
+package config
+
+import (
 	"errors"
-	"os"                                                                  
-	"strconv"                                                             
-	"strings"                                                             
-)                                                                           
+	"os"
+	"strconv"
+	"strings"
+)
 
 type Config struct {
 	DatabaseURL    string

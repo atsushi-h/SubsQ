@@ -1,7 +1,7 @@
-package port                                                                
-																			
-import (                                                                    
-	"context"                                           
+package port
+
+import (
+	"context"
 
 	"github.com/atsushi-h/subsq/backend/internal/domain/user"
 )

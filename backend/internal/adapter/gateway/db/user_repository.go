@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	sqlcdb "github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc"
 	"github.com/atsushi-h/subsq/backend/internal/domain/user"
@@ -21,7 +21,7 @@ func NewUserRepository(pool *pgxpool.Pool) port.UserRepository {
 }
 
 func (r *userRepository) UpsertUser(ctx context.Context, u *user.User) (*user.User, error) {
-	now := int32(time.Now().Unix())
+	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
 	row, err := r.queries.UpsertUser(ctx, sqlcdb.UpsertUserParams{
 		Email:             u.Email.String(),
