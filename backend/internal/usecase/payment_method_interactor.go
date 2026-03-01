@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/payment_method"
 	"github.com/atsushi-h/subsq/backend/internal/port"
@@ -90,6 +91,9 @@ func (i *PaymentMethodInteractor) Delete(ctx context.Context, id, userID string)
 	}
 
 	if err := i.pmRepo.Delete(ctx, id, userID); err != nil {
+		if isForeignKeyViolation(err) {
+			return ErrPaymentMethodInUse
+		}
 		return fmt.Errorf("failed to delete payment method: %w", err)
 	}
 	return nil
@@ -115,7 +119,15 @@ func (i *PaymentMethodInteractor) DeleteMany(ctx context.Context, ids []string, 
 	}
 
 	if err := i.pmRepo.DeleteMany(ctx, ids, userID); err != nil {
+		if isForeignKeyViolation(err) {
+			return ErrPaymentMethodInUse
+		}
 		return fmt.Errorf("failed to delete payment methods: %w", err)
 	}
 	return nil
+}
+
+func isForeignKeyViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23503"
 }
