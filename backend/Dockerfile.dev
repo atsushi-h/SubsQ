@@ -11,6 +11,9 @@ RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 # Install golangci-lint for linting
 RUN go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 
+# Install oapi-codegen for OpenAPI code generation
+RUN go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+
 # Pre-fetch modules for faster startup
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \

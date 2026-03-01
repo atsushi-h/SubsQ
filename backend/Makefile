@@ -97,6 +97,10 @@ lint:
 sqlc:
 	$(DOCKER_EXEC) sqlc generate
 
+.PHONY: openapi
+openapi:
+	$(DOCKER_EXEC) oapi-codegen --config oapi-codegen.yaml ../api-schema/generated/openapi.yaml
+
 # -------------------------------------------------------------------
 # Docker
 # -------------------------------------------------------------------
