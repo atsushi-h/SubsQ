@@ -9,7 +9,7 @@ RUN go install github.com/air-verse/air@latest
 RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # Install golangci-lint for linting
-RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+RUN go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 
 # Pre-fetch modules for faster startup
 COPY go.mod go.sum ./
