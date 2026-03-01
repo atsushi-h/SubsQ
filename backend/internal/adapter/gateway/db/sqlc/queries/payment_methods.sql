@@ -26,14 +26,7 @@ WHERE id = $1 AND user_id = $2;
 DELETE FROM payment_methods
 WHERE id = ANY($1::uuid[]) AND user_id = $2;
 
--- name: CountSubscriptionsByPaymentMethodID :one
-SELECT COUNT(*) FROM subscriptions
-WHERE payment_method_id = $1;
-
 -- name: FindPaymentMethodsByIDs :many
 SELECT * FROM payment_methods
 WHERE id = ANY($1::uuid[]) AND user_id = $2;
 
--- name: CountSubscriptionsByPaymentMethodIDs :one
-SELECT COUNT(*) FROM subscriptions
-WHERE payment_method_id = ANY($1::uuid[]);

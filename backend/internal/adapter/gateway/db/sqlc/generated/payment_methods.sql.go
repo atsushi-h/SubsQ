@@ -11,30 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const countSubscriptionsByPaymentMethodID = `-- name: CountSubscriptionsByPaymentMethodID :one
-SELECT COUNT(*) FROM subscriptions
-WHERE payment_method_id = $1
-`
-
-func (q *Queries) CountSubscriptionsByPaymentMethodID(ctx context.Context, paymentMethodID pgtype.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countSubscriptionsByPaymentMethodID, paymentMethodID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countSubscriptionsByPaymentMethodIDs = `-- name: CountSubscriptionsByPaymentMethodIDs :one
-SELECT COUNT(*) FROM subscriptions
-WHERE payment_method_id = ANY($1::uuid[])
-`
-
-func (q *Queries) CountSubscriptionsByPaymentMethodIDs(ctx context.Context, dollar_1 []pgtype.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countSubscriptionsByPaymentMethodIDs, dollar_1)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createPaymentMethod = `-- name: CreatePaymentMethod :one
 INSERT INTO payment_methods (user_id, name, created_at, updated_at)
 VALUES ($1, $2, $3, $4)

@@ -14,4 +14,6 @@ type SubscriptionRepository interface {
 	Delete(ctx context.Context, id, userID string) error
 	DeleteMany(ctx context.Context, ids []string, userID string) error
 	FindByIDs(ctx context.Context, ids []string, userID string) ([]*domain.Subscription, error)
+	CountByPaymentMethodID(ctx context.Context, pmID string) (int64, error)
+	CountByPaymentMethodIDs(ctx context.Context, ids []string) (int64, error)
 }

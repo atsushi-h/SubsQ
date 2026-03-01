@@ -44,3 +44,11 @@ WHERE id = ANY($1::uuid[]) AND user_id = $2;
 -- name: FindSubscriptionsByIDs :many
 SELECT * FROM subscriptions
 WHERE id = ANY($1::uuid[]) AND user_id = $2;
+
+-- name: CountSubscriptionsByPaymentMethodID :one
+SELECT COUNT(*) FROM subscriptions
+WHERE payment_method_id = $1;
+
+-- name: CountSubscriptionsByPaymentMethodIDs :one
+SELECT COUNT(*) FROM subscriptions
+WHERE payment_method_id = ANY($1::uuid[]);
