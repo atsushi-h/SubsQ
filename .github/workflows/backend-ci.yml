@@ -41,13 +41,10 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Install oapi-codegen
+      - name: Check OpenAPI generated code is up to date
         run: |
           go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
-
-      - name: Check OpenAPI generated code is up to date
-        run: oapi-codegen --config oapi-codegen.yaml ../api-schema/generated/openapi.yaml
+          $(go env GOPATH)/bin/oapi-codegen --config oapi-codegen.yaml ../api-schema/generated/openapi.yaml
 
       - name: Verify no diff after generation
         run: git diff --exit-code internal/adapter/http/generated/
