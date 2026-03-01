@@ -87,7 +87,7 @@ migrate-new:
 
 .PHONY: fmt
 fmt:
-	$(DOCKER_EXEC) golangci-lint run --fix --enable-only gofumpt ./...
+	$(DOCKER_EXEC) golangci-lint fmt ./...
 
 .PHONY: lint
 lint:
