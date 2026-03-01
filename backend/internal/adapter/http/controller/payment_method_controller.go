@@ -128,6 +128,8 @@ func (c *PaymentMethodController) DeleteMany(ctx echo.Context) error {
 
 func (c *PaymentMethodController) handleError(ctx echo.Context, err error) error {
 	switch {
+	case errors.Is(err, usecase.ErrInvalidInput):
+		return problemJSON(ctx, http.StatusBadRequest, "Bad Request", err.Error())
 	case errors.Is(err, usecase.ErrPaymentMethodNotFound):
 		return problemJSON(ctx, http.StatusNotFound, "Not Found", err.Error())
 	case errors.Is(err, usecase.ErrPaymentMethodInUse):

@@ -14,6 +14,7 @@ import (
 var (
 	ErrPaymentMethodNotFound = errors.New("payment method not found")
 	ErrPaymentMethodInUse    = errors.New("payment method is in use by subscriptions")
+	ErrInvalidInput          = errors.New("invalid input")
 )
 
 type PaymentMethodInteractor struct {
@@ -34,7 +35,7 @@ func (i *PaymentMethodInteractor) List(ctx context.Context, userID string) ([]*d
 
 func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name string) (*domain.PaymentMethod, error) {
 	if len(name) == 0 || len(name) > 100 {
-		return nil, fmt.Errorf("name must be between 1 and 100 characters")
+		return nil, fmt.Errorf("%w: name must be between 1 and 100 characters", ErrInvalidInput)
 	}
 
 	pm, err := i.pmRepo.Create(ctx, &domain.PaymentMethod{
@@ -49,7 +50,7 @@ func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name strin
 
 func (i *PaymentMethodInteractor) Update(ctx context.Context, id, userID, name string) (*domain.PaymentMethod, error) {
 	if len(name) == 0 || len(name) > 100 {
-		return nil, fmt.Errorf("name must be between 1 and 100 characters")
+		return nil, fmt.Errorf("%w: name must be between 1 and 100 characters", ErrInvalidInput)
 	}
 
 	_, err := i.pmRepo.FindByID(ctx, id, userID)
