@@ -32,6 +32,7 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 
 	// DI
 	userRepo := gatewaydb.NewUserRepository(pool)
+	pmRepo := gatewaydb.NewPaymentMethodRepository(pool)
 
 	oauthConfig := &oauth2.Config{
 		ClientID:     cfg.GoogleClientID,
@@ -44,6 +45,8 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	authInteractor := usecase.NewAuthInteractor(userRepo, oauthConfig, cfg.JWTSecret)
 	authController := httpcontroller.NewAuthController(authInteractor, cfg.FrontendURL)
 	healthController := httpcontroller.NewHealthController()
+	pmInteractor := usecase.NewPaymentMethodInteractor(pmRepo)
+	pmController := httpcontroller.NewPaymentMethodController(pmInteractor)
 
 	// Echo
 	e := echo.New()
@@ -70,9 +73,15 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	auth.GET("/me", authController.Me, httpmiddleware.JWTAuth(cfg.JWTSecret))
 	auth.POST("/logout", authController.Logout)
 
+	pm := v1.Group("/payment-methods", httpmiddleware.JWTAuth(cfg.JWTSecret))
+	pm.GET("", pmController.List)
+	pm.POST("", pmController.Create)
+	pm.PUT("/:id", pmController.Update)
+	pm.DELETE("/:id", pmController.Delete)
+	pm.DELETE("", pmController.DeleteMany)
+
 	// 後続フェーズ用（空グループ）
 	v1.Group("/subscriptions")
-	v1.Group("/payment-methods")
 	v1.Group("/users")
 
 	return e, cfg, cleanup, nil
