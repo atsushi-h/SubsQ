@@ -44,7 +44,11 @@ linters:
       - internal/usecase/mock
     rules:
       - text: "error return value not checked.*Close"
+        linters:
+          - errcheck
       - text: "G108" # false positives on http insecure
+        linters:
+          - gosec
 
 issues:
   max-same-issues: 3
