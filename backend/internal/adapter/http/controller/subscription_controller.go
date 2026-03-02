@@ -209,7 +209,7 @@ func toSubscriptionResponse(sub *domain.Subscription) openapi.ModelsSubscription
 		ServiceName:     sub.ServiceName,
 		UpdatedAt:       sub.UpdatedAt.UTC(),
 		Memo:            sub.Memo,
-		NextBillingDate: calculateNextBillingDate(sub.BaseDate, sub.BillingCycle),
+		NextBillingDate: calculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt),
 		MonthlyAmount:   int64(sub.ToMonthlyAmount()),
 		YearlyAmount:    int64(sub.ToYearlyAmount()),
 	}
@@ -238,14 +238,20 @@ func toSubscriptionResponse(sub *domain.Subscription) openapi.ModelsSubscription
 	return resp
 }
 
-func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle) openapi_types.Date {
+// calculateNextBillingDate は次回請求日を計算する。
+// 年次課金の場合、請求月は契約日（createdAt）の月を使う。
+// baseDate は日（1〜31）のみを持ち、月の情報がないため、
+// 年次課金を現在の月で計算すると誤った日付になる。
+func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle, createdAt time.Time) openapi_types.Date {
 	now := time.Now()
 	year, month, _ := now.Date()
 
 	if cycle == domain.BillingCycleYearly {
-		next := time.Date(year, month, baseDate, 0, 0, 0, 0, time.UTC)
+		// 年次課金は契約月（createdAt の月）を請求月として使う
+		billingMonth := createdAt.Month()
+		next := time.Date(year, billingMonth, baseDate, 0, 0, 0, 0, time.UTC)
 		if !next.After(now) {
-			next = time.Date(year+1, month, baseDate, 0, 0, 0, 0, time.UTC)
+			next = time.Date(year+1, billingMonth, baseDate, 0, 0, 0, 0, time.UTC)
 		}
 		return openapi_types.Date{Time: next}
 	}
