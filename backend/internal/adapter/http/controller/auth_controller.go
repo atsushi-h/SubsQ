@@ -6,7 +6,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/atsushi-h/subsq/backend/internal/adapter/http/middleware"
 	"github.com/atsushi-h/subsq/backend/internal/usecase"
 )
 
@@ -75,26 +74,6 @@ func (c *AuthController) GoogleCallback(ctx echo.Context) error {
 	})
 
 	return ctx.Redirect(http.StatusTemporaryRedirect, c.frontendURL)
-}
-
-// GET /api/v1/auth/me
-func (c *AuthController) Me(ctx echo.Context) error {
-	userID, ok := ctx.Get(middleware.UserIDKey).(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-
-	u, err := c.authInteractor.GetCurrentUser(ctx.Request().Context(), userID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
-	}
-
-	return ctx.JSON(http.StatusOK, map[string]any{
-		"id":        u.ID,
-		"email":     u.Email.String(),
-		"name":      u.Name,
-		"thumbnail": u.Thumbnail,
-	})
 }
 
 // POST /api/v1/auth/logout

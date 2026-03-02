@@ -58,6 +58,31 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Models.CreatePaymentMethodRequest'
+    delete:
+      operationId: PaymentMethods_deletePaymentMethods
+      summary: Delete multiple payment methods
+      description: 複数の支払い方法を削除
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.ConflictError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - PaymentMethods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Routes.DeletePaymentMethodsRequest'
   /api/v1/payment-methods/{id}:
     get:
       operationId: PaymentMethods_getPaymentMethod
@@ -193,6 +218,30 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Models.CreateSubscriptionRequest'
+    delete:
+      operationId: Subscriptions_deleteSubscriptions
+      summary: Delete multiple subscriptions
+      description: 複数のサブスクリプションを削除
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Routes.DeleteSubscriptionsRequest'
   /api/v1/subscriptions/{id}:
     get:
       operationId: Subscriptions_getSubscription
@@ -717,6 +766,24 @@ components:
       type: string
       format: uuid
       description: UUID形式の文字列（再利用可能な共通スカラー）
+    Routes.DeletePaymentMethodsRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Models.uuid'
+    Routes.DeleteSubscriptionsRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Models.uuid'
 servers:
   - url: https://api.subsq-app.com
     description: Production server

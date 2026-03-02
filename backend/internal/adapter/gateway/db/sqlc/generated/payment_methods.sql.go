@@ -163,6 +163,52 @@ func (q *Queries) ListPaymentMethodsByUserID(ctx context.Context, userID pgtype.
 	return items, nil
 }
 
+const listPaymentMethodsWithCountByUserID = `-- name: ListPaymentMethodsWithCountByUserID :many
+SELECT pm.id, pm.user_id, pm.name, pm.created_at, pm.updated_at,
+       COUNT(s.id) AS usage_count
+FROM payment_methods pm
+LEFT JOIN subscriptions s ON s.payment_method_id = pm.id
+WHERE pm.user_id = $1
+GROUP BY pm.id, pm.user_id, pm.name, pm.created_at, pm.updated_at
+ORDER BY pm.created_at DESC
+`
+
+type ListPaymentMethodsWithCountByUserIDRow struct {
+	ID         pgtype.UUID `db:"id" json:"id"`
+	UserID     pgtype.UUID `db:"user_id" json:"user_id"`
+	Name       string      `db:"name" json:"name"`
+	CreatedAt  int32       `db:"created_at" json:"created_at"`
+	UpdatedAt  int32       `db:"updated_at" json:"updated_at"`
+	UsageCount int64       `db:"usage_count" json:"usage_count"`
+}
+
+func (q *Queries) ListPaymentMethodsWithCountByUserID(ctx context.Context, userID pgtype.UUID) ([]*ListPaymentMethodsWithCountByUserIDRow, error) {
+	rows, err := q.db.Query(ctx, listPaymentMethodsWithCountByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*ListPaymentMethodsWithCountByUserIDRow
+	for rows.Next() {
+		var i ListPaymentMethodsWithCountByUserIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UsageCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePaymentMethod = `-- name: UpdatePaymentMethod :one
 UPDATE payment_methods
 SET name = $2, updated_at = $3

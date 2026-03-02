@@ -47,4 +47,15 @@ interface Subscriptions {
   deleteSubscription(
     @path id: uuid
   ): void | NotFoundError | UnauthorizedError;
+
+  /** 複数のサブスクリプションを削除 */
+  @delete
+  @summary("Delete multiple subscriptions")
+  deleteSubscriptions(
+    @body request: DeleteSubscriptionsRequest
+  ): void | BadRequestError | UnauthorizedError;
+}
+
+model DeleteSubscriptionsRequest {
+  ids: uuid[];
 }

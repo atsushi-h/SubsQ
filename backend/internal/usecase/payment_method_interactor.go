@@ -35,6 +35,33 @@ func (i *PaymentMethodInteractor) List(ctx context.Context, userID string) ([]*d
 	return pms, nil
 }
 
+func (i *PaymentMethodInteractor) ListWithCount(ctx context.Context, userID string) ([]*port.PaymentMethodWithCount, error) {
+	result, err := i.pmRepo.FindByUserIDWithCount(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list payment methods with count: %w", err)
+	}
+	return result, nil
+}
+
+func (i *PaymentMethodInteractor) Get(ctx context.Context, id, userID string) (*domain.PaymentMethod, error) {
+	pm, err := i.pmRepo.FindByID(ctx, id, userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrPaymentMethodNotFound
+		}
+		return nil, fmt.Errorf("failed to get payment method: %w", err)
+	}
+	return pm, nil
+}
+
+func (i *PaymentMethodInteractor) CountUsage(ctx context.Context, id string) (int64, error) {
+	count, err := i.subRepo.CountByPaymentMethodID(ctx, id)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count usage: %w", err)
+	}
+	return count, nil
+}
+
 func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name string) (*domain.PaymentMethod, error) {
 	if len(name) == 0 || len(name) > 100 {
 		return nil, fmt.Errorf("%w: name must be between 1 and 100 characters", ErrInvalidInput)

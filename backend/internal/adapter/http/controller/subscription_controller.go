@@ -1,12 +1,15 @@
 package controller
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	openapi "github.com/atsushi-h/subsq/backend/internal/adapter/http/generated/openapi"
 	"github.com/atsushi-h/subsq/backend/internal/adapter/http/middleware"
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/subscription"
 	"github.com/atsushi-h/subsq/backend/internal/usecase"
@@ -24,128 +27,168 @@ func NewSubscriptionController(interactor *usecase.SubscriptionInteractor) *Subs
 func (c *SubscriptionController) List(ctx echo.Context) error {
 	userID, ok := ctx.Get(middleware.UserIDKey).(string)
 	if !ok {
-		return problemJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
 	subs, err := c.interactor.List(ctx.Request().Context(), userID)
 	if err != nil {
-		return problemJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
 	}
 
-	resp := make([]subscriptionResponse, 0, len(subs))
-	totalMonthly := 0
-	totalYearly := 0
+	items := make([]openapi.ModelsSubscriptionResponse, 0, len(subs))
+	var totalMonthly, totalYearly int64
 	for _, sub := range subs {
-		resp = append(resp, toSubscriptionResponse(sub))
-		totalMonthly += sub.ToMonthlyAmount()
-		totalYearly += sub.ToYearlyAmount()
+		item, err := toSubscriptionResponse(sub)
+		if err != nil {
+			ctx.Logger().Error(err)
+			return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+		}
+		items = append(items, item)
+		totalMonthly += int64(sub.ToMonthlyAmount())
+		totalYearly += int64(sub.ToYearlyAmount())
 	}
 
-	return ctx.JSON(http.StatusOK, listSubscriptionsResponse{
-		Subscriptions:      resp,
-		TotalMonthlyAmount: totalMonthly,
-		TotalYearlyAmount:  totalYearly,
+	return ctx.JSON(http.StatusOK, openapi.ModelsListSubscriptionsResponse{
+		Subscriptions: items,
+		Summary: openapi.ModelsSubscriptionListSummary{
+			Count:        int32(len(subs)),
+			MonthlyTotal: totalMonthly,
+			YearlyTotal:  totalYearly,
+		},
 	})
 }
 
 // GET /api/v1/subscriptions/:id
-func (c *SubscriptionController) Get(ctx echo.Context) error {
+func (c *SubscriptionController) Get(ctx echo.Context, id openapi.ModelsUuid) error {
 	userID, ok := ctx.Get(middleware.UserIDKey).(string)
 	if !ok {
-		return problemJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	id := ctx.Param("id")
-
-	sub, err := c.interactor.Get(ctx.Request().Context(), id, userID)
+	sub, err := c.interactor.Get(ctx.Request().Context(), id.String(), userID)
 	if err != nil {
-		return c.handleError(ctx, err)
+		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusOK, toSubscriptionResponse(sub))
+	resp, err := toSubscriptionResponse(sub)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 // POST /api/v1/subscriptions
 func (c *SubscriptionController) Create(ctx echo.Context) error {
 	userID, ok := ctx.Get(middleware.UserIDKey).(string)
 	if !ok {
-		return problemJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	var req struct {
-		ServiceName     string  `json:"serviceName"`
-		Amount          int     `json:"amount"`
-		BillingCycle    string  `json:"billingCycle"`
-		BaseDate        int     `json:"baseDate"`
-		PaymentMethodID *string `json:"paymentMethodId"`
-		Memo            *string `json:"memo"`
-	}
+	var req openapi.SubscriptionsCreateSubscriptionJSONRequestBody
 	if err := ctx.Bind(&req); err != nil {
-		return problemJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
+		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
+	}
+
+	var pmID *string
+	if req.PaymentMethodId != nil {
+		s := req.PaymentMethodId.String()
+		pmID = &s
 	}
 
 	sub, err := c.interactor.Create(ctx.Request().Context(), userID, usecase.CreateSubscriptionInput{
 		ServiceName:     req.ServiceName,
-		Amount:          req.Amount,
+		Amount:          int(req.Amount),
 		BillingCycle:    domain.BillingCycle(req.BillingCycle),
-		BaseDate:        req.BaseDate,
-		PaymentMethodID: req.PaymentMethodID,
+		BaseDate:        int(req.BaseDate),
+		PaymentMethodID: pmID,
 		Memo:            req.Memo,
 	})
 	if err != nil {
-		return c.handleError(ctx, err)
+		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusCreated, toSubscriptionResponse(sub))
+	resp, err := toSubscriptionResponse(sub)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusCreated, resp)
 }
 
-// PUT /api/v1/subscriptions/:id
-func (c *SubscriptionController) Update(ctx echo.Context) error {
+// PATCH /api/v1/subscriptions/:id
+func (c *SubscriptionController) Update(ctx echo.Context, id openapi.ModelsUuid) error {
 	userID, ok := ctx.Get(middleware.UserIDKey).(string)
 	if !ok {
-		return problemJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	id := ctx.Param("id")
-
-	var req struct {
-		ServiceName     string  `json:"serviceName"`
-		Amount          int     `json:"amount"`
-		BillingCycle    string  `json:"billingCycle"`
-		BaseDate        int     `json:"baseDate"`
-		PaymentMethodID *string `json:"paymentMethodId"`
-		Memo            *string `json:"memo"`
-	}
+	var req openapi.SubscriptionsUpdateSubscriptionJSONRequestBody
 	if err := ctx.Bind(&req); err != nil {
-		return problemJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
+		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
 	}
 
-	sub, err := c.interactor.Update(ctx.Request().Context(), id, userID, usecase.UpdateSubscriptionInput{
-		ServiceName:     req.ServiceName,
-		Amount:          req.Amount,
-		BillingCycle:    domain.BillingCycle(req.BillingCycle),
-		BaseDate:        req.BaseDate,
-		PaymentMethodID: req.PaymentMethodID,
-		Memo:            req.Memo,
+	// 既存の値を取得してからマージ
+	existing, err := c.interactor.Get(ctx.Request().Context(), id.String(), userID)
+	if err != nil {
+		return handleError(ctx, err)
+	}
+
+	serviceName := existing.ServiceName
+	if req.ServiceName != nil {
+		serviceName = *req.ServiceName
+	}
+	amount := existing.Amount
+	if req.Amount != nil {
+		amount = int(*req.Amount)
+	}
+	billingCycle := existing.BillingCycle
+	if req.BillingCycle != nil {
+		billingCycle = domain.BillingCycle(*req.BillingCycle)
+	}
+	baseDate := existing.BaseDate
+	if req.BaseDate != nil {
+		baseDate = int(*req.BaseDate)
+	}
+	pmID := existing.PaymentMethodID
+	if req.PaymentMethodId != nil {
+		s := req.PaymentMethodId.String()
+		pmID = &s
+	}
+	memo := existing.Memo
+	if req.Memo != nil {
+		memo = req.Memo
+	}
+
+	sub, err := c.interactor.Update(ctx.Request().Context(), id.String(), userID, usecase.UpdateSubscriptionInput{
+		ServiceName:     serviceName,
+		Amount:          amount,
+		BillingCycle:    billingCycle,
+		BaseDate:        baseDate,
+		PaymentMethodID: pmID,
+		Memo:            memo,
 	})
 	if err != nil {
-		return c.handleError(ctx, err)
+		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusOK, toSubscriptionResponse(sub))
+	resp, err := toSubscriptionResponse(sub)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 // DELETE /api/v1/subscriptions/:id
-func (c *SubscriptionController) Delete(ctx echo.Context) error {
+func (c *SubscriptionController) Delete(ctx echo.Context, id openapi.ModelsUuid) error {
 	userID, ok := ctx.Get(middleware.UserIDKey).(string)
 	if !ok {
-		return problemJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	id := ctx.Param("id")
-
-	if err := c.interactor.Delete(ctx.Request().Context(), id, userID); err != nil {
-		return c.handleError(ctx, err)
+	if err := c.interactor.Delete(ctx.Request().Context(), id.String(), userID); err != nil {
+		return handleError(ctx, err)
 	}
 
 	return ctx.NoContent(http.StatusNoContent)
@@ -155,82 +198,105 @@ func (c *SubscriptionController) Delete(ctx echo.Context) error {
 func (c *SubscriptionController) DeleteMany(ctx echo.Context) error {
 	userID, ok := ctx.Get(middleware.UserIDKey).(string)
 	if !ok {
-		return problemJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	var req struct {
-		IDs []string `json:"ids"`
-	}
+	var req openapi.SubscriptionsDeleteSubscriptionsJSONRequestBody
 	if err := ctx.Bind(&req); err != nil {
-		return problemJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
+		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
 	}
-	if len(req.IDs) == 0 {
-		return problemJSON(ctx, http.StatusBadRequest, "Bad Request", "ids must not be empty")
+	if len(req.Ids) == 0 {
+		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "ids must not be empty")
 	}
 
-	if err := c.interactor.DeleteMany(ctx.Request().Context(), req.IDs, userID); err != nil {
-		return c.handleError(ctx, err)
+	ids := make([]string, 0, len(req.Ids))
+	for _, id := range req.Ids {
+		ids = append(ids, id.String())
+	}
+
+	if err := c.interactor.DeleteMany(ctx.Request().Context(), ids, userID); err != nil {
+		return handleError(ctx, err)
 	}
 
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-func (c *SubscriptionController) handleError(ctx echo.Context, err error) error {
-	switch {
-	case errors.Is(err, usecase.ErrInvalidInput):
-		return problemJSON(ctx, http.StatusBadRequest, "Bad Request", err.Error())
-	case errors.Is(err, usecase.ErrSubscriptionNotFound):
-		return problemJSON(ctx, http.StatusNotFound, "Not Found", err.Error())
-	default:
-		return problemJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+func toSubscriptionResponse(sub *domain.Subscription) (openapi.ModelsSubscriptionResponse, error) {
+	id, err := uuid.Parse(sub.ID)
+	if err != nil {
+		return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid subscription id %q: %w", sub.ID, err)
 	}
-}
-
-type paymentMethodRef struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type subscriptionResponse struct {
-	ID            string            `json:"id"`
-	UserID        string            `json:"userId"`
-	ServiceName   string            `json:"serviceName"`
-	Amount        int               `json:"amount"`
-	BillingCycle  string            `json:"billingCycle"`
-	BaseDate      int               `json:"baseDate"`
-	PaymentMethod *paymentMethodRef `json:"paymentMethod"`
-	Memo          *string           `json:"memo"`
-	MonthlyAmount int               `json:"monthlyAmount"`
-	YearlyAmount  int               `json:"yearlyAmount"`
-	CreatedAt     string            `json:"createdAt"`
-	UpdatedAt     string            `json:"updatedAt"`
-}
-
-type listSubscriptionsResponse struct {
-	Subscriptions      []subscriptionResponse `json:"subscriptions"`
-	TotalMonthlyAmount int                    `json:"totalMonthlyAmount"`
-	TotalYearlyAmount  int                    `json:"totalYearlyAmount"`
-}
-
-func toSubscriptionResponse(sub *domain.Subscription) subscriptionResponse {
-	resp := subscriptionResponse{
-		ID:            sub.ID,
-		UserID:        sub.UserID,
-		ServiceName:   sub.ServiceName,
-		Amount:        sub.Amount,
-		BillingCycle:  string(sub.BillingCycle),
-		BaseDate:      sub.BaseDate,
-		Memo:          sub.Memo,
-		MonthlyAmount: sub.ToMonthlyAmount(),
-		YearlyAmount:  sub.ToYearlyAmount(),
-		CreatedAt:     sub.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt:     sub.UpdatedAt.UTC().Format(time.RFC3339),
+	userID, err := uuid.Parse(sub.UserID)
+	if err != nil {
+		return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid user id %q: %w", sub.UserID, err)
 	}
-	if sub.PaymentMethodID != nil && sub.PaymentMethodName != nil {
-		resp.PaymentMethod = &paymentMethodRef{
-			ID:   *sub.PaymentMethodID,
-			Name: *sub.PaymentMethodName,
+
+	resp := openapi.ModelsSubscriptionResponse{
+		Id:              id,
+		UserId:          userID,
+		Amount:          int64(sub.Amount),
+		BaseDate:        int32(sub.BaseDate),
+		BillingCycle:    openapi.ModelsBillingCycle(sub.BillingCycle),
+		CreatedAt:       sub.CreatedAt.UTC(),
+		ServiceName:     sub.ServiceName,
+		UpdatedAt:       sub.UpdatedAt.UTC(),
+		Memo:            sub.Memo,
+		NextBillingDate: calculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt),
+		MonthlyAmount:   int64(sub.ToMonthlyAmount()),
+		YearlyAmount:    int64(sub.ToYearlyAmount()),
+	}
+
+	if sub.PaymentMethodID != nil {
+		pmID, err := uuid.Parse(*sub.PaymentMethodID)
+		if err != nil {
+			return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid payment_method_id %q: %w", *sub.PaymentMethodID, err)
+		}
+		resp.PaymentMethodId = &pmID
+		if sub.PaymentMethodName != nil {
+			resp.PaymentMethod = &openapi.ModelsPaymentMethodSummary{
+				Id:   pmID,
+				Name: *sub.PaymentMethodName,
+			}
 		}
 	}
-	return resp
+
+	return resp, nil
+}
+
+// calculateNextBillingDate は次回請求日を計算する。
+// 年次課金の場合、請求月は契約日（createdAt）の月を使う。
+// baseDate は日（1〜31）のみを持ち、月の情報がないため、
+// 年次課金を現在の月で計算すると誤った日付になる。
+// baseDate が対象月の日数を超える場合は月末にクランプする（例: 4月31日 → 4月30日）。
+func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle, createdAt time.Time) openapi_types.Date {
+	now := time.Now().UTC()
+	year, month, _ := now.Date()
+
+	if cycle == domain.BillingCycleYearly {
+		// 年次課金は契約月（createdAt の月）を請求月として使う
+		billingMonth := createdAt.Month()
+		next := time.Date(year, billingMonth, clampDay(baseDate, year, billingMonth), 0, 0, 0, 0, time.UTC)
+		if !next.After(now) {
+			next = time.Date(year+1, billingMonth, clampDay(baseDate, year+1, billingMonth), 0, 0, 0, 0, time.UTC)
+		}
+		return openapi_types.Date{Time: next}
+	}
+
+	// monthly
+	next := time.Date(year, month, clampDay(baseDate, year, month), 0, 0, 0, 0, time.UTC)
+	if !next.After(now) {
+		next = time.Date(year, month+1, clampDay(baseDate, year, month+1), 0, 0, 0, 0, time.UTC)
+	}
+	return openapi_types.Date{Time: next}
+}
+
+// clampDay は baseDate がその月の日数を超える場合に月末の日にクランプする。
+// 例: baseDate=31, 4月 → 30
+func clampDay(baseDate, year int, month time.Month) int {
+	// month+1 の day=0 はその月の最終日を返す
+	lastDay := time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	if baseDate > lastDay {
+		return lastDay
+	}
+	return baseDate
 }

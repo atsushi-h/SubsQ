@@ -247,11 +247,27 @@ type ModelsUserResponse struct {
 // ModelsUuid UUID形式の文字列（再利用可能な共通スカラー）
 type ModelsUuid = openapi_types.UUID
 
+// RoutesDeletePaymentMethodsRequest defines model for Routes.DeletePaymentMethodsRequest.
+type RoutesDeletePaymentMethodsRequest struct {
+	Ids []ModelsUuid `json:"ids"`
+}
+
+// RoutesDeleteSubscriptionsRequest defines model for Routes.DeleteSubscriptionsRequest.
+type RoutesDeleteSubscriptionsRequest struct {
+	Ids []ModelsUuid `json:"ids"`
+}
+
+// PaymentMethodsDeletePaymentMethodsJSONRequestBody defines body for PaymentMethodsDeletePaymentMethods for application/json ContentType.
+type PaymentMethodsDeletePaymentMethodsJSONRequestBody = RoutesDeletePaymentMethodsRequest
+
 // PaymentMethodsCreatePaymentMethodJSONRequestBody defines body for PaymentMethodsCreatePaymentMethod for application/json ContentType.
 type PaymentMethodsCreatePaymentMethodJSONRequestBody = ModelsCreatePaymentMethodRequest
 
 // PaymentMethodsUpdatePaymentMethodJSONRequestBody defines body for PaymentMethodsUpdatePaymentMethod for application/json ContentType.
 type PaymentMethodsUpdatePaymentMethodJSONRequestBody = ModelsUpdatePaymentMethodRequest
+
+// SubscriptionsDeleteSubscriptionsJSONRequestBody defines body for SubscriptionsDeleteSubscriptions for application/json ContentType.
+type SubscriptionsDeleteSubscriptionsJSONRequestBody = RoutesDeleteSubscriptionsRequest
 
 // SubscriptionsCreateSubscriptionJSONRequestBody defines body for SubscriptionsCreateSubscription for application/json ContentType.
 type SubscriptionsCreateSubscriptionJSONRequestBody = ModelsCreateSubscriptionRequest
@@ -261,6 +277,9 @@ type SubscriptionsUpdateSubscriptionJSONRequestBody = ModelsUpdateSubscriptionRe
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Delete multiple payment methods
+	// (DELETE /api/v1/payment-methods)
+	PaymentMethodsDeletePaymentMethods(ctx echo.Context) error
 	// List payment methods
 	// (GET /api/v1/payment-methods)
 	PaymentMethodsListPaymentMethods(ctx echo.Context) error
@@ -276,6 +295,9 @@ type ServerInterface interface {
 	// Update payment method
 	// (PATCH /api/v1/payment-methods/{id})
 	PaymentMethodsUpdatePaymentMethod(ctx echo.Context, id ModelsUuid) error
+	// Delete multiple subscriptions
+	// (DELETE /api/v1/subscriptions)
+	SubscriptionsDeleteSubscriptions(ctx echo.Context) error
 	// List subscriptions
 	// (GET /api/v1/subscriptions)
 	SubscriptionsListSubscriptions(ctx echo.Context) error
@@ -302,6 +324,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// PaymentMethodsDeletePaymentMethods converts echo context to params.
+func (w *ServerInterfaceWrapper) PaymentMethodsDeletePaymentMethods(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PaymentMethodsDeletePaymentMethods(ctx)
+	return err
 }
 
 // PaymentMethodsListPaymentMethods converts echo context to params.
@@ -367,6 +398,15 @@ func (w *ServerInterfaceWrapper) PaymentMethodsUpdatePaymentMethod(ctx echo.Cont
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsUpdatePaymentMethod(ctx, id)
+	return err
+}
+
+// SubscriptionsDeleteSubscriptions converts echo context to params.
+func (w *ServerInterfaceWrapper) SubscriptionsDeleteSubscriptions(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.SubscriptionsDeleteSubscriptions(ctx)
 	return err
 }
 
@@ -482,11 +522,13 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.DELETE(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsDeletePaymentMethods)
 	router.GET(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsListPaymentMethods)
 	router.POST(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsCreatePaymentMethod)
 	router.DELETE(baseURL+"/api/v1/payment-methods/:id", wrapper.PaymentMethodsDeletePaymentMethod)
 	router.GET(baseURL+"/api/v1/payment-methods/:id", wrapper.PaymentMethodsGetPaymentMethod)
 	router.PATCH(baseURL+"/api/v1/payment-methods/:id", wrapper.PaymentMethodsUpdatePaymentMethod)
+	router.DELETE(baseURL+"/api/v1/subscriptions", wrapper.SubscriptionsDeleteSubscriptions)
 	router.GET(baseURL+"/api/v1/subscriptions", wrapper.SubscriptionsListSubscriptions)
 	router.POST(baseURL+"/api/v1/subscriptions", wrapper.SubscriptionsCreateSubscription)
 	router.DELETE(baseURL+"/api/v1/subscriptions/:id", wrapper.SubscriptionsDeleteSubscription)

@@ -13,6 +13,8 @@ import (
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
+var _ port.PaymentMethodRepository = (*paymentMethodRepository)(nil)
+
 type paymentMethodRepository struct {
 	queries *generated.Queries
 }
@@ -56,6 +58,34 @@ func (r *paymentMethodRepository) FindByUserID(ctx context.Context, userID strin
 	result := make([]*domain.PaymentMethod, len(rows))
 	for i, row := range rows {
 		result[i] = toPaymentMethodDomain(row)
+	}
+
+	return result, nil
+}
+
+func (r *paymentMethodRepository) FindByUserIDWithCount(ctx context.Context, userID string) ([]*port.PaymentMethodWithCount, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.queries.ListPaymentMethodsWithCountByUserID(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*port.PaymentMethodWithCount, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, &port.PaymentMethodWithCount{
+			PaymentMethod: toPaymentMethodDomain(&generated.PaymentMethod{
+				ID:        row.ID,
+				UserID:    row.UserID,
+				Name:      row.Name,
+				CreatedAt: row.CreatedAt,
+				UpdatedAt: row.UpdatedAt,
+			}),
+			UsageCount: row.UsageCount,
+		})
 	}
 
 	return result, nil

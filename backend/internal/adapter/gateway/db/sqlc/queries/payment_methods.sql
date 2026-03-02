@@ -30,3 +30,12 @@ WHERE id = ANY($1::uuid[]) AND user_id = $2;
 SELECT * FROM payment_methods
 WHERE id = ANY($1::uuid[]) AND user_id = $2;
 
+-- name: ListPaymentMethodsWithCountByUserID :many
+SELECT pm.id, pm.user_id, pm.name, pm.created_at, pm.updated_at,
+       COUNT(s.id) AS usage_count
+FROM payment_methods pm
+LEFT JOIN subscriptions s ON s.payment_method_id = pm.id
+WHERE pm.user_id = $1
+GROUP BY pm.id, pm.user_id, pm.name, pm.created_at, pm.updated_at
+ORDER BY pm.created_at DESC;
+
