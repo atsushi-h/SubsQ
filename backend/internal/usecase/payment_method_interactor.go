@@ -12,6 +12,9 @@ import (
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
+// PaymentMethodWithCount はポート層で定義された型の再エクスポート（usecase層から参照しやすくするため）
+type PaymentMethodWithCount = port.PaymentMethodWithCount
+
 var (
 	ErrPaymentMethodNotFound = errors.New("payment method not found")
 	ErrPaymentMethodInUse    = errors.New("payment method is in use by subscriptions")
@@ -35,27 +38,10 @@ func (i *PaymentMethodInteractor) List(ctx context.Context, userID string) ([]*d
 	return pms, nil
 }
 
-type PaymentMethodWithCount struct {
-	PaymentMethod *domain.PaymentMethod
-	UsageCount    int64
-}
-
 func (i *PaymentMethodInteractor) ListWithCount(ctx context.Context, userID string) ([]*PaymentMethodWithCount, error) {
-	pms, err := i.pmRepo.FindByUserID(ctx, userID)
+	result, err := i.pmRepo.FindByUserIDWithCount(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list payment methods: %w", err)
-	}
-
-	result := make([]*PaymentMethodWithCount, 0, len(pms))
-	for _, pm := range pms {
-		count, err := i.subRepo.CountByPaymentMethodID(ctx, pm.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to count subscriptions: %w", err)
-		}
-		result = append(result, &PaymentMethodWithCount{
-			PaymentMethod: pm,
-			UsageCount:    count,
-		})
+		return nil, fmt.Errorf("failed to list payment methods with count: %w", err)
 	}
 	return result, nil
 }
