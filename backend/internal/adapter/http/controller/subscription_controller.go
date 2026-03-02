@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -37,7 +38,12 @@ func (c *SubscriptionController) List(ctx echo.Context) error {
 	items := make([]openapi.ModelsSubscriptionResponse, 0, len(subs))
 	var totalMonthly, totalYearly int64
 	for _, sub := range subs {
-		items = append(items, toSubscriptionResponse(sub))
+		item, err := toSubscriptionResponse(sub)
+		if err != nil {
+			ctx.Logger().Error(err)
+			return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+		}
+		items = append(items, item)
 		totalMonthly += int64(sub.ToMonthlyAmount())
 		totalYearly += int64(sub.ToYearlyAmount())
 	}
@@ -64,7 +70,12 @@ func (c *SubscriptionController) Get(ctx echo.Context, id openapi.ModelsUuid) er
 		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusOK, toSubscriptionResponse(sub))
+	resp, err := toSubscriptionResponse(sub)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 // POST /api/v1/subscriptions
@@ -97,7 +108,12 @@ func (c *SubscriptionController) Create(ctx echo.Context) error {
 		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusCreated, toSubscriptionResponse(sub))
+	resp, err := toSubscriptionResponse(sub)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusCreated, resp)
 }
 
 // PATCH /api/v1/subscriptions/:id
@@ -156,7 +172,12 @@ func (c *SubscriptionController) Update(ctx echo.Context, id openapi.ModelsUuid)
 		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusOK, toSubscriptionResponse(sub))
+	resp, err := toSubscriptionResponse(sub)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 // DELETE /api/v1/subscriptions/:id
@@ -200,8 +221,19 @@ func (c *SubscriptionController) DeleteMany(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-func toSubscriptionResponse(sub *domain.Subscription) openapi.ModelsSubscriptionResponse {
+func toSubscriptionResponse(sub *domain.Subscription) (openapi.ModelsSubscriptionResponse, error) {
+	id, err := uuid.Parse(sub.ID)
+	if err != nil {
+		return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid subscription id %q: %w", sub.ID, err)
+	}
+	userID, err := uuid.Parse(sub.UserID)
+	if err != nil {
+		return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid user id %q: %w", sub.UserID, err)
+	}
+
 	resp := openapi.ModelsSubscriptionResponse{
+		Id:              id,
+		UserId:          userID,
 		Amount:          int64(sub.Amount),
 		BaseDate:        int32(sub.BaseDate),
 		BillingCycle:    openapi.ModelsBillingCycle(sub.BillingCycle),
@@ -214,28 +246,21 @@ func toSubscriptionResponse(sub *domain.Subscription) openapi.ModelsSubscription
 		YearlyAmount:    int64(sub.ToYearlyAmount()),
 	}
 
-	if idVal, err := uuid.Parse(sub.ID); err == nil {
-		resp.Id = idVal
-	}
-	if idVal, err := uuid.Parse(sub.UserID); err == nil {
-		resp.UserId = idVal
-	}
 	if sub.PaymentMethodID != nil {
-		if idVal, err := uuid.Parse(*sub.PaymentMethodID); err == nil {
-			resp.PaymentMethodId = &idVal
+		pmID, err := uuid.Parse(*sub.PaymentMethodID)
+		if err != nil {
+			return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid payment_method_id %q: %w", *sub.PaymentMethodID, err)
 		}
+		resp.PaymentMethodId = &pmID
 		if sub.PaymentMethodName != nil {
-			pmID := resp.PaymentMethodId
-			if pmID != nil {
-				resp.PaymentMethod = &openapi.ModelsPaymentMethodSummary{
-					Id:   *pmID,
-					Name: *sub.PaymentMethodName,
-				}
+			resp.PaymentMethod = &openapi.ModelsPaymentMethodSummary{
+				Id:   pmID,
+				Name: *sub.PaymentMethodName,
 			}
 		}
 	}
 
-	return resp
+	return resp, nil
 }
 
 // calculateNextBillingDate は次回請求日を計算する。

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -34,7 +35,12 @@ func (c *PaymentMethodController) List(ctx echo.Context) error {
 
 	resp := make([]openapi.ModelsPaymentMethodResponse, 0, len(pms))
 	for _, pm := range pms {
-		resp = append(resp, toPaymentMethodResponse(pm.PaymentMethod, pm.UsageCount))
+		item, err := toPaymentMethodResponse(pm.PaymentMethod, pm.UsageCount)
+		if err != nil {
+			ctx.Logger().Error(err)
+			return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+		}
+		resp = append(resp, item)
 	}
 
 	return ctx.JSON(http.StatusOK, resp)
@@ -57,7 +63,12 @@ func (c *PaymentMethodController) GetByID(ctx echo.Context, id openapi.ModelsUui
 		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
 	}
 
-	return ctx.JSON(http.StatusOK, toPaymentMethodResponse(pm, count))
+	resp, err := toPaymentMethodResponse(pm, count)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 // POST /api/v1/payment-methods
@@ -77,7 +88,12 @@ func (c *PaymentMethodController) Create(ctx echo.Context) error {
 		return handleError(ctx, err)
 	}
 
-	return ctx.JSON(http.StatusCreated, toPaymentMethodResponse(pm, 0))
+	resp, err := toPaymentMethodResponse(pm, 0)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusCreated, resp)
 }
 
 // PATCH /api/v1/payment-methods/:id
@@ -107,7 +123,12 @@ func (c *PaymentMethodController) Update(ctx echo.Context, id openapi.ModelsUuid
 		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
 	}
 
-	return ctx.JSON(http.StatusOK, toPaymentMethodResponse(pm, count))
+	resp, err := toPaymentMethodResponse(pm, count)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 // DELETE /api/v1/payment-methods/:id
@@ -151,18 +172,21 @@ func (c *PaymentMethodController) DeleteMany(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-func toPaymentMethodResponse(pm *domain.PaymentMethod, usageCount int64) openapi.ModelsPaymentMethodResponse {
-	resp := openapi.ModelsPaymentMethodResponse{
+func toPaymentMethodResponse(pm *domain.PaymentMethod, usageCount int64) (openapi.ModelsPaymentMethodResponse, error) {
+	id, err := uuid.Parse(pm.ID)
+	if err != nil {
+		return openapi.ModelsPaymentMethodResponse{}, fmt.Errorf("invalid payment_method id %q: %w", pm.ID, err)
+	}
+	userID, err := uuid.Parse(pm.UserID)
+	if err != nil {
+		return openapi.ModelsPaymentMethodResponse{}, fmt.Errorf("invalid user id %q: %w", pm.UserID, err)
+	}
+	return openapi.ModelsPaymentMethodResponse{
+		Id:         id,
+		UserId:     userID,
 		Name:       pm.Name,
 		CreatedAt:  pm.CreatedAt.UTC(),
 		UpdatedAt:  pm.UpdatedAt.UTC(),
 		UsageCount: int32(usageCount),
-	}
-	if idVal, err := uuid.Parse(pm.ID); err == nil {
-		resp.Id = idVal
-	}
-	if idVal, err := uuid.Parse(pm.UserID); err == nil {
-		resp.UserId = idVal
-	}
-	return resp
+	}, nil
 }
