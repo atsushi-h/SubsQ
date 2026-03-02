@@ -35,6 +35,50 @@ func (i *PaymentMethodInteractor) List(ctx context.Context, userID string) ([]*d
 	return pms, nil
 }
 
+type PaymentMethodWithCount struct {
+	PaymentMethod *domain.PaymentMethod
+	UsageCount    int64
+}
+
+func (i *PaymentMethodInteractor) ListWithCount(ctx context.Context, userID string) ([]*PaymentMethodWithCount, error) {
+	pms, err := i.pmRepo.FindByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list payment methods: %w", err)
+	}
+
+	result := make([]*PaymentMethodWithCount, 0, len(pms))
+	for _, pm := range pms {
+		count, err := i.subRepo.CountByPaymentMethodID(ctx, pm.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to count subscriptions: %w", err)
+		}
+		result = append(result, &PaymentMethodWithCount{
+			PaymentMethod: pm,
+			UsageCount:    count,
+		})
+	}
+	return result, nil
+}
+
+func (i *PaymentMethodInteractor) Get(ctx context.Context, id, userID string) (*domain.PaymentMethod, error) {
+	pm, err := i.pmRepo.FindByID(ctx, id, userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrPaymentMethodNotFound
+		}
+		return nil, fmt.Errorf("failed to get payment method: %w", err)
+	}
+	return pm, nil
+}
+
+func (i *PaymentMethodInteractor) CountUsage(ctx context.Context, id string) (int64, error) {
+	count, err := i.subRepo.CountByPaymentMethodID(ctx, id)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count usage: %w", err)
+	}
+	return count, nil
+}
+
 func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name string) (*domain.PaymentMethod, error) {
 	if len(name) == 0 || len(name) > 100 {
 		return nil, fmt.Errorf("%w: name must be between 1 and 100 characters", ErrInvalidInput)

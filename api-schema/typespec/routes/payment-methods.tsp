@@ -47,4 +47,15 @@ interface PaymentMethods {
   deletePaymentMethod(
     @path id: uuid
   ): void | ConflictError | NotFoundError | UnauthorizedError;
+
+  /** 複数の支払い方法を削除 */
+  @delete
+  @summary("Delete multiple payment methods")
+  deletePaymentMethods(
+    @body request: DeletePaymentMethodsRequest
+  ): void | BadRequestError | ConflictError | UnauthorizedError;
+}
+
+model DeletePaymentMethodsRequest {
+  ids: uuid[];
 }
