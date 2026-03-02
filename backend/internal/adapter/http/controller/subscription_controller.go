@@ -267,24 +267,36 @@ func toSubscriptionResponse(sub *domain.Subscription) (openapi.ModelsSubscriptio
 // 年次課金の場合、請求月は契約日（createdAt）の月を使う。
 // baseDate は日（1〜31）のみを持ち、月の情報がないため、
 // 年次課金を現在の月で計算すると誤った日付になる。
+// baseDate が対象月の日数を超える場合は月末にクランプする（例: 4月31日 → 4月30日）。
 func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle, createdAt time.Time) openapi_types.Date {
-	now := time.Now()
+	now := time.Now().UTC()
 	year, month, _ := now.Date()
 
 	if cycle == domain.BillingCycleYearly {
 		// 年次課金は契約月（createdAt の月）を請求月として使う
 		billingMonth := createdAt.Month()
-		next := time.Date(year, billingMonth, baseDate, 0, 0, 0, 0, time.UTC)
+		next := time.Date(year, billingMonth, clampDay(baseDate, year, billingMonth), 0, 0, 0, 0, time.UTC)
 		if !next.After(now) {
-			next = time.Date(year+1, billingMonth, baseDate, 0, 0, 0, 0, time.UTC)
+			next = time.Date(year+1, billingMonth, clampDay(baseDate, year+1, billingMonth), 0, 0, 0, 0, time.UTC)
 		}
 		return openapi_types.Date{Time: next}
 	}
 
 	// monthly
-	next := time.Date(year, month, baseDate, 0, 0, 0, 0, time.UTC)
+	next := time.Date(year, month, clampDay(baseDate, year, month), 0, 0, 0, 0, time.UTC)
 	if !next.After(now) {
-		next = time.Date(year, month+1, baseDate, 0, 0, 0, 0, time.UTC)
+		next = time.Date(year, month+1, clampDay(baseDate, year, month+1), 0, 0, 0, 0, time.UTC)
 	}
 	return openapi_types.Date{Time: next}
+}
+
+// clampDay は baseDate がその月の日数を超える場合に月末の日にクランプする。
+// 例: baseDate=31, 4月 → 30
+func clampDay(baseDate, year int, month time.Month) int {
+	// month+1 の day=0 はその月の最終日を返す
+	lastDay := time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	if baseDate > lastDay {
+		return lastDay
+	}
+	return baseDate
 }
