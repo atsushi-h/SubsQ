@@ -18,18 +18,25 @@ import (
 type SubscriptionPresenter struct {
 	response     *openapi.ModelsSubscriptionResponse
 	listResponse *openapi.ModelsListSubscriptionsResponse
+	now          func() time.Time
 }
 
 var _ port.SubscriptionOutputPort = (*SubscriptionPresenter)(nil)
 
 // NewSubscriptionPresenter creates a new SubscriptionPresenter.
 func NewSubscriptionPresenter() *SubscriptionPresenter {
-	return &SubscriptionPresenter{}
+	return &SubscriptionPresenter{now: func() time.Time { return time.Now().UTC() }}
+}
+
+// NewSubscriptionPresenterWithClock creates a SubscriptionPresenter with an injectable clock.
+// Use this constructor in tests to control the current time.
+func NewSubscriptionPresenterWithClock(now func() time.Time) *SubscriptionPresenter {
+	return &SubscriptionPresenter{now: now}
 }
 
 // PresentSubscription stores a converted single subscription response.
 func (p *SubscriptionPresenter) PresentSubscription(_ context.Context, sub *domain.Subscription) error {
-	resp, err := toSubscriptionResponse(sub)
+	resp, err := toSubscriptionResponse(sub, p.now())
 	if err != nil {
 		return err
 	}
@@ -39,10 +46,11 @@ func (p *SubscriptionPresenter) PresentSubscription(_ context.Context, sub *doma
 
 // PresentSubscriptions stores a converted subscription list response with summary.
 func (p *SubscriptionPresenter) PresentSubscriptions(_ context.Context, subs []*domain.Subscription) error {
+	now := p.now()
 	items := make([]openapi.ModelsSubscriptionResponse, 0, len(subs))
 	var totalMonthly, totalYearly int64
 	for _, sub := range subs {
-		item, err := toSubscriptionResponse(sub)
+		item, err := toSubscriptionResponse(sub, now)
 		if err != nil {
 			return err
 		}
@@ -71,7 +79,7 @@ func (p *SubscriptionPresenter) ListResponse() *openapi.ModelsListSubscriptionsR
 	return p.listResponse
 }
 
-func toSubscriptionResponse(sub *domain.Subscription) (openapi.ModelsSubscriptionResponse, error) {
+func toSubscriptionResponse(sub *domain.Subscription, now time.Time) (openapi.ModelsSubscriptionResponse, error) {
 	id, err := uuid.Parse(sub.ID)
 	if err != nil {
 		return openapi.ModelsSubscriptionResponse{}, fmt.Errorf("invalid subscription id %q: %w", sub.ID, err)
@@ -91,7 +99,7 @@ func toSubscriptionResponse(sub *domain.Subscription) (openapi.ModelsSubscriptio
 		ServiceName:     sub.ServiceName,
 		UpdatedAt:       sub.UpdatedAt.UTC(),
 		Memo:            sub.Memo,
-		NextBillingDate: calculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt),
+		NextBillingDate: calculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt, now),
 		MonthlyAmount:   int64(sub.ToMonthlyAmount()),
 		YearlyAmount:    int64(sub.ToYearlyAmount()),
 	}
@@ -118,8 +126,7 @@ func toSubscriptionResponse(sub *domain.Subscription) (openapi.ModelsSubscriptio
 // baseDate は日（1〜31）のみを持ち、月の情報がないため、
 // 年次課金を現在の月で計算すると誤った日付になる。
 // baseDate が対象月の日数を超える場合は月末にクランプする（例: 4月31日 → 4月30日）。
-func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle, createdAt time.Time) openapi_types.Date {
-	now := time.Now().UTC()
+func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle, createdAt, now time.Time) openapi_types.Date {
 	year, month, _ := now.Date()
 
 	if cycle == domain.BillingCycleYearly {
