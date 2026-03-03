@@ -9,4 +9,5 @@ import (
 type UserRepository interface {
 	UpsertUser(ctx context.Context, u *user.User) (*user.User, error)
 	FindByID(ctx context.Context, id string) (*user.User, error)
+	DeleteUser(ctx context.Context, id string) error
 }

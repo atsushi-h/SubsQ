@@ -13,11 +13,11 @@ import (
 )
 
 type UserController struct {
-	authInteractor *usecase.AuthInteractor
+	interactor *usecase.UserInteractor
 }
 
-func NewUserController(authInteractor *usecase.AuthInteractor) *UserController {
-	return &UserController{authInteractor: authInteractor}
+func NewUserController(interactor *usecase.UserInteractor) *UserController {
+	return &UserController{interactor: interactor}
 }
 
 // GET /api/v1/users/me
@@ -27,9 +27,9 @@ func (c *UserController) GetCurrentUser(ctx echo.Context) error {
 		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	u, err := c.authInteractor.GetCurrentUser(ctx.Request().Context(), userID)
+	u, err := c.interactor.GetCurrentUser(ctx.Request().Context(), userID)
 	if err != nil {
-		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "failed to get user")
+		return handleError(ctx, err)
 	}
 
 	resp := openapi.ModelsUserResponse{
@@ -50,5 +50,24 @@ func (c *UserController) GetCurrentUser(ctx echo.Context) error {
 
 // DELETE /api/v1/users/me
 func (c *UserController) DeleteCurrentUser(ctx echo.Context) error {
-	return ctx.NoContent(http.StatusNotImplemented)
+	userID, ok := ctx.Get(middleware.UserIDKey).(string)
+	if !ok {
+		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+	}
+
+	if err := c.interactor.DeleteCurrentUser(ctx.Request().Context(), userID); err != nil {
+		return handleError(ctx, err)
+	}
+
+	ctx.SetCookie(&http.Cookie{
+		Name:     "subsq_token",
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return ctx.NoContent(http.StatusNoContent)
 }

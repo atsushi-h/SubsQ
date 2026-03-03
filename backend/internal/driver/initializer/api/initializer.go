@@ -51,7 +51,8 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	pmController := httpcontroller.NewPaymentMethodController(pmInteractor)
 	subInteractor := usecase.NewSubscriptionInteractor(subRepo, pmRepo)
 	subController := httpcontroller.NewSubscriptionController(subInteractor)
-	userController := httpcontroller.NewUserController(authInteractor)
+	userInteractor := usecase.NewUserInteractor(userRepo)
+	userController := httpcontroller.NewUserController(userInteractor)
 
 	server := httpcontroller.NewServer(subController, pmController, userController)
 
