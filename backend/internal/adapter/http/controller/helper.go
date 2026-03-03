@@ -20,6 +20,8 @@ func handleError(ctx echo.Context, err error) error {
 		return errorJSON(ctx, http.StatusNotFound, "Not Found", err.Error())
 	case errors.Is(err, usecase.ErrPaymentMethodInUse):
 		return errorJSON(ctx, http.StatusConflict, "Conflict", err.Error())
+	case errors.Is(err, usecase.ErrUserNotFound):
+		return errorJSON(ctx, http.StatusNotFound, "Not Found", err.Error())
 	default:
 		ctx.Logger().Error(err)
 		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")

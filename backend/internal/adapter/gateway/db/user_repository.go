@@ -53,6 +53,14 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*user.User, e
 	return toUserDomain(row), nil
 }
 
+func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
+	var pgID pgtype.UUID
+	if err := pgID.Scan(id); err != nil {
+		return err
+	}
+	return r.queries.DeleteUser(ctx, pgID)
+}
+
 func toUserDomain(row *generated.User) *user.User {
 	return &user.User{
 		ID:                row.ID.String(),
