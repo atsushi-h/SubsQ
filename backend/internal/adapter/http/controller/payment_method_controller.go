@@ -1,24 +1,43 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
 	openapi "github.com/atsushi-h/subsq/backend/internal/adapter/http/generated/openapi"
 	"github.com/atsushi-h/subsq/backend/internal/adapter/http/middleware"
-	domain "github.com/atsushi-h/subsq/backend/internal/domain/payment_method"
-	"github.com/atsushi-h/subsq/backend/internal/usecase"
+	httppresenter "github.com/atsushi-h/subsq/backend/internal/adapter/http/presenter"
+	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
+// PaymentMethodController handles payment method HTTP endpoints.
 type PaymentMethodController struct {
-	interactor *usecase.PaymentMethodInteractor
+	inputFactory   func(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort) port.PaymentMethodInputPort
+	outputFactory  func() *httppresenter.PaymentMethodPresenter
+	pmRepoFactory  func() port.PaymentMethodRepository
+	subRepoFactory func() port.SubscriptionRepository
 }
 
-func NewPaymentMethodController(interactor *usecase.PaymentMethodInteractor) *PaymentMethodController {
-	return &PaymentMethodController{interactor: interactor}
+// NewPaymentMethodController creates PaymentMethodController.
+func NewPaymentMethodController(
+	inputFactory func(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort) port.PaymentMethodInputPort,
+	outputFactory func() *httppresenter.PaymentMethodPresenter,
+	pmRepoFactory func() port.PaymentMethodRepository,
+	subRepoFactory func() port.SubscriptionRepository,
+) *PaymentMethodController {
+	return &PaymentMethodController{
+		inputFactory:   inputFactory,
+		outputFactory:  outputFactory,
+		pmRepoFactory:  pmRepoFactory,
+		subRepoFactory: subRepoFactory,
+	}
+}
+
+func (c *PaymentMethodController) newIO() (port.PaymentMethodInputPort, *httppresenter.PaymentMethodPresenter) {
+	p := c.outputFactory()
+	input := c.inputFactory(c.pmRepoFactory(), c.subRepoFactory(), p)
+	return input, p
 }
 
 // GET /api/v1/payment-methods
@@ -28,22 +47,11 @@ func (c *PaymentMethodController) List(ctx echo.Context) error {
 		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	pms, err := c.interactor.ListWithCount(ctx.Request().Context(), userID)
-	if err != nil {
+	input, p := c.newIO()
+	if err := input.List(ctx.Request().Context(), userID); err != nil {
 		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
 	}
-
-	resp := make([]openapi.ModelsPaymentMethodResponse, 0, len(pms))
-	for _, pm := range pms {
-		item, err := toPaymentMethodResponse(pm.PaymentMethod, pm.UsageCount)
-		if err != nil {
-			ctx.Logger().Error(err)
-			return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
-		}
-		resp = append(resp, item)
-	}
-
-	return ctx.JSON(http.StatusOK, resp)
+	return ctx.JSON(http.StatusOK, p.ListResponse())
 }
 
 // GET /api/v1/payment-methods/:id
@@ -53,22 +61,11 @@ func (c *PaymentMethodController) GetByID(ctx echo.Context, id openapi.ModelsUui
 		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	pm, err := c.interactor.Get(ctx.Request().Context(), id.String(), userID)
-	if err != nil {
+	input, p := c.newIO()
+	if err := input.GetByID(ctx.Request().Context(), id.String(), userID); err != nil {
 		return handleError(ctx, err)
 	}
-
-	count, err := c.interactor.CountUsage(ctx.Request().Context(), id.String())
-	if err != nil {
-		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
-	}
-
-	resp, err := toPaymentMethodResponse(pm, count)
-	if err != nil {
-		ctx.Logger().Error(err)
-		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
-	}
-	return ctx.JSON(http.StatusOK, resp)
+	return ctx.JSON(http.StatusOK, p.Response())
 }
 
 // POST /api/v1/payment-methods
@@ -83,17 +80,11 @@ func (c *PaymentMethodController) Create(ctx echo.Context) error {
 		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
 	}
 
-	pm, err := c.interactor.Create(ctx.Request().Context(), userID, req.Name)
-	if err != nil {
+	input, p := c.newIO()
+	if err := input.Create(ctx.Request().Context(), userID, req.Name); err != nil {
 		return handleError(ctx, err)
 	}
-
-	resp, err := toPaymentMethodResponse(pm, 0)
-	if err != nil {
-		ctx.Logger().Error(err)
-		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
-	}
-	return ctx.JSON(http.StatusCreated, resp)
+	return ctx.JSON(http.StatusCreated, p.Response())
 }
 
 // PATCH /api/v1/payment-methods/:id
@@ -113,22 +104,11 @@ func (c *PaymentMethodController) Update(ctx echo.Context, id openapi.ModelsUuid
 		name = *req.Name
 	}
 
-	pm, err := c.interactor.Update(ctx.Request().Context(), id.String(), userID, name)
-	if err != nil {
+	input, p := c.newIO()
+	if err := input.Update(ctx.Request().Context(), id.String(), userID, name); err != nil {
 		return handleError(ctx, err)
 	}
-
-	count, err := c.interactor.CountUsage(ctx.Request().Context(), id.String())
-	if err != nil {
-		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
-	}
-
-	resp, err := toPaymentMethodResponse(pm, count)
-	if err != nil {
-		ctx.Logger().Error(err)
-		return errorJSON(ctx, http.StatusInternalServerError, "Internal Server Error", "unexpected error")
-	}
-	return ctx.JSON(http.StatusOK, resp)
+	return ctx.JSON(http.StatusOK, p.Response())
 }
 
 // DELETE /api/v1/payment-methods/:id
@@ -138,10 +118,10 @@ func (c *PaymentMethodController) Delete(ctx echo.Context, id openapi.ModelsUuid
 		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	if err := c.interactor.Delete(ctx.Request().Context(), id.String(), userID); err != nil {
+	input, _ := c.newIO()
+	if err := input.Delete(ctx.Request().Context(), id.String(), userID); err != nil {
 		return handleError(ctx, err)
 	}
-
 	return ctx.NoContent(http.StatusNoContent)
 }
 
@@ -165,28 +145,9 @@ func (c *PaymentMethodController) DeleteMany(ctx echo.Context) error {
 		ids = append(ids, id.String())
 	}
 
-	if err := c.interactor.DeleteMany(ctx.Request().Context(), ids, userID); err != nil {
+	input, _ := c.newIO()
+	if err := input.DeleteMany(ctx.Request().Context(), ids, userID); err != nil {
 		return handleError(ctx, err)
 	}
-
 	return ctx.NoContent(http.StatusNoContent)
-}
-
-func toPaymentMethodResponse(pm *domain.PaymentMethod, usageCount int64) (openapi.ModelsPaymentMethodResponse, error) {
-	id, err := uuid.Parse(pm.ID)
-	if err != nil {
-		return openapi.ModelsPaymentMethodResponse{}, fmt.Errorf("invalid payment_method id %q: %w", pm.ID, err)
-	}
-	userID, err := uuid.Parse(pm.UserID)
-	if err != nil {
-		return openapi.ModelsPaymentMethodResponse{}, fmt.Errorf("invalid user id %q: %w", pm.UserID, err)
-	}
-	return openapi.ModelsPaymentMethodResponse{
-		Id:         id,
-		UserId:     userID,
-		Name:       pm.Name,
-		CreatedAt:  pm.CreatedAt.UTC(),
-		UpdatedAt:  pm.UpdatedAt.UTC(),
-		UsageCount: int32(usageCount),
-	}, nil
 }
