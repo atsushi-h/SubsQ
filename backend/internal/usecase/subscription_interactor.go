@@ -7,65 +7,63 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	pmdomain "github.com/atsushi-h/subsq/backend/internal/domain/payment_method"
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/subscription"
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
 var ErrSubscriptionNotFound = errors.New("subscription not found")
 
+// SubscriptionInteractor handles subscription use cases.
 type SubscriptionInteractor struct {
 	subRepo port.SubscriptionRepository
 	pmRepo  port.PaymentMethodRepository
+	output  port.SubscriptionOutputPort
 }
 
-func NewSubscriptionInteractor(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository) *SubscriptionInteractor {
-	return &SubscriptionInteractor{subRepo: subRepo, pmRepo: pmRepo}
+var _ port.SubscriptionInputPort = (*SubscriptionInteractor)(nil)
+
+// NewSubscriptionInteractor creates SubscriptionInteractor.
+func NewSubscriptionInteractor(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository, output port.SubscriptionOutputPort) *SubscriptionInteractor {
+	return &SubscriptionInteractor{subRepo: subRepo, pmRepo: pmRepo, output: output}
 }
 
-func (i *SubscriptionInteractor) List(ctx context.Context, userID string) ([]*domain.Subscription, error) {
+// List retrieves all subscriptions for a user.
+func (i *SubscriptionInteractor) List(ctx context.Context, userID string) error {
 	subs, err := i.subRepo.FindByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list subscriptions: %w", err)
+		return fmt.Errorf("failed to list subscriptions: %w", err)
 	}
-	return subs, nil
+	return i.output.PresentSubscriptions(ctx, subs)
 }
 
-func (i *SubscriptionInteractor) Get(ctx context.Context, id, userID string) (*domain.Subscription, error) {
+// Get retrieves a single subscription by id.
+func (i *SubscriptionInteractor) Get(ctx context.Context, id, userID string) error {
 	sub, err := i.subRepo.FindByID(ctx, id, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrSubscriptionNotFound
+			return ErrSubscriptionNotFound
 		}
-		return nil, fmt.Errorf("failed to get subscription: %w", err)
+		return fmt.Errorf("failed to get subscription: %w", err)
 	}
-	return sub, nil
+	return i.output.PresentSubscription(ctx, sub)
 }
 
-type CreateSubscriptionInput struct {
-	ServiceName     string
-	Amount          int
-	BillingCycle    domain.BillingCycle
-	BaseDate        int
-	PaymentMethodID *string
-	Memo            *string
-}
-
-func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, input CreateSubscriptionInput) (*domain.Subscription, error) {
+// Create creates a new subscription.
+func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, input port.CreateSubscriptionInput) error {
 	if err := validateSubscriptionInput(input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate); err != nil {
-		return nil, err
+		return err
 	}
 
-	var pm *pmdomain.PaymentMethod
+	var pmName *string
 	if input.PaymentMethodID != nil {
-		var err error
-		pm, err = i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID)
+		pm, err := i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, fmt.Errorf("%w: payment method not found", ErrInvalidInput)
+				return fmt.Errorf("%w: payment method not found", ErrInvalidInput)
 			}
-			return nil, fmt.Errorf("failed to verify payment method: %w", err)
+			return fmt.Errorf("failed to verify payment method: %w", err)
 		}
+		pmName = &pm.Name
 	}
 
 	sub, err := i.subRepo.Create(ctx, &domain.Subscription{
@@ -78,68 +76,83 @@ func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, inpu
 		Memo:            input.Memo,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create subscription: %w", err)
+		return fmt.Errorf("failed to create subscription: %w", err)
 	}
 
-	if pm != nil {
-		sub.PaymentMethodName = &pm.Name
-	}
-	return sub, nil
+	sub.PaymentMethodName = pmName
+	return i.output.PresentSubscription(ctx, sub)
 }
 
-type UpdateSubscriptionInput struct {
-	ServiceName     string
-	Amount          int
-	BillingCycle    domain.BillingCycle
-	BaseDate        int
-	PaymentMethodID *string
-	Memo            *string
-}
-
-func (i *SubscriptionInteractor) Update(ctx context.Context, id, userID string, input UpdateSubscriptionInput) (*domain.Subscription, error) {
-	if err := validateSubscriptionInput(input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate); err != nil {
-		return nil, err
-	}
-
-	if _, err := i.subRepo.FindByID(ctx, id, userID); err != nil {
+// Update updates an existing subscription, merging nil fields with existing values.
+func (i *SubscriptionInteractor) Update(ctx context.Context, id, userID string, input port.UpdateSubscriptionInput) error {
+	existing, err := i.subRepo.FindByID(ctx, id, userID)
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrSubscriptionNotFound
+			return ErrSubscriptionNotFound
 		}
-		return nil, fmt.Errorf("failed to find subscription: %w", err)
+		return fmt.Errorf("failed to find subscription: %w", err)
 	}
 
-	var pm *pmdomain.PaymentMethod
+	serviceName := existing.ServiceName
+	if input.ServiceName != nil {
+		serviceName = *input.ServiceName
+	}
+	amount := existing.Amount
+	if input.Amount != nil {
+		amount = *input.Amount
+	}
+	billingCycle := existing.BillingCycle
+	if input.BillingCycle != nil {
+		billingCycle = *input.BillingCycle
+	}
+	baseDate := existing.BaseDate
+	if input.BaseDate != nil {
+		baseDate = *input.BaseDate
+	}
+	pmID := existing.PaymentMethodID
 	if input.PaymentMethodID != nil {
-		var err error
-		pm, err = i.pmRepo.FindByID(ctx, *input.PaymentMethodID, userID)
+		pmID = input.PaymentMethodID
+	}
+	memo := existing.Memo
+	if input.Memo != nil {
+		memo = input.Memo
+	}
+
+	if err := validateSubscriptionInput(serviceName, amount, billingCycle, baseDate); err != nil {
+		return err
+	}
+
+	var pmName *string
+	if pmID != nil {
+		pm, err := i.pmRepo.FindByID(ctx, *pmID, userID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, fmt.Errorf("%w: payment method not found", ErrInvalidInput)
+				return fmt.Errorf("%w: payment method not found", ErrInvalidInput)
 			}
-			return nil, fmt.Errorf("failed to verify payment method: %w", err)
+			return fmt.Errorf("failed to verify payment method: %w", err)
 		}
+		pmName = &pm.Name
 	}
 
 	sub, err := i.subRepo.Update(ctx, &domain.Subscription{
 		ID:              id,
 		UserID:          userID,
-		ServiceName:     input.ServiceName,
-		Amount:          input.Amount,
-		BillingCycle:    input.BillingCycle,
-		BaseDate:        input.BaseDate,
-		PaymentMethodID: input.PaymentMethodID,
-		Memo:            input.Memo,
+		ServiceName:     serviceName,
+		Amount:          amount,
+		BillingCycle:    billingCycle,
+		BaseDate:        baseDate,
+		PaymentMethodID: pmID,
+		Memo:            memo,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to update subscription: %w", err)
+		return fmt.Errorf("failed to update subscription: %w", err)
 	}
 
-	if pm != nil {
-		sub.PaymentMethodName = &pm.Name
-	}
-	return sub, nil
+	sub.PaymentMethodName = pmName
+	return i.output.PresentSubscription(ctx, sub)
 }
 
+// Delete deletes a subscription by id.
 func (i *SubscriptionInteractor) Delete(ctx context.Context, id, userID string) error {
 	if _, err := i.subRepo.FindByID(ctx, id, userID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -147,13 +160,13 @@ func (i *SubscriptionInteractor) Delete(ctx context.Context, id, userID string) 
 		}
 		return fmt.Errorf("failed to find subscription: %w", err)
 	}
-
 	if err := i.subRepo.Delete(ctx, id, userID); err != nil {
 		return fmt.Errorf("failed to delete subscription: %w", err)
 	}
 	return nil
 }
 
+// DeleteMany deletes multiple subscriptions by ids.
 func (i *SubscriptionInteractor) DeleteMany(ctx context.Context, ids []string, userID string) error {
 	subs, err := i.subRepo.FindByIDs(ctx, ids, userID)
 	if err != nil {
@@ -162,7 +175,6 @@ func (i *SubscriptionInteractor) DeleteMany(ctx context.Context, ids []string, u
 	if len(subs) != len(ids) {
 		return ErrSubscriptionNotFound
 	}
-
 	if err := i.subRepo.DeleteMany(ctx, ids, userID); err != nil {
 		return fmt.Errorf("failed to delete subscriptions: %w", err)
 	}

@@ -8,13 +8,13 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	gatewaydb "github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db"
 	httpcontroller "github.com/atsushi-h/subsq/backend/internal/adapter/http/controller"
 	openapi "github.com/atsushi-h/subsq/backend/internal/adapter/http/generated/openapi"
 	httpmiddleware "github.com/atsushi-h/subsq/backend/internal/adapter/http/middleware"
 	"github.com/atsushi-h/subsq/backend/internal/driver/config"
 	driverdb "github.com/atsushi-h/subsq/backend/internal/driver/db"
-	"github.com/atsushi-h/subsq/backend/internal/usecase"
+	"github.com/atsushi-h/subsq/backend/internal/driver/factory"
+	httpfactory "github.com/atsushi-h/subsq/backend/internal/driver/factory/http"
 )
 
 func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error) {
@@ -31,11 +31,22 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 		pool.Close()
 	}
 
-	// DI
-	userRepo := gatewaydb.NewUserRepository(pool)
-	pmRepo := gatewaydb.NewPaymentMethodRepository(pool)
-	subRepo := gatewaydb.NewSubscriptionRepository(pool)
+	// Repository factories
+	userRepoFactory := factory.NewUserRepoFactory(pool)
+	pmRepoFactory := factory.NewPaymentMethodRepoFactory(pool)
+	subRepoFactory := factory.NewSubscriptionRepoFactory(pool)
 
+	// Output (presenter) factories
+	subOutputFactory := httpfactory.NewSubscriptionOutputFactory()
+	pmOutputFactory := httpfactory.NewPaymentMethodOutputFactory()
+	userOutputFactory := httpfactory.NewUserOutputFactory()
+
+	// Input (interactor) factories
+	subInputFactory := factory.NewSubscriptionInputFactory()
+	pmInputFactory := factory.NewPaymentMethodInputFactory()
+	userInputFactory := factory.NewUserInputFactory()
+
+	// Auth (unchanged – not using output port pattern)
 	oauthConfig := &oauth2.Config{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -43,16 +54,14 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 		Scopes:       []string{"openid", "email", "profile"},
 		Endpoint:     google.Endpoint,
 	}
-
-	authInteractor := usecase.NewAuthInteractor(userRepo, oauthConfig, cfg.JWTSecret)
+	authInteractor := factory.NewAuthInteractorFactory(oauthConfig, cfg.JWTSecret)(userRepoFactory())
 	authController := httpcontroller.NewAuthController(authInteractor, cfg.FrontendURL)
 	healthController := httpcontroller.NewHealthController()
-	pmInteractor := usecase.NewPaymentMethodInteractor(pmRepo, subRepo)
-	pmController := httpcontroller.NewPaymentMethodController(pmInteractor)
-	subInteractor := usecase.NewSubscriptionInteractor(subRepo, pmRepo)
-	subController := httpcontroller.NewSubscriptionController(subInteractor)
-	userInteractor := usecase.NewUserInteractor(userRepo)
-	userController := httpcontroller.NewUserController(userInteractor)
+
+	// Controllers
+	subController := httpcontroller.NewSubscriptionController(subInputFactory, subOutputFactory, subRepoFactory, pmRepoFactory)
+	pmController := httpcontroller.NewPaymentMethodController(pmInputFactory, pmOutputFactory, pmRepoFactory, subRepoFactory)
+	userController := httpcontroller.NewUserController(userInputFactory, userOutputFactory, userRepoFactory)
 
 	server := httpcontroller.NewServer(subController, pmController, userController)
 

@@ -7,31 +7,37 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/atsushi-h/subsq/backend/internal/domain/user"
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
 var ErrUserNotFound = errors.New("user not found")
 
+// UserInteractor handles user use cases.
 type UserInteractor struct {
 	userRepo port.UserRepository
+	output   port.UserOutputPort
 }
 
-func NewUserInteractor(userRepo port.UserRepository) *UserInteractor {
-	return &UserInteractor{userRepo: userRepo}
+var _ port.UserInputPort = (*UserInteractor)(nil)
+
+// NewUserInteractor creates UserInteractor.
+func NewUserInteractor(userRepo port.UserRepository, output port.UserOutputPort) *UserInteractor {
+	return &UserInteractor{userRepo: userRepo, output: output}
 }
 
-func (i *UserInteractor) GetCurrentUser(ctx context.Context, userID string) (*user.User, error) {
+// GetCurrentUser retrieves the current user by id.
+func (i *UserInteractor) GetCurrentUser(ctx context.Context, userID string) error {
 	u, err := i.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrUserNotFound
+			return ErrUserNotFound
 		}
-		return nil, fmt.Errorf("failed to find user: %w", err)
+		return fmt.Errorf("failed to find user: %w", err)
 	}
-	return u, nil
+	return i.output.PresentUser(ctx, u)
 }
 
+// DeleteCurrentUser deletes the current user by id.
 func (i *UserInteractor) DeleteCurrentUser(ctx context.Context, userID string) error {
 	if _, err := i.userRepo.FindByID(ctx, userID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

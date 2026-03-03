@@ -3,21 +3,37 @@ package controller
 import (
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 
-	openapi "github.com/atsushi-h/subsq/backend/internal/adapter/http/generated/openapi"
 	"github.com/atsushi-h/subsq/backend/internal/adapter/http/middleware"
-	"github.com/atsushi-h/subsq/backend/internal/usecase"
+	httppresenter "github.com/atsushi-h/subsq/backend/internal/adapter/http/presenter"
+	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
+// UserController handles user HTTP endpoints.
 type UserController struct {
-	interactor *usecase.UserInteractor
+	inputFactory    func(userRepo port.UserRepository, output port.UserOutputPort) port.UserInputPort
+	outputFactory   func() *httppresenter.UserPresenter
+	userRepoFactory func() port.UserRepository
 }
 
-func NewUserController(interactor *usecase.UserInteractor) *UserController {
-	return &UserController{interactor: interactor}
+// NewUserController creates UserController.
+func NewUserController(
+	inputFactory func(userRepo port.UserRepository, output port.UserOutputPort) port.UserInputPort,
+	outputFactory func() *httppresenter.UserPresenter,
+	userRepoFactory func() port.UserRepository,
+) *UserController {
+	return &UserController{
+		inputFactory:    inputFactory,
+		outputFactory:   outputFactory,
+		userRepoFactory: userRepoFactory,
+	}
+}
+
+func (c *UserController) newIO() (port.UserInputPort, *httppresenter.UserPresenter) {
+	p := c.outputFactory()
+	input := c.inputFactory(c.userRepoFactory(), p)
+	return input, p
 }
 
 // GET /api/v1/users/me
@@ -27,25 +43,11 @@ func (c *UserController) GetCurrentUser(ctx echo.Context) error {
 		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	u, err := c.interactor.GetCurrentUser(ctx.Request().Context(), userID)
-	if err != nil {
+	input, p := c.newIO()
+	if err := input.GetCurrentUser(ctx.Request().Context(), userID); err != nil {
 		return handleError(ctx, err)
 	}
-
-	resp := openapi.ModelsUserResponse{
-		Name:              u.Name,
-		Provider:          u.Provider,
-		ProviderAccountId: u.ProviderAccountID,
-		CreatedAt:         u.CreatedAt.UTC(),
-		UpdatedAt:         u.UpdatedAt.UTC(),
-		Thumbnail:         u.Thumbnail,
-		Email:             openapi_types.Email(u.Email.String()),
-	}
-	if idVal, err := uuid.Parse(u.ID); err == nil {
-		resp.Id = idVal
-	}
-
-	return ctx.JSON(http.StatusOK, resp)
+	return ctx.JSON(http.StatusOK, p.Response())
 }
 
 // DELETE /api/v1/users/me
@@ -55,7 +57,8 @@ func (c *UserController) DeleteCurrentUser(ctx echo.Context) error {
 		return errorJSON(ctx, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	}
 
-	if err := c.interactor.DeleteCurrentUser(ctx.Request().Context(), userID); err != nil {
+	input, _ := c.newIO()
+	if err := input.DeleteCurrentUser(ctx.Request().Context(), userID); err != nil {
 		return handleError(ctx, err)
 	}
 
@@ -68,6 +71,5 @@ func (c *UserController) DeleteCurrentUser(ctx echo.Context) error {
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	})
-
 	return ctx.NoContent(http.StatusNoContent)
 }
