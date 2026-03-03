@@ -123,14 +123,6 @@ func (a *AuthInteractor) HandleCallback(
 	return jwtToken, savedUser, nil
 }
 
-func (a *AuthInteractor) GetCurrentUser(ctx context.Context, userID string) (*user.User, error) {
-	u, err := a.userRepo.FindByID(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-	return u, nil
-}
-
 func (a *AuthInteractor) generateJWT(u *user.User) (string, error) {
 	claims := Claims{
 		UserID: u.ID,
