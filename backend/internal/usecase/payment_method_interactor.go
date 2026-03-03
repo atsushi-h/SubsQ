@@ -23,13 +23,14 @@ type PaymentMethodInteractor struct {
 	pmRepo  port.PaymentMethodRepository
 	subRepo port.SubscriptionRepository
 	output  port.PaymentMethodOutputPort
+	tx      port.TxManager
 }
 
 var _ port.PaymentMethodInputPort = (*PaymentMethodInteractor)(nil)
 
 // NewPaymentMethodInteractor creates PaymentMethodInteractor.
-func NewPaymentMethodInteractor(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort) *PaymentMethodInteractor {
-	return &PaymentMethodInteractor{pmRepo: pmRepo, subRepo: subRepo, output: output}
+func NewPaymentMethodInteractor(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort, tx port.TxManager) *PaymentMethodInteractor {
+	return &PaymentMethodInteractor{pmRepo: pmRepo, subRepo: subRepo, output: output, tx: tx}
 }
 
 // List retrieves all payment methods with subscription usage counts.
@@ -100,49 +101,61 @@ func (i *PaymentMethodInteractor) Update(ctx context.Context, id, userID, name s
 
 // Delete deletes a payment method if not in use.
 func (i *PaymentMethodInteractor) Delete(ctx context.Context, id, userID string) error {
-	if _, err := i.pmRepo.FindByID(ctx, id, userID); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return ErrPaymentMethodNotFound
+	err := i.tx.WithinTransaction(ctx, func(ctx context.Context) error {
+		if _, err := i.pmRepo.FindByID(ctx, id, userID); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return ErrPaymentMethodNotFound
+			}
+			return fmt.Errorf("failed to find payment method: %w", err)
 		}
-		return fmt.Errorf("failed to find payment method: %w", err)
-	}
-	count, err := i.subRepo.CountByPaymentMethodID(ctx, id)
-	if err != nil {
-		return fmt.Errorf("failed to count subscriptions: %w", err)
-	}
-	if count > 0 {
-		return ErrPaymentMethodInUse
-	}
-	if err := i.pmRepo.Delete(ctx, id, userID); err != nil {
-		if isForeignKeyViolation(err) {
+		count, err := i.subRepo.CountByPaymentMethodID(ctx, id)
+		if err != nil {
+			return fmt.Errorf("failed to count subscriptions: %w", err)
+		}
+		if count > 0 {
 			return ErrPaymentMethodInUse
 		}
-		return fmt.Errorf("failed to delete payment method: %w", err)
+		if err := i.pmRepo.Delete(ctx, id, userID); err != nil {
+			if isForeignKeyViolation(err) {
+				return ErrPaymentMethodInUse
+			}
+			return fmt.Errorf("failed to delete payment method: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 // DeleteMany deletes multiple payment methods if none are in use.
 func (i *PaymentMethodInteractor) DeleteMany(ctx context.Context, ids []string, userID string) error {
-	pms, err := i.pmRepo.FindByIDs(ctx, ids, userID)
-	if err != nil {
-		return fmt.Errorf("failed to find payment methods: %w", err)
-	}
-	if len(pms) != len(ids) {
-		return ErrPaymentMethodNotFound
-	}
-	count, err := i.subRepo.CountByPaymentMethodIDs(ctx, ids)
-	if err != nil {
-		return fmt.Errorf("failed to count subscriptions: %w", err)
-	}
-	if count > 0 {
-		return ErrPaymentMethodInUse
-	}
-	if err := i.pmRepo.DeleteMany(ctx, ids, userID); err != nil {
-		if isForeignKeyViolation(err) {
+	err := i.tx.WithinTransaction(ctx, func(ctx context.Context) error {
+		pms, err := i.pmRepo.FindByIDs(ctx, ids, userID)
+		if err != nil {
+			return fmt.Errorf("failed to find payment methods: %w", err)
+		}
+		if len(pms) != len(ids) {
+			return ErrPaymentMethodNotFound
+		}
+		count, err := i.subRepo.CountByPaymentMethodIDs(ctx, ids)
+		if err != nil {
+			return fmt.Errorf("failed to count subscriptions: %w", err)
+		}
+		if count > 0 {
 			return ErrPaymentMethodInUse
 		}
-		return fmt.Errorf("failed to delete payment methods: %w", err)
+		if err := i.pmRepo.DeleteMany(ctx, ids, userID); err != nil {
+			if isForeignKeyViolation(err) {
+				return ErrPaymentMethodInUse
+			}
+			return fmt.Errorf("failed to delete payment methods: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }

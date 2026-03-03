@@ -23,7 +23,7 @@ func NewUserRepository(pool *pgxpool.Pool) port.UserRepository {
 func (r *userRepository) UpsertUser(ctx context.Context, u *user.User) (*user.User, error) {
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	row, err := r.queries.UpsertUser(ctx, &generated.UpsertUserParams{
+	row, err := queriesForContext(ctx, r.queries).UpsertUser(ctx, &generated.UpsertUserParams{
 		Email:             u.Email.String(),
 		Name:              u.Name,
 		Provider:          u.Provider,
@@ -45,7 +45,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*user.User, e
 		return nil, err
 	}
 
-	row, err := r.queries.FindUserByID(ctx, pgID)
+	row, err := queriesForContext(ctx, r.queries).FindUserByID(ctx, pgID)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 	if err := pgID.Scan(id); err != nil {
 		return err
 	}
-	return r.queries.DeleteUser(ctx, pgID)
+	return queriesForContext(ctx, r.queries).DeleteUser(ctx, pgID)
 }
 
 func toUserDomain(row *generated.User) *user.User {

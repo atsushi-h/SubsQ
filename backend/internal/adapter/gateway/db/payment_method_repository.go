@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -33,7 +32,7 @@ func (r *paymentMethodRepository) FindByID(ctx context.Context, id, userID strin
 		return nil, err
 	}
 
-	row, err := r.queries.GetPaymentMethodByID(ctx, &generated.GetPaymentMethodByIDParams{
+	row, err := queriesForContext(ctx, r.queries).GetPaymentMethodByID(ctx, &generated.GetPaymentMethodByIDParams{
 		ID:     pmID,
 		UserID: uid,
 	})
@@ -50,7 +49,7 @@ func (r *paymentMethodRepository) FindByUserID(ctx context.Context, userID strin
 		return nil, err
 	}
 
-	rows, err := r.queries.ListPaymentMethodsByUserID(ctx, uid)
+	rows, err := queriesForContext(ctx, r.queries).ListPaymentMethodsByUserID(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func (r *paymentMethodRepository) FindByUserIDWithCount(ctx context.Context, use
 		return nil, err
 	}
 
-	rows, err := r.queries.ListPaymentMethodsWithCountByUserID(ctx, uid)
+	rows, err := queriesForContext(ctx, r.queries).ListPaymentMethodsWithCountByUserID(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +98,7 @@ func (r *paymentMethodRepository) Create(ctx context.Context, pm *domain.Payment
 
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	row, err := r.queries.CreatePaymentMethod(ctx, &generated.CreatePaymentMethodParams{
+	row, err := queriesForContext(ctx, r.queries).CreatePaymentMethod(ctx, &generated.CreatePaymentMethodParams{
 		UserID:    uid,
 		Name:      pm.Name,
 		CreatedAt: now,
@@ -124,7 +123,7 @@ func (r *paymentMethodRepository) Update(ctx context.Context, pm *domain.Payment
 
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	row, err := r.queries.UpdatePaymentMethod(ctx, &generated.UpdatePaymentMethodParams{
+	row, err := queriesForContext(ctx, r.queries).UpdatePaymentMethod(ctx, &generated.UpdatePaymentMethodParams{
 		ID:        pmID,
 		Name:      pm.Name,
 		UpdatedAt: now,
@@ -147,7 +146,7 @@ func (r *paymentMethodRepository) Delete(ctx context.Context, id, userID string)
 		return err
 	}
 
-	return r.queries.DeletePaymentMethod(ctx, &generated.DeletePaymentMethodParams{
+	return queriesForContext(ctx, r.queries).DeletePaymentMethod(ctx, &generated.DeletePaymentMethodParams{
 		ID:     pmID,
 		UserID: uid,
 	})
@@ -167,7 +166,7 @@ func (r *paymentMethodRepository) DeleteMany(ctx context.Context, ids []string, 
 		}
 	}
 
-	return r.queries.DeletePaymentMethods(ctx, &generated.DeletePaymentMethodsParams{
+	return queriesForContext(ctx, r.queries).DeletePaymentMethods(ctx, &generated.DeletePaymentMethodsParams{
 		Column1: uuids,
 		UserID:  uid,
 	})
@@ -187,7 +186,7 @@ func (r *paymentMethodRepository) FindByIDs(ctx context.Context, ids []string, u
 		}
 	}
 
-	rows, err := r.queries.FindPaymentMethodsByIDs(ctx, &generated.FindPaymentMethodsByIDsParams{
+	rows, err := queriesForContext(ctx, r.queries).FindPaymentMethodsByIDs(ctx, &generated.FindPaymentMethodsByIDsParams{
 		Column1: uuids,
 		UserID:  uid,
 	})
@@ -201,14 +200,6 @@ func (r *paymentMethodRepository) FindByIDs(ctx context.Context, ids []string, u
 	}
 
 	return result, nil
-}
-
-func parseUUID(s string) (pgtype.UUID, error) {
-	var id pgtype.UUID
-	if err := id.Scan(s); err != nil {
-		return pgtype.UUID{}, fmt.Errorf("invalid uuid %q: %w", s, err)
-	}
-	return id, nil
 }
 
 func toPaymentMethodDomain(row *generated.PaymentMethod) *domain.PaymentMethod {

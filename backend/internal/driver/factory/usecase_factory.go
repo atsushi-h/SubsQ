@@ -15,16 +15,16 @@ func NewAuthInteractorFactory(oauthConfig *oauth2.Config, jwtSecret string) func
 }
 
 // NewSubscriptionInputFactory returns a factory for SubscriptionInteractor.
-func NewSubscriptionInputFactory() func(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository, output port.SubscriptionOutputPort) port.SubscriptionInputPort {
+func NewSubscriptionInputFactory(tx port.TxManager) func(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository, output port.SubscriptionOutputPort) port.SubscriptionInputPort {
 	return func(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository, output port.SubscriptionOutputPort) port.SubscriptionInputPort {
-		return usecase.NewSubscriptionInteractor(subRepo, pmRepo, output)
+		return usecase.NewSubscriptionInteractor(subRepo, pmRepo, output, tx)
 	}
 }
 
 // NewPaymentMethodInputFactory returns a factory for PaymentMethodInteractor.
-func NewPaymentMethodInputFactory() func(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort) port.PaymentMethodInputPort {
+func NewPaymentMethodInputFactory(tx port.TxManager) func(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort) port.PaymentMethodInputPort {
 	return func(pmRepo port.PaymentMethodRepository, subRepo port.SubscriptionRepository, output port.PaymentMethodOutputPort) port.PaymentMethodInputPort {
-		return usecase.NewPaymentMethodInteractor(pmRepo, subRepo, output)
+		return usecase.NewPaymentMethodInteractor(pmRepo, subRepo, output, tx)
 	}
 }
 
