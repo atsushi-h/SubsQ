@@ -48,22 +48,20 @@ func (p *SubscriptionPresenter) PresentSubscription(_ context.Context, sub *doma
 func (p *SubscriptionPresenter) PresentSubscriptions(_ context.Context, subs []*domain.Subscription) error {
 	now := p.now()
 	items := make([]openapi.ModelsSubscriptionResponse, 0, len(subs))
-	var totalMonthly, totalYearly int64
 	for _, sub := range subs {
 		item, err := toSubscriptionResponse(sub, now)
 		if err != nil {
 			return err
 		}
 		items = append(items, item)
-		totalMonthly += int64(sub.ToMonthlyAmount())
-		totalYearly += int64(sub.ToYearlyAmount())
 	}
+	summary := domain.CalculateSummary(subs)
 	p.listResponse = &openapi.ModelsListSubscriptionsResponse{
 		Subscriptions: items,
 		Summary: openapi.ModelsSubscriptionListSummary{
-			Count:        int32(len(subs)),
-			MonthlyTotal: totalMonthly,
-			YearlyTotal:  totalYearly,
+			Count:        int32(summary.Count),
+			MonthlyTotal: summary.MonthlyTotal,
+			YearlyTotal:  summary.YearlyTotal,
 		},
 	}
 	return nil
@@ -99,7 +97,7 @@ func toSubscriptionResponse(sub *domain.Subscription, now time.Time) (openapi.Mo
 		ServiceName:     sub.ServiceName,
 		UpdatedAt:       sub.UpdatedAt.UTC(),
 		Memo:            sub.Memo,
-		NextBillingDate: calculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt, now),
+		NextBillingDate: openapi_types.Date{Time: domain.CalculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt, now)},
 		MonthlyAmount:   int64(sub.ToMonthlyAmount()),
 		YearlyAmount:    int64(sub.ToYearlyAmount()),
 	}
@@ -119,37 +117,4 @@ func toSubscriptionResponse(sub *domain.Subscription, now time.Time) (openapi.Mo
 	}
 
 	return resp, nil
-}
-
-// calculateNextBillingDate は次回請求日を計算する。
-// 年次課金の場合、請求月は契約日（createdAt）の月を使う。
-// baseDate は日（1〜31）のみを持ち、月の情報がないため、
-// 年次課金を現在の月で計算すると誤った日付になる。
-// baseDate が対象月の日数を超える場合は月末にクランプする（例: 4月31日 → 4月30日）。
-func calculateNextBillingDate(baseDate int, cycle domain.BillingCycle, createdAt, now time.Time) openapi_types.Date {
-	year, month, _ := now.Date()
-
-	if cycle == domain.BillingCycleYearly {
-		billingMonth := createdAt.Month()
-		next := time.Date(year, billingMonth, clampDay(baseDate, year, billingMonth), 0, 0, 0, 0, time.UTC)
-		if !next.After(now) {
-			next = time.Date(year+1, billingMonth, clampDay(baseDate, year+1, billingMonth), 0, 0, 0, 0, time.UTC)
-		}
-		return openapi_types.Date{Time: next}
-	}
-
-	next := time.Date(year, month, clampDay(baseDate, year, month), 0, 0, 0, 0, time.UTC)
-	if !next.After(now) {
-		next = time.Date(year, month+1, clampDay(baseDate, year, month+1), 0, 0, 0, 0, time.UTC)
-	}
-	return openapi_types.Date{Time: next}
-}
-
-// clampDay は baseDate がその月の日数を超える場合に月末の日にクランプする。
-func clampDay(baseDate, year int, month time.Month) int {
-	lastDay := time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()
-	if baseDate > lastDay {
-		return lastDay
-	}
-	return baseDate
 }

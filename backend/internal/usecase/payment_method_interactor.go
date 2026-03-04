@@ -8,15 +8,12 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
+	domainerrors "github.com/atsushi-h/subsq/backend/internal/domain/errors"
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/payment_method"
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
-var (
-	ErrPaymentMethodNotFound = errors.New("payment method not found")
-	ErrPaymentMethodInUse    = errors.New("payment method is in use by subscriptions")
-	ErrInvalidInput          = errors.New("invalid input")
-)
+var ErrPaymentMethodNotFound = errors.New("payment method not found")
 
 // PaymentMethodInteractor handles payment method use cases.
 type PaymentMethodInteractor struct {
@@ -61,7 +58,7 @@ func (i *PaymentMethodInteractor) GetByID(ctx context.Context, id, userID string
 // Create creates a new payment method.
 func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name string) error {
 	if len(name) == 0 || len(name) > 100 {
-		return fmt.Errorf("%w: name must be between 1 and 100 characters", ErrInvalidInput)
+		return fmt.Errorf("%w: name must be between 1 and 100 characters", domainerrors.ErrInvalidInput)
 	}
 	pm, err := i.pmRepo.Create(ctx, &domain.PaymentMethod{
 		UserID: userID,
@@ -76,7 +73,7 @@ func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name strin
 // Update updates an existing payment method and returns it with usage count.
 func (i *PaymentMethodInteractor) Update(ctx context.Context, id, userID, name string) error {
 	if len(name) == 0 || len(name) > 100 {
-		return fmt.Errorf("%w: name must be between 1 and 100 characters", ErrInvalidInput)
+		return fmt.Errorf("%w: name must be between 1 and 100 characters", domainerrors.ErrInvalidInput)
 	}
 	if _, err := i.pmRepo.FindByID(ctx, id, userID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -112,12 +109,12 @@ func (i *PaymentMethodInteractor) Delete(ctx context.Context, id, userID string)
 		if err != nil {
 			return fmt.Errorf("failed to count subscriptions: %w", err)
 		}
-		if count > 0 {
-			return ErrPaymentMethodInUse
+		if err := domain.CanDelete(count); err != nil {
+			return err
 		}
 		if err := i.pmRepo.Delete(ctx, id, userID); err != nil {
 			if isForeignKeyViolation(err) {
-				return ErrPaymentMethodInUse
+				return domainerrors.ErrPaymentMethodInUse
 			}
 			return fmt.Errorf("failed to delete payment method: %w", err)
 		}
@@ -143,12 +140,12 @@ func (i *PaymentMethodInteractor) DeleteMany(ctx context.Context, ids []string, 
 		if err != nil {
 			return fmt.Errorf("failed to count subscriptions: %w", err)
 		}
-		if count > 0 {
-			return ErrPaymentMethodInUse
+		if err := domain.CanDelete(count); err != nil {
+			return err
 		}
 		if err := i.pmRepo.DeleteMany(ctx, ids, userID); err != nil {
 			if isForeignKeyViolation(err) {
-				return ErrPaymentMethodInUse
+				return domainerrors.ErrPaymentMethodInUse
 			}
 			return fmt.Errorf("failed to delete payment methods: %w", err)
 		}
