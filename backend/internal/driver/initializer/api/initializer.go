@@ -41,9 +41,12 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	pmOutputFactory := httpfactory.NewPaymentMethodOutputFactory()
 	userOutputFactory := httpfactory.NewUserOutputFactory()
 
+	// Transaction manager
+	txManager := factory.NewTxManager(pool)
+
 	// Input (interactor) factories
-	subInputFactory := factory.NewSubscriptionInputFactory()
-	pmInputFactory := factory.NewPaymentMethodInputFactory()
+	subInputFactory := factory.NewSubscriptionInputFactory(txManager)
+	pmInputFactory := factory.NewPaymentMethodInputFactory(txManager)
 	userInputFactory := factory.NewUserInputFactory()
 
 	// Auth (unchanged – not using output port pattern)

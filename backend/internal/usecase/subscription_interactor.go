@@ -18,13 +18,14 @@ type SubscriptionInteractor struct {
 	subRepo port.SubscriptionRepository
 	pmRepo  port.PaymentMethodRepository
 	output  port.SubscriptionOutputPort
+	tx      port.TxManager
 }
 
 var _ port.SubscriptionInputPort = (*SubscriptionInteractor)(nil)
 
 // NewSubscriptionInteractor creates SubscriptionInteractor.
-func NewSubscriptionInteractor(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository, output port.SubscriptionOutputPort) *SubscriptionInteractor {
-	return &SubscriptionInteractor{subRepo: subRepo, pmRepo: pmRepo, output: output}
+func NewSubscriptionInteractor(subRepo port.SubscriptionRepository, pmRepo port.PaymentMethodRepository, output port.SubscriptionOutputPort, tx port.TxManager) *SubscriptionInteractor {
+	return &SubscriptionInteractor{subRepo: subRepo, pmRepo: pmRepo, output: output, tx: tx}
 }
 
 // List retrieves all subscriptions for a user.
@@ -168,15 +169,21 @@ func (i *SubscriptionInteractor) Delete(ctx context.Context, id, userID string) 
 
 // DeleteMany deletes multiple subscriptions by ids.
 func (i *SubscriptionInteractor) DeleteMany(ctx context.Context, ids []string, userID string) error {
-	subs, err := i.subRepo.FindByIDs(ctx, ids, userID)
+	err := i.tx.WithinTransaction(ctx, func(ctx context.Context) error {
+		subs, err := i.subRepo.FindByIDs(ctx, ids, userID)
+		if err != nil {
+			return fmt.Errorf("failed to find subscriptions: %w", err)
+		}
+		if len(subs) != len(ids) {
+			return ErrSubscriptionNotFound
+		}
+		if err := i.subRepo.DeleteMany(ctx, ids, userID); err != nil {
+			return fmt.Errorf("failed to delete subscriptions: %w", err)
+		}
+		return nil
+	})
 	if err != nil {
-		return fmt.Errorf("failed to find subscriptions: %w", err)
-	}
-	if len(subs) != len(ids) {
-		return ErrSubscriptionNotFound
-	}
-	if err := i.subRepo.DeleteMany(ctx, ids, userID); err != nil {
-		return fmt.Errorf("failed to delete subscriptions: %w", err)
+		return err
 	}
 	return nil
 }

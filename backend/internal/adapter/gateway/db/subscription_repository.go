@@ -30,7 +30,7 @@ func (r *subscriptionRepository) FindByID(ctx context.Context, id, userID string
 		return nil, err
 	}
 
-	row, err := r.queries.GetSubscriptionByID(ctx, &generated.GetSubscriptionByIDParams{
+	row, err := queriesForContext(ctx, r.queries).GetSubscriptionByID(ctx, &generated.GetSubscriptionByIDParams{
 		ID:     subID,
 		UserID: uid,
 	})
@@ -47,7 +47,7 @@ func (r *subscriptionRepository) FindByUserID(ctx context.Context, userID string
 		return nil, err
 	}
 
-	rows, err := r.queries.ListSubscriptionsByUserID(ctx, uid)
+	rows, err := queriesForContext(ctx, r.queries).ListSubscriptionsByUserID(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (r *subscriptionRepository) Create(ctx context.Context, s *domain.Subscript
 
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	created, err := r.queries.CreateSubscription(ctx, &generated.CreateSubscriptionParams{
+	created, err := queriesForContext(ctx, r.queries).CreateSubscription(ctx, &generated.CreateSubscriptionParams{
 		UserID:          uid,
 		ServiceName:     s.ServiceName,
 		Amount:          int32(s.Amount), //nolint:gosec // amount is validated (0-1000000)
@@ -113,7 +113,7 @@ func (r *subscriptionRepository) Update(ctx context.Context, s *domain.Subscript
 
 	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
 
-	updated, err := r.queries.UpdateSubscription(ctx, &generated.UpdateSubscriptionParams{
+	updated, err := queriesForContext(ctx, r.queries).UpdateSubscription(ctx, &generated.UpdateSubscriptionParams{
 		ID:              subID,
 		UserID:          uid,
 		ServiceName:     s.ServiceName,
@@ -141,7 +141,7 @@ func (r *subscriptionRepository) Delete(ctx context.Context, id, userID string) 
 		return err
 	}
 
-	return r.queries.DeleteSubscription(ctx, &generated.DeleteSubscriptionParams{
+	return queriesForContext(ctx, r.queries).DeleteSubscription(ctx, &generated.DeleteSubscriptionParams{
 		ID:     subID,
 		UserID: uid,
 	})
@@ -161,7 +161,7 @@ func (r *subscriptionRepository) DeleteMany(ctx context.Context, ids []string, u
 		}
 	}
 
-	return r.queries.DeleteSubscriptions(ctx, &generated.DeleteSubscriptionsParams{
+	return queriesForContext(ctx, r.queries).DeleteSubscriptions(ctx, &generated.DeleteSubscriptionsParams{
 		Column1: uuids,
 		UserID:  uid,
 	})
@@ -181,7 +181,7 @@ func (r *subscriptionRepository) FindByIDs(ctx context.Context, ids []string, us
 		}
 	}
 
-	rows, err := r.queries.FindSubscriptionsByIDs(ctx, &generated.FindSubscriptionsByIDsParams{
+	rows, err := queriesForContext(ctx, r.queries).FindSubscriptionsByIDs(ctx, &generated.FindSubscriptionsByIDsParams{
 		Column1: uuids,
 		UserID:  uid,
 	})
@@ -202,7 +202,7 @@ func (r *subscriptionRepository) CountByPaymentMethodID(ctx context.Context, pmI
 		return 0, err
 	}
 
-	return r.queries.CountSubscriptionsByPaymentMethodID(ctx, id)
+	return queriesForContext(ctx, r.queries).CountSubscriptionsByPaymentMethodID(ctx, id)
 }
 
 func (r *subscriptionRepository) CountByPaymentMethodIDs(ctx context.Context, ids []string) (int64, error) {
@@ -215,7 +215,7 @@ func (r *subscriptionRepository) CountByPaymentMethodIDs(ctx context.Context, id
 		}
 	}
 
-	return r.queries.CountSubscriptionsByPaymentMethodIDs(ctx, uuids)
+	return queriesForContext(ctx, r.queries).CountSubscriptionsByPaymentMethodIDs(ctx, uuids)
 }
 
 func toSubscriptionDomainFromGetRow(row *generated.GetSubscriptionByIDRow) *domain.Subscription {
