@@ -202,6 +202,14 @@ func TestCalculateNextBillingDate(t *testing.T) {
 			now:       time.Date(2024, 7, 1, 0, 0, 0, 0, time.UTC),
 			want:      time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC),
 		},
+		{
+			name:      "年額: 今日がちょうど請求日 → 翌年",
+			baseDate:  1,
+			cycle:     domain.BillingCycleYearly,
+			createdAt: createdAt,
+			now:       time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC),
+			want:      time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	for _, tc := range tests {
