@@ -57,8 +57,8 @@ func (i *PaymentMethodInteractor) GetByID(ctx context.Context, id, userID string
 
 // Create creates a new payment method.
 func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name string) error {
-	if len(name) == 0 || len(name) > 100 {
-		return fmt.Errorf("%w: name must be between 1 and 100 characters", domainerrors.ErrInvalidInput)
+	if err := domain.ValidateFields(name); err != nil {
+		return err
 	}
 	pm, err := i.pmRepo.Create(ctx, &domain.PaymentMethod{
 		UserID: userID,
@@ -72,8 +72,8 @@ func (i *PaymentMethodInteractor) Create(ctx context.Context, userID, name strin
 
 // Update updates an existing payment method and returns it with usage count.
 func (i *PaymentMethodInteractor) Update(ctx context.Context, id, userID, name string) error {
-	if len(name) == 0 || len(name) > 100 {
-		return fmt.Errorf("%w: name must be between 1 and 100 characters", domainerrors.ErrInvalidInput)
+	if err := domain.ValidateFields(name); err != nil {
+		return err
 	}
 	if _, err := i.pmRepo.FindByID(ctx, id, userID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
