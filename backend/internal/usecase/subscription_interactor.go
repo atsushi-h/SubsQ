@@ -68,7 +68,7 @@ func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, inpu
 		pmName = &pm.Name
 	}
 
-	sub, err := i.subRepo.Create(ctx, domain.Create(userID, input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate, input.PaymentMethodID, input.Memo))
+	sub, err := i.subRepo.Create(ctx, domain.NewSubscription(userID, input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate, input.PaymentMethodID, input.Memo))
 	if err != nil {
 		return fmt.Errorf("failed to create subscription: %w", err)
 	}

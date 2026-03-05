@@ -41,8 +41,8 @@ func (s *Subscription) ToYearlyAmount() int {
 	return s.Amount
 }
 
-// Create は新規 Subscription の値を組み立てる（ID/timestamps はrepository層が付与）
-func Create(userID, serviceName string, amount int, cycle BillingCycle, baseDate int, paymentMethodID *string, memo *string) *Subscription {
+// NewSubscription は新規 Subscription の値を組み立てる（ID/timestamps はrepository層が付与）
+func NewSubscription(userID, serviceName string, amount int, cycle BillingCycle, baseDate int, paymentMethodID *string, memo *string) *Subscription {
 	return &Subscription{
 		UserID:          userID,
 		ServiceName:     serviceName,
