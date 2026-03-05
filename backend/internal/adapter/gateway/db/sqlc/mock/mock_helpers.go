@@ -35,6 +35,9 @@ func (r *mockRow) Scan(dest ...any) error {
 			elem.Set(reflect.Zero(elem.Type()))
 			continue
 		}
+		if !val.Type().AssignableTo(elem.Type()) {
+			return fmt.Errorf("dest[%d]: cannot assign %s to %s", i, val.Type(), elem.Type())
+		}
 		elem.Set(val)
 	}
 	return nil
