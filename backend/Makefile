@@ -101,6 +101,17 @@ sqlc:
 openapi:
 	$(DOCKER_EXEC) oapi-codegen --config oapi-codegen.yaml ../api-schema/generated/openapi.yaml
 
+# Install or update a package. Example:
+#   make go-get PKG=github.com/some/package@latest
+.PHONY: go-get
+go-get:
+	@test -n "$(PKG)" || (echo "PKG is required, e.g. make go-get PKG=github.com/some/package@latest"; exit 1)
+	$(DOCKER_EXEC) go get $(PKG)
+
+.PHONY: mod-tidy
+mod-tidy:
+	$(DOCKER_EXEC) go mod tidy
+
 # -------------------------------------------------------------------
 # Docker
 # -------------------------------------------------------------------
