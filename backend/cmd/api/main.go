@@ -39,7 +39,10 @@ func main() {
 	case <-ctx.Done():
 		shutdown(e, cleanup)
 	case err := <-errCh:
-		log.Fatalf("server error: %v", err)
+		if err != nil {
+			cleanup()
+			log.Fatalf("server error: %v", err)
+		}
 	}
 }
 
