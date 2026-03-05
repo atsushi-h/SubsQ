@@ -97,7 +97,7 @@ func toSubscriptionResponse(sub *domain.Subscription, now time.Time) (openapi.Mo
 		ServiceName:     sub.ServiceName,
 		UpdatedAt:       sub.UpdatedAt.UTC(),
 		Memo:            sub.Memo,
-		NextBillingDate: openapi_types.Date{Time: domain.CalculateNextBillingDate(sub.BaseDate, sub.BillingCycle, sub.CreatedAt, now)},
+		NextBillingDate: openapi_types.Date{Time: sub.CalculateNextBillingDate(now)},
 		MonthlyAmount:   int64(sub.ToMonthlyAmount()),
 		YearlyAmount:    int64(sub.ToYearlyAmount()),
 	}
