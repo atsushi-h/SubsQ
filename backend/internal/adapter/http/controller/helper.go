@@ -7,18 +7,19 @@ import (
 	"github.com/labstack/echo/v4"
 
 	openapi "github.com/atsushi-h/subsq/backend/internal/adapter/http/generated/openapi"
+	domainerrors "github.com/atsushi-h/subsq/backend/internal/domain/errors"
 	"github.com/atsushi-h/subsq/backend/internal/usecase"
 )
 
 func handleError(ctx echo.Context, err error) error {
 	switch {
-	case errors.Is(err, usecase.ErrInvalidInput):
+	case errors.Is(err, domainerrors.ErrInvalidInput):
 		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", err.Error())
 	case errors.Is(err, usecase.ErrSubscriptionNotFound):
 		return errorJSON(ctx, http.StatusNotFound, "Not Found", err.Error())
 	case errors.Is(err, usecase.ErrPaymentMethodNotFound):
 		return errorJSON(ctx, http.StatusNotFound, "Not Found", err.Error())
-	case errors.Is(err, usecase.ErrPaymentMethodInUse):
+	case errors.Is(err, domainerrors.ErrPaymentMethodInUse):
 		return errorJSON(ctx, http.StatusConflict, "Conflict", err.Error())
 	case errors.Is(err, usecase.ErrUserNotFound):
 		return errorJSON(ctx, http.StatusNotFound, "Not Found", err.Error())

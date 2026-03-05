@@ -102,8 +102,13 @@ func (a *AuthInteractor) HandleCallback(
 		thumbnail = &googleUser.Picture
 	}
 
+	email, err := user.ParseEmail(googleUser.Email)
+	if err != nil {
+		return "", nil, fmt.Errorf("invalid email from google: %w", err)
+	}
+
 	u := &user.User{
-		Email:             user.Email(googleUser.Email),
+		Email:             email,
 		Name:              googleUser.Name,
 		Provider:          "google",
 		ProviderAccountID: googleUser.ID,
