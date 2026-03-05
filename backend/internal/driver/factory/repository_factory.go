@@ -3,7 +3,7 @@ package factory
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	gatewaydb "github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db"
+	gatewaydb "github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc"
 	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
