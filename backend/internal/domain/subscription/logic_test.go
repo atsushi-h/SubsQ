@@ -9,7 +9,7 @@ import (
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/subscription"
 )
 
-func TestValidateForCreate(t *testing.T) {
+func TestValidateFields(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
@@ -96,12 +96,12 @@ func TestValidateForCreate(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			err := domain.ValidateForCreate(tc.serviceName, tc.amount, tc.cycle, tc.baseDate)
+			err := domain.ValidateFields(tc.serviceName, tc.amount, tc.cycle, tc.baseDate)
 			if (err != nil) != tc.wantErr {
-				t.Errorf("ValidateForCreate() error = %v, wantErr %v", err, tc.wantErr)
+				t.Errorf("ValidateFields() error = %v, wantErr %v", err, tc.wantErr)
 			}
 			if tc.wantErr && err != nil && !errors.Is(err, domainerrors.ErrInvalidInput) {
-				t.Errorf("ValidateForCreate() error should wrap ErrInvalidInput, got %v", err)
+				t.Errorf("ValidateFields() error should wrap ErrInvalidInput, got %v", err)
 			}
 		})
 	}

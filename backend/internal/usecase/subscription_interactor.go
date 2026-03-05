@@ -52,7 +52,7 @@ func (i *SubscriptionInteractor) Get(ctx context.Context, id, userID string) err
 
 // Create creates a new subscription.
 func (i *SubscriptionInteractor) Create(ctx context.Context, userID string, input port.CreateSubscriptionInput) error {
-	if err := domain.ValidateForCreate(input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate); err != nil {
+	if err := domain.ValidateFields(input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate); err != nil {
 		return err
 	}
 
@@ -88,7 +88,7 @@ func (i *SubscriptionInteractor) Update(ctx context.Context, id, userID string, 
 	}
 
 	updated := existing.WithUpdate(input.ServiceName, input.Amount, input.BillingCycle, input.BaseDate, input.PaymentMethodID, input.Memo)
-	if err := domain.ValidateForCreate(updated.ServiceName, updated.Amount, updated.BillingCycle, updated.BaseDate); err != nil {
+	if err := domain.ValidateFields(updated.ServiceName, updated.Amount, updated.BillingCycle, updated.BaseDate); err != nil {
 		return err
 	}
 

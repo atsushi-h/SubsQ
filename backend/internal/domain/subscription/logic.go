@@ -14,8 +14,8 @@ type SubscriptionSummary struct {
 	YearlyTotal  int64
 }
 
-// ValidateForCreate は新規作成・更新時のドメインバリデーション
-func ValidateForCreate(serviceName string, amount int, cycle BillingCycle, baseDate int) error {
+// ValidateFields はサブスクリプションのフィールドに対するドメインバリデーション
+func ValidateFields(serviceName string, amount int, cycle BillingCycle, baseDate int) error {
 	if len(serviceName) == 0 || len(serviceName) > 100 {
 		return fmt.Errorf("%w: service_name must be between 1 and 100 characters", domainerrors.ErrInvalidInput)
 	}
