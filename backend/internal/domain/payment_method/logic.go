@@ -18,7 +18,7 @@ func ValidateFields(name string) error {
 // サブスクリプションから参照中の場合は ErrPaymentMethodInUse を返す。
 func CanDelete(usageCount int64) error {
 	if usageCount > 0 {
-		return fmt.Errorf("%w", domainerrors.ErrPaymentMethodInUse)
+		return domainerrors.ErrPaymentMethodInUse
 	}
 	return nil
 }
