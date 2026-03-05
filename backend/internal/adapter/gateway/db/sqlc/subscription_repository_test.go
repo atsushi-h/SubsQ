@@ -425,6 +425,15 @@ func TestSubscriptionRepository_DeleteMany(t *testing.T) {
 		}
 	})
 
+	t.Run("空スライス", func(t *testing.T) {
+		t.Parallel()
+		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil)
+		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		if err := repo.DeleteMany(ctx, []string{}, testUserIDStr); err != nil {
+			t.Fatalf("unexpected error for empty ids: %v", err)
+		}
+	})
+
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
 		mockDB := mock.NewSubscriptionDBTX(nil, nil, errors.New("exec error"))
@@ -471,6 +480,19 @@ func TestSubscriptionRepository_FindByIDs(t *testing.T) {
 		_, err := repo.FindByIDs(ctx, []string{invalidUUID}, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected error for invalid id in ids")
+		}
+	})
+
+	t.Run("空スライス", func(t *testing.T) {
+		t.Parallel()
+		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithBaseRows(nil)
+		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		result, err := repo.FindByIDs(ctx, []string{}, testUserIDStr)
+		if err != nil {
+			t.Fatalf("unexpected error for empty ids: %v", err)
+		}
+		if len(result) != 0 {
+			t.Errorf("len(result) = %d, want 0", len(result))
 		}
 	})
 
@@ -541,6 +563,16 @@ func TestSubscriptionRepository_CountByPaymentMethodIDs(t *testing.T) {
 		_, err := repo.CountByPaymentMethodIDs(ctx, []string{invalidUUID})
 		if err == nil {
 			t.Fatal("expected error for invalid UUID in ids")
+		}
+	})
+
+	t.Run("DBエラー", func(t *testing.T) {
+		t.Parallel()
+		mockDB := mock.NewSubscriptionDBTX(nil, errors.New("db error"), nil)
+		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		_, err := repo.CountByPaymentMethodIDs(ctx, []string{testPMIDStr})
+		if err == nil {
+			t.Fatal("expected DB error")
 		}
 	})
 }

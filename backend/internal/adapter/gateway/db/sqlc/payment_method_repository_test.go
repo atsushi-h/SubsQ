@@ -413,6 +413,15 @@ func TestPaymentMethodRepository_DeleteMany(t *testing.T) {
 		}
 	})
 
+	t.Run("空スライス", func(t *testing.T) {
+		t.Parallel()
+		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil)
+		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		if err := repo.DeleteMany(ctx, []string{}, testUserIDStr); err != nil {
+			t.Fatalf("unexpected error for empty ids: %v", err)
+		}
+	})
+
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
 		mockDB := mock.NewPaymentMethodDBTX(nil, nil, errors.New("exec error"))
@@ -462,6 +471,19 @@ func TestPaymentMethodRepository_FindByIDs(t *testing.T) {
 		_, err := repo.FindByIDs(ctx, []string{invalidUUID}, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected error for invalid id in ids")
+		}
+	})
+
+	t.Run("空スライス", func(t *testing.T) {
+		t.Parallel()
+		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithRows(nil)
+		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		result, err := repo.FindByIDs(ctx, []string{}, testUserIDStr)
+		if err != nil {
+			t.Fatalf("unexpected error for empty ids: %v", err)
+		}
+		if len(result) != 0 {
+			t.Errorf("len(result) = %d, want 0", len(result))
 		}
 	})
 

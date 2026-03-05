@@ -12,9 +12,10 @@ import (
 
 // UserDBTX is a mock generated.DBTX for user repository tests.
 type UserDBTX struct {
-	row     *generated.User
-	rowErr  error
-	execErr error
+	row      *generated.User
+	rowErr   error
+	execErr  error
+	queryErr error
 }
 
 var _ generated.DBTX = (*UserDBTX)(nil)
@@ -26,6 +27,12 @@ func NewUserDBTX(row *generated.User, rowErr, execErr error) *UserDBTX {
 		rowErr:  rowErr,
 		execErr: execErr,
 	}
+}
+
+// WithQueryErr configures the mock to return an error from Query.
+func (m *UserDBTX) WithQueryErr(err error) *UserDBTX {
+	m.queryErr = err
+	return m
 }
 
 func (m *UserDBTX) Exec(_ context.Context, _ string, _ ...interface{}) (pgconn.CommandTag, error) {
@@ -47,5 +54,8 @@ func (m *UserDBTX) QueryRow(_ context.Context, _ string, _ ...interface{}) pgx.R
 }
 
 func (m *UserDBTX) Query(_ context.Context, _ string, _ ...interface{}) (pgx.Rows, error) {
+	if m.queryErr != nil {
+		return nil, m.queryErr
+	}
 	return &mockRows{}, nil
 }
