@@ -21,7 +21,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CONTACT_FORM_URL: z
       .string()
       .url('NEXT_PUBLIC_CONTACT_FORM_URL must be a valid URL'),
-    NEXT_PUBLIC_API_BASE_URL: z.string().optional(),
+    NEXT_PUBLIC_API_BASE_URL: z.string().url().optional(),
   },
 
   runtimeEnv: {
