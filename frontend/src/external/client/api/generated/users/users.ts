@@ -7,6 +7,7 @@ import type {
   ModelsUserResponse
 } from '../model';
 
+import { customFetch } from '../../fetcher';
 
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
@@ -44,25 +45,19 @@ export const getUsersGetCurrentUserUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/users/me`
+  return `/api/v1/users/me`
 }
 
 export const usersGetCurrentUser = async ( options?: RequestInit): Promise<usersGetCurrentUserResponse> => {
   
-  const res = await fetch(getUsersGetCurrentUserUrl(),
+  return customFetch<usersGetCurrentUserResponse>(getUsersGetCurrentUserUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: usersGetCurrentUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as usersGetCurrentUserResponse
-}
+);}
   
 
 /**
@@ -93,24 +88,18 @@ export const getUsersDeleteCurrentUserUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/users/me`
+  return `/api/v1/users/me`
 }
 
 export const usersDeleteCurrentUser = async ( options?: RequestInit): Promise<usersDeleteCurrentUserResponse> => {
   
-  const res = await fetch(getUsersDeleteCurrentUserUrl(),
+  return customFetch<usersDeleteCurrentUserResponse>(getUsersDeleteCurrentUserUrl(),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: usersDeleteCurrentUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as usersDeleteCurrentUserResponse
-}
+);}
   
 

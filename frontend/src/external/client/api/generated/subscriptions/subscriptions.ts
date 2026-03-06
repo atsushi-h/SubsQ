@@ -14,6 +14,7 @@ import type {
   RoutesDeleteSubscriptionsRequest
 } from '../model';
 
+import { customFetch } from '../../fetcher';
 
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
@@ -51,25 +52,19 @@ export const getSubscriptionsListSubscriptionsUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/subscriptions`
+  return `/api/v1/subscriptions`
 }
 
 export const subscriptionsListSubscriptions = async ( options?: RequestInit): Promise<subscriptionsListSubscriptionsResponse> => {
   
-  const res = await fetch(getSubscriptionsListSubscriptionsUrl(),
+  return customFetch<subscriptionsListSubscriptionsResponse>(getSubscriptionsListSubscriptionsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: subscriptionsListSubscriptionsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as subscriptionsListSubscriptionsResponse
-}
+);}
   
 
 /**
@@ -100,12 +95,12 @@ export const getSubscriptionsCreateSubscriptionUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/subscriptions`
+  return `/api/v1/subscriptions`
 }
 
 export const subscriptionsCreateSubscription = async (modelsCreateSubscriptionRequest: ModelsCreateSubscriptionRequest, options?: RequestInit): Promise<subscriptionsCreateSubscriptionResponse> => {
   
-  const res = await fetch(getSubscriptionsCreateSubscriptionUrl(),
+  return customFetch<subscriptionsCreateSubscriptionResponse>(getSubscriptionsCreateSubscriptionUrl(),
   {      
     ...options,
     method: 'POST',
@@ -113,13 +108,7 @@ export const subscriptionsCreateSubscription = async (modelsCreateSubscriptionRe
     body: JSON.stringify(
       modelsCreateSubscriptionRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: subscriptionsCreateSubscriptionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as subscriptionsCreateSubscriptionResponse
-}
+);}
   
 
 /**
@@ -150,12 +139,12 @@ export const getSubscriptionsDeleteSubscriptionsUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/subscriptions`
+  return `/api/v1/subscriptions`
 }
 
 export const subscriptionsDeleteSubscriptions = async (routesDeleteSubscriptionsRequest: RoutesDeleteSubscriptionsRequest, options?: RequestInit): Promise<subscriptionsDeleteSubscriptionsResponse> => {
   
-  const res = await fetch(getSubscriptionsDeleteSubscriptionsUrl(),
+  return customFetch<subscriptionsDeleteSubscriptionsResponse>(getSubscriptionsDeleteSubscriptionsUrl(),
   {      
     ...options,
     method: 'DELETE',
@@ -163,13 +152,7 @@ export const subscriptionsDeleteSubscriptions = async (routesDeleteSubscriptions
     body: JSON.stringify(
       routesDeleteSubscriptionsRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: subscriptionsDeleteSubscriptionsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as subscriptionsDeleteSubscriptionsResponse
-}
+);}
   
 
 /**
@@ -200,25 +183,19 @@ export const getSubscriptionsGetSubscriptionUrl = (id: ModelsUuid,) => {
 
   
 
-  return `http://localhost:8080/api/v1/subscriptions/${id}`
+  return `/api/v1/subscriptions/${id}`
 }
 
 export const subscriptionsGetSubscription = async (id: ModelsUuid, options?: RequestInit): Promise<subscriptionsGetSubscriptionResponse> => {
   
-  const res = await fetch(getSubscriptionsGetSubscriptionUrl(id),
+  return customFetch<subscriptionsGetSubscriptionResponse>(getSubscriptionsGetSubscriptionUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: subscriptionsGetSubscriptionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as subscriptionsGetSubscriptionResponse
-}
+);}
   
 
 /**
@@ -249,13 +226,13 @@ export const getSubscriptionsUpdateSubscriptionUrl = (id: ModelsUuid,) => {
 
   
 
-  return `http://localhost:8080/api/v1/subscriptions/${id}`
+  return `/api/v1/subscriptions/${id}`
 }
 
 export const subscriptionsUpdateSubscription = async (id: ModelsUuid,
     modelsUpdateSubscriptionRequest: ModelsUpdateSubscriptionRequest, options?: RequestInit): Promise<subscriptionsUpdateSubscriptionResponse> => {
   
-  const res = await fetch(getSubscriptionsUpdateSubscriptionUrl(id),
+  return customFetch<subscriptionsUpdateSubscriptionResponse>(getSubscriptionsUpdateSubscriptionUrl(id),
   {      
     ...options,
     method: 'PATCH',
@@ -263,13 +240,7 @@ export const subscriptionsUpdateSubscription = async (id: ModelsUuid,
     body: JSON.stringify(
       modelsUpdateSubscriptionRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: subscriptionsUpdateSubscriptionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as subscriptionsUpdateSubscriptionResponse
-}
+);}
   
 
 /**
@@ -300,24 +271,18 @@ export const getSubscriptionsDeleteSubscriptionUrl = (id: ModelsUuid,) => {
 
   
 
-  return `http://localhost:8080/api/v1/subscriptions/${id}`
+  return `/api/v1/subscriptions/${id}`
 }
 
 export const subscriptionsDeleteSubscription = async (id: ModelsUuid, options?: RequestInit): Promise<subscriptionsDeleteSubscriptionResponse> => {
   
-  const res = await fetch(getSubscriptionsDeleteSubscriptionUrl(id),
+  return customFetch<subscriptionsDeleteSubscriptionResponse>(getSubscriptionsDeleteSubscriptionUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: subscriptionsDeleteSubscriptionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as subscriptionsDeleteSubscriptionResponse
-}
+);}
   
 

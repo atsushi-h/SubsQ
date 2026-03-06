@@ -14,6 +14,7 @@ import type {
   RoutesDeletePaymentMethodsRequest
 } from '../model';
 
+import { customFetch } from '../../fetcher';
 
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
@@ -51,25 +52,19 @@ export const getPaymentMethodsListPaymentMethodsUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/payment-methods`
+  return `/api/v1/payment-methods`
 }
 
 export const paymentMethodsListPaymentMethods = async ( options?: RequestInit): Promise<paymentMethodsListPaymentMethodsResponse> => {
   
-  const res = await fetch(getPaymentMethodsListPaymentMethodsUrl(),
+  return customFetch<paymentMethodsListPaymentMethodsResponse>(getPaymentMethodsListPaymentMethodsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: paymentMethodsListPaymentMethodsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as paymentMethodsListPaymentMethodsResponse
-}
+);}
   
 
 /**
@@ -100,12 +95,12 @@ export const getPaymentMethodsCreatePaymentMethodUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/payment-methods`
+  return `/api/v1/payment-methods`
 }
 
 export const paymentMethodsCreatePaymentMethod = async (modelsCreatePaymentMethodRequest: ModelsCreatePaymentMethodRequest, options?: RequestInit): Promise<paymentMethodsCreatePaymentMethodResponse> => {
   
-  const res = await fetch(getPaymentMethodsCreatePaymentMethodUrl(),
+  return customFetch<paymentMethodsCreatePaymentMethodResponse>(getPaymentMethodsCreatePaymentMethodUrl(),
   {      
     ...options,
     method: 'POST',
@@ -113,13 +108,7 @@ export const paymentMethodsCreatePaymentMethod = async (modelsCreatePaymentMetho
     body: JSON.stringify(
       modelsCreatePaymentMethodRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: paymentMethodsCreatePaymentMethodResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as paymentMethodsCreatePaymentMethodResponse
-}
+);}
   
 
 /**
@@ -150,12 +139,12 @@ export const getPaymentMethodsDeletePaymentMethodsUrl = () => {
 
   
 
-  return `http://localhost:8080/api/v1/payment-methods`
+  return `/api/v1/payment-methods`
 }
 
 export const paymentMethodsDeletePaymentMethods = async (routesDeletePaymentMethodsRequest: RoutesDeletePaymentMethodsRequest, options?: RequestInit): Promise<paymentMethodsDeletePaymentMethodsResponse> => {
   
-  const res = await fetch(getPaymentMethodsDeletePaymentMethodsUrl(),
+  return customFetch<paymentMethodsDeletePaymentMethodsResponse>(getPaymentMethodsDeletePaymentMethodsUrl(),
   {      
     ...options,
     method: 'DELETE',
@@ -163,13 +152,7 @@ export const paymentMethodsDeletePaymentMethods = async (routesDeletePaymentMeth
     body: JSON.stringify(
       routesDeletePaymentMethodsRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: paymentMethodsDeletePaymentMethodsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as paymentMethodsDeletePaymentMethodsResponse
-}
+);}
   
 
 /**
@@ -200,25 +183,19 @@ export const getPaymentMethodsGetPaymentMethodUrl = (id: ModelsUuid,) => {
 
   
 
-  return `http://localhost:8080/api/v1/payment-methods/${id}`
+  return `/api/v1/payment-methods/${id}`
 }
 
 export const paymentMethodsGetPaymentMethod = async (id: ModelsUuid, options?: RequestInit): Promise<paymentMethodsGetPaymentMethodResponse> => {
   
-  const res = await fetch(getPaymentMethodsGetPaymentMethodUrl(id),
+  return customFetch<paymentMethodsGetPaymentMethodResponse>(getPaymentMethodsGetPaymentMethodUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: paymentMethodsGetPaymentMethodResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as paymentMethodsGetPaymentMethodResponse
-}
+);}
   
 
 /**
@@ -249,13 +226,13 @@ export const getPaymentMethodsUpdatePaymentMethodUrl = (id: ModelsUuid,) => {
 
   
 
-  return `http://localhost:8080/api/v1/payment-methods/${id}`
+  return `/api/v1/payment-methods/${id}`
 }
 
 export const paymentMethodsUpdatePaymentMethod = async (id: ModelsUuid,
     modelsUpdatePaymentMethodRequest: ModelsUpdatePaymentMethodRequest, options?: RequestInit): Promise<paymentMethodsUpdatePaymentMethodResponse> => {
   
-  const res = await fetch(getPaymentMethodsUpdatePaymentMethodUrl(id),
+  return customFetch<paymentMethodsUpdatePaymentMethodResponse>(getPaymentMethodsUpdatePaymentMethodUrl(id),
   {      
     ...options,
     method: 'PATCH',
@@ -263,13 +240,7 @@ export const paymentMethodsUpdatePaymentMethod = async (id: ModelsUuid,
     body: JSON.stringify(
       modelsUpdatePaymentMethodRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: paymentMethodsUpdatePaymentMethodResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as paymentMethodsUpdatePaymentMethodResponse
-}
+);}
   
 
 /**
@@ -300,24 +271,18 @@ export const getPaymentMethodsDeletePaymentMethodUrl = (id: ModelsUuid,) => {
 
   
 
-  return `http://localhost:8080/api/v1/payment-methods/${id}`
+  return `/api/v1/payment-methods/${id}`
 }
 
 export const paymentMethodsDeletePaymentMethod = async (id: ModelsUuid, options?: RequestInit): Promise<paymentMethodsDeletePaymentMethodResponse> => {
   
-  const res = await fetch(getPaymentMethodsDeletePaymentMethodUrl(id),
+  return customFetch<paymentMethodsDeletePaymentMethodResponse>(getPaymentMethodsDeletePaymentMethodUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: paymentMethodsDeletePaymentMethodResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as paymentMethodsDeletePaymentMethodResponse
-}
+);}
   
 
