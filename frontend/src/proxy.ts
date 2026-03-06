@@ -4,7 +4,7 @@ const PROTECTED_PREFIXES = ['/subscriptions', '/payment-methods', '/settings']
 // HTTPSとHTTPの両方のCookie名に対応
 const SESSION_COOKIES = ['__Secure-better-auth.session_token', 'better-auth.session_token']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
 
