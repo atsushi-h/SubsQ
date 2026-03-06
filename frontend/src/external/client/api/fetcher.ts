@@ -8,6 +8,18 @@ export const customFetch = async <T>(url: string, options: RequestInit): Promise
   })
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text()
-  const data = body ? JSON.parse(body) : {}
+
+  let data: unknown
+  try {
+    data = body ? JSON.parse(body) : {}
+  } catch {
+    throw new Error(`${res.status} ${res.statusText}: invalid response body`)
+  }
+
+  if (!res.ok) {
+    const errorData = data as { detail?: string; message?: string }
+    throw new Error(errorData?.detail ?? errorData?.message ?? `${res.status} ${res.statusText}`)
+  }
+
   return { data, status: res.status, headers: res.headers } as T
 }
