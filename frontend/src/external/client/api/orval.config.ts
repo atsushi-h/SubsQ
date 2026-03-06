@@ -33,6 +33,7 @@ export default defineConfig({
     output: {
       mode: 'tags-split',
       target: './generated/mocks/',
+      schemas: './generated/model',
       client: 'fetch',
       mock: { type: 'msw' },
       clean: true,

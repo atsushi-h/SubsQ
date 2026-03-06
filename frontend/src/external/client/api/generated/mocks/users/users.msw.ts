@@ -16,7 +16,7 @@ import type {
 
 import type {
   ModelsUserResponse
-} from '../subsQAPI.schemas';
+} from '../../model';
 
 
 export const getUsersGetCurrentUserResponseMock = (overrideResponse: Partial<Extract<ModelsUserResponse, object>> = {}): ModelsUserResponse => ({id: faker.string.uuid(), email: faker.internet.email(), name: faker.string.alpha({length: {min: 10, max: 20}}), provider: faker.string.alpha({length: {min: 10, max: 20}}), providerAccountId: faker.string.alpha({length: {min: 10, max: 20}}), thumbnail: faker.helpers.arrayElement([faker.internet.url(), undefined]), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', updatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', ...overrideResponse})

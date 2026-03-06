@@ -16,11 +16,11 @@ import type {
 
 import {
   ModelsBillingCycle
-} from '../subsQAPI.schemas';
+} from '../../model';
 import type {
   ModelsListSubscriptionsResponse,
   ModelsSubscriptionResponse
-} from '../subsQAPI.schemas';
+} from '../../model';
 
 
 export const getSubscriptionsListSubscriptionsResponseMock = (overrideResponse: Partial<Extract<ModelsListSubscriptionsResponse, object>> = {}): ModelsListSubscriptionsResponse => ({subscriptions: Array.from({ length: faker.number.int({min: 1, max: 10}) }, (_, i) => i + 1).map(() => ({id: faker.string.uuid(), userId: faker.string.uuid(), serviceName: faker.string.alpha({length: {min: 10, max: 20}}), amount: faker.number.int(), billingCycle: faker.helpers.arrayElement(Object.values(ModelsBillingCycle)), baseDate: faker.number.int(), nextBillingDate: faker.date.past().toISOString().slice(0, 10), paymentMethodId: faker.helpers.arrayElement([faker.string.uuid(), undefined]), paymentMethod: faker.helpers.arrayElement([{...{id: faker.string.uuid(), name: faker.string.alpha({length: {min: 10, max: 20}})},}, undefined]), memo: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), monthlyAmount: faker.number.int(), yearlyAmount: faker.number.int(), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', updatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z'})), summary: {...{monthlyTotal: faker.number.int(), yearlyTotal: faker.number.int(), count: faker.number.int()},}, ...overrideResponse})

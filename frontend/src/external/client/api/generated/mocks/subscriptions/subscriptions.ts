@@ -12,7 +12,7 @@ import type {
   ModelsUpdateSubscriptionRequest,
   ModelsUuid,
   RoutesDeleteSubscriptionsRequest
-} from '../subsQAPI.schemas';
+} from '../../model';
 
 
 

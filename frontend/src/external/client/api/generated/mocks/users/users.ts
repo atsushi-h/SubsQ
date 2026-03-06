@@ -5,7 +5,7 @@
 import type {
   ModelsUnauthorizedError,
   ModelsUserResponse
-} from '../subsQAPI.schemas';
+} from '../../model';
 
 
 

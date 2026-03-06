@@ -16,7 +16,7 @@ import type {
 
 import type {
   ModelsPaymentMethodResponse
-} from '../subsQAPI.schemas';
+} from '../../model';
 
 
 export const getPaymentMethodsListPaymentMethodsResponseMock = (): ModelsPaymentMethodResponse[] => (Array.from({ length: faker.number.int({min: 1, max: 10}) }, (_, i) => i + 1).map(() => ({id: faker.string.uuid(), userId: faker.string.uuid(), name: faker.string.alpha({length: {min: 10, max: 20}}), usageCount: faker.number.int(), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', updatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z'})))

@@ -12,7 +12,7 @@ import type {
   ModelsUpdatePaymentMethodRequest,
   ModelsUuid,
   RoutesDeletePaymentMethodsRequest
-} from '../subsQAPI.schemas';
+} from '../../model';
 
 
 
