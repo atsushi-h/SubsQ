@@ -89,7 +89,12 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
         run: |
+          VERSION=$(cat version.txt)
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
           docker build \
+            --build-arg VERSION="v${VERSION}" \
+            --build-arg COMMIT_SHA="${SHORT_SHA}" \
+            --build-arg BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             -t "$REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" \
             .
 
