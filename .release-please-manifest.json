@@ -1,4 +1,5 @@
 {
   "frontend": "1.4.0",
-  "backend": "0.0.0"
+  "backend": "0.0.0",
+  "api-schema": "1.0.0"
 }
