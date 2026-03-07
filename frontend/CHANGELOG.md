@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.4.0...frontend-v1.4.1) (2026-03-07)
+
+
+### Bug Fixes
+
+* **ci:** CIビルドの環境変数とmiddleware非推奨警告を修正 ([#184](https://github.com/atsushi-h/SubsQ/issues/184)) ([a98031e](https://github.com/atsushi-h/SubsQ/commit/a98031eef26ca09f55e211e552a8079d21d59877))
+
 ## [1.4.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.3.0...frontend-v1.4.0) (2026-02-28)
 
 
