@@ -82,7 +82,9 @@ func TestLoad(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Clearenv()
 			for k, v := range tt.envVars {
-				os.Setenv(k, v)
+				if err := os.Setenv(k, v); err != nil {
+					t.Fatalf("os.Setenv(%s): %v", k, err)
+				}
 			}
 
 			cfg, err := config.Load()
@@ -111,12 +113,18 @@ func TestLoad(t *testing.T) {
 
 func TestLoad_DefaultOrigins(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("DATABASE_URL", "postgres://user:pass@localhost:5432/db")
-	os.Setenv("JWT_SECRET", "test-jwt-secret")
-	os.Setenv("GOOGLE_CLIENT_ID", "test-client-id")
-	os.Setenv("GOOGLE_CLIENT_SECRET", "test-client-secret")
-	os.Setenv("GOOGLE_REDIRECT_URL", "http://localhost:8080/auth/callback")
-	os.Setenv("FRONTEND_URL", "http://localhost:3000")
+	for k, v := range map[string]string{
+		"DATABASE_URL":         "postgres://user:pass@localhost:5432/db",
+		"JWT_SECRET":           "test-jwt-secret",
+		"GOOGLE_CLIENT_ID":     "test-client-id",
+		"GOOGLE_CLIENT_SECRET": "test-client-secret",
+		"GOOGLE_REDIRECT_URL":  "http://localhost:8080/auth/callback",
+		"FRONTEND_URL":         "http://localhost:3000",
+	} {
+		if err := os.Setenv(k, v); err != nil {
+			t.Fatalf("os.Setenv(%s): %v", k, err)
+		}
+	}
 
 	cfg, err := config.Load()
 	if err != nil {
