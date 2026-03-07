@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
       -X github.com/atsushi-h/subsq/backend/internal/version.Version=${VERSION} \
       -X github.com/atsushi-h/subsq/backend/internal/version.CommitSHA=${COMMIT_SHA} \
       -X github.com/atsushi-h/subsq/backend/internal/version.BuildTime=${BUILD_TIME}" \
-    -o server ./...
+    -o server ./cmd/api
 
 # ===========================
 # Runner
