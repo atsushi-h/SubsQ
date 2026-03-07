@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	initializer "github.com/atsushi-h/subsq/backend/internal/driver/initializer/api"
+	"github.com/atsushi-h/subsq/backend/internal/version"
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 
 	go func() {
 		addr := fmt.Sprintf(":%d", cfg.ServerPort)
+		log.Printf("Starting server version=%s commit=%s built=%s", version.Version, version.CommitSHA, version.BuildTime)
 		log.Printf("Server listening on %s", addr)
 		if err := e.Start(addr); !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
