@@ -128,8 +128,10 @@ jobs:
           gcloud run deploy "$SERVICE_NAME" \
             --image="$REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" \
             --region="$REGION" \
-            --set-env-vars="DATABASE_URL=$DATABASE_URL"
-            # PORT は Cloud Run の予約済み環境変数のため --set-env-vars では設定不可。
+            --update-env-vars="DATABASE_URL=$DATABASE_URL"
+            # --update-env-varsで既存の環境変数（JWT_SECRETなど）を保持しつつDATABASE_URLのみ更新する。
+            # --set-env-varsは既存の環境変数を全て削除するため使用しない。
+            # PORT は Cloud Run の予約済み環境変数のため設定不可。
             # Cloud Run が自動で PORT=8080 を設定し、コンテナはそれを読み取る。
 
           # Get service URL
