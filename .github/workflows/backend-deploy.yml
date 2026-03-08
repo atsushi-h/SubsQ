@@ -117,11 +117,16 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URL: ${{ secrets.GOOGLE_REDIRECT_URL }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         run: |
           gcloud run deploy "$SERVICE_NAME" \
             --image="$REGION-docker.pkg.dev/$GCP_PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG" \
             --region="$REGION" \
-            --set-env-vars="DATABASE_URL=$DATABASE_URL"
+            --set-env-vars="DATABASE_URL=$DATABASE_URL,JWT_SECRET=$JWT_SECRET,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET,GOOGLE_REDIRECT_URL=$GOOGLE_REDIRECT_URL,FRONTEND_URL=$FRONTEND_URL"
             # PORT は Cloud Run の予約済み環境変数のため --set-env-vars では設定不可。
             # Cloud Run が自動で PORT=8080 を設定し、コンテナはそれを読み取る。
 
