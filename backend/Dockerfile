@@ -19,7 +19,7 @@ COPY . .
 
 # 静的バイナリとしてビルド
 RUN LDFLAGS="-s -w -X github.com/atsushi-h/subsq/backend/internal/version.Version=${VERSION} -X github.com/atsushi-h/subsq/backend/internal/version.CommitSHA=${COMMIT_SHA} -X github.com/atsushi-h/subsq/backend/internal/version.BuildTime=${BUILD_TIME}" && \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="${LDFLAGS}" -o server ./cmd/api
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o server ./cmd/api
 
 # ===========================
 # Runner
