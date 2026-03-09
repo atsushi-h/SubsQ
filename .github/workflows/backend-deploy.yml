@@ -68,6 +68,8 @@ jobs:
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
           TAG="v${VERSION}-${SHORT_SHA}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
           echo "::notice::Image tag: $TAG"
 
       - name: Authenticate to Google Cloud
@@ -88,9 +90,9 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+          VERSION: ${{ steps.image_tag.outputs.version }}
+          SHORT_SHA: ${{ steps.image_tag.outputs.short_sha }}
         run: |
-          VERSION=$(grep -v '^#' version.txt | tr -d '[:space:]')
-          SHORT_SHA=$(git rev-parse --short=7 HEAD)
           BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           docker build \
             --build-arg VERSION="${VERSION}" \
