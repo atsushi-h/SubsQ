@@ -307,6 +307,7 @@ func TestPaymentMethodInteractor_DeleteMany(t *testing.T) {
 		userID     string
 		findPMs    []*domain.PaymentMethod
 		usageCount int64
+		countErr   error
 		wantError  error
 	}{
 		{
@@ -322,6 +323,14 @@ func TestPaymentMethodInteractor_DeleteMany(t *testing.T) {
 			userID:    "user-1",
 			findPMs:   pms[:1],
 			wantError: uc.ErrPaymentMethodNotFound,
+		},
+		{
+			name:      "[Fail] CountByPaymentMethodIDs でDBエラーの場合エラーをラップして返す",
+			ids:       ids,
+			userID:    "user-1",
+			findPMs:   pms,
+			countErr:  errors.New("db error"),
+			wantError: errors.New("failed to count subscriptions: db error"),
 		},
 		{
 			name:       "[Fail] サブスクリプションから参照中の場合 ErrPaymentMethodInUse を返す",
@@ -350,8 +359,8 @@ func TestPaymentMethodInteractor_DeleteMany(t *testing.T) {
 
 			pmRepo.EXPECT().FindByIDs(gomock.Any(), tt.ids, tt.userID).Return(tt.findPMs, nil)
 			if len(tt.findPMs) == len(tt.ids) {
-				subRepo.EXPECT().CountByPaymentMethodIDs(gomock.Any(), tt.ids).Return(tt.usageCount, nil)
-				if tt.usageCount == 0 {
+				subRepo.EXPECT().CountByPaymentMethodIDs(gomock.Any(), tt.ids).Return(tt.usageCount, tt.countErr)
+				if tt.countErr == nil && tt.usageCount == 0 {
 					pmRepo.EXPECT().DeleteMany(gomock.Any(), tt.ids, tt.userID).Return(nil)
 				}
 			}
