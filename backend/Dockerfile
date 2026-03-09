@@ -14,7 +14,15 @@ RUN go mod download
 COPY . .
 
 # 静的バイナリとしてビルド
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o server ./cmd/api
+ARG VERSION=dev
+ARG COMMIT=unknown
+ARG BUILD_TIME=unknown
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w \
+      -X 'github.com/atsushi-h/subsq/backend/internal/version.Version=${VERSION}' \
+      -X 'github.com/atsushi-h/subsq/backend/internal/version.CommitSHA=${COMMIT}' \
+      -X 'github.com/atsushi-h/subsq/backend/internal/version.BuildTime=${BUILD_TIME}'" \
+    -o server ./cmd/api
 
 # ===========================
 # Runner
