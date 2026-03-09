@@ -63,12 +63,12 @@ func TestUserInteractor_GetCurrentUser(t *testing.T) {
 
 func TestUserInteractor_DeleteCurrentUser(t *testing.T) {
 	tests := []struct {
-		name        string
-		userID      string
-		findUser    *user.User
-		findErr     error
-		deleteErr   error
-		wantError   error
+		name      string
+		userID    string
+		findUser  *user.User
+		findErr   error
+		deleteErr error
+		wantError error
 	}{
 		{
 			name:     "[Success] ユーザーを削除する",

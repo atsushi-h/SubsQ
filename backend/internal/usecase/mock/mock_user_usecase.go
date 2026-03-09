@@ -107,5 +107,7 @@ func (mr *MockUserOutputPortMockRecorder) PresentUser(ctx, u any) *gomock.Call {
 }
 
 // Ensure mocks implement the interfaces at compile time.
-var _ port.UserRepository = (*MockUserRepository)(nil)
-var _ port.UserOutputPort = (*MockUserOutputPort)(nil)
+var (
+	_ port.UserRepository = (*MockUserRepository)(nil)
+	_ port.UserOutputPort = (*MockUserOutputPort)(nil)
+)

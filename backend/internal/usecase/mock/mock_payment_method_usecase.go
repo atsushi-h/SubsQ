@@ -183,5 +183,7 @@ func (mr *MockPaymentMethodOutputPortMockRecorder) PresentPaymentMethods(ctx, pm
 }
 
 // Ensure mocks implement the interfaces at compile time.
-var _ port.PaymentMethodRepository = (*MockPaymentMethodRepository)(nil)
-var _ port.PaymentMethodOutputPort = (*MockPaymentMethodOutputPort)(nil)
+var (
+	_ port.PaymentMethodRepository = (*MockPaymentMethodRepository)(nil)
+	_ port.PaymentMethodOutputPort = (*MockPaymentMethodOutputPort)(nil)
+)

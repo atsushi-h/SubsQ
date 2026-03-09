@@ -196,5 +196,7 @@ func (mr *MockSubscriptionOutputPortMockRecorder) PresentSubscriptions(ctx, subs
 }
 
 // Ensure mock implements the interface at compile time.
-var _ port.SubscriptionRepository = (*MockSubscriptionRepository)(nil)
-var _ port.SubscriptionOutputPort = (*MockSubscriptionOutputPort)(nil)
+var (
+	_ port.SubscriptionRepository = (*MockSubscriptionRepository)(nil)
+	_ port.SubscriptionOutputPort = (*MockSubscriptionOutputPort)(nil)
+)
