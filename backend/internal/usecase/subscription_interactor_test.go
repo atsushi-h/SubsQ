@@ -274,12 +274,12 @@ func TestSubscriptionInteractor_Update(t *testing.T) {
 			updateSub: updatedSub,
 		},
 		{
-			name:   "[Success] 支払い方法を変更してサブスクリプションを更新する",
-			id:     "sub-1",
-			userID: "user-1",
-			input:  port.UpdateSubscriptionInput{PaymentMethodID: &pmID},
+			name:    "[Success] 支払い方法を変更してサブスクリプションを更新する",
+			id:      "sub-1",
+			userID:  "user-1",
+			input:   port.UpdateSubscriptionInput{PaymentMethodID: &pmID},
 			findSub: existingSub,
-			findPM: &pm_domain.PaymentMethod{ID: pmID, Name: "クレジットカード"},
+			findPM:  &pm_domain.PaymentMethod{ID: pmID, Name: "クレジットカード"},
 			updateSub: &domain.Subscription{
 				ID: "sub-1", UserID: "user-1", ServiceName: "Netflix",
 				Amount: 1490, BillingCycle: domain.BillingCycleMonthly, BaseDate: 1,
