@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/subscription"
@@ -13,11 +12,11 @@ import (
 )
 
 type subscriptionRepository struct {
-	queries *generated.Queries
+	queries generated.Querier
 }
 
-func NewSubscriptionRepository(pool *pgxpool.Pool) port.SubscriptionRepository {
-	return &subscriptionRepository{queries: generated.New(pool)}
+func NewSubscriptionRepository(q generated.Querier) port.SubscriptionRepository {
+	return &subscriptionRepository{queries: q}
 }
 
 func (r *subscriptionRepository) FindByID(ctx context.Context, id, userID string) (*domain.Subscription, error) {

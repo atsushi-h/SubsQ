@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"go.uber.org/mock/gomock"
+
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/mock"
 	"github.com/atsushi-h/subsq/backend/internal/domain/user"
@@ -35,8 +37,12 @@ func TestUserRepository_UpsertUser(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 		row := newTestUserRow(t)
-		mockDB := mock.NewUserDBTX(row, nil, nil)
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpsertUser(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &userRepository{queries: mockQ}
 
 		input := &user.User{
 			Email:             user.Email(testUserEmailStr),
@@ -68,8 +74,12 @@ func TestUserRepository_UpsertUser(t *testing.T) {
 		row := newTestUserRow(t)
 		thumb := "https://example.com/thumb.jpg"
 		row.Thumbnail = &thumb
-		mockDB := mock.NewUserDBTX(row, nil, nil)
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpsertUser(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &userRepository{queries: mockQ}
 
 		input := &user.User{
 			Email:             user.Email(testUserEmailStr),
@@ -89,8 +99,12 @@ func TestUserRepository_UpsertUser(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewUserDBTX(nil, errors.New("db error"), nil)
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpsertUser(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &userRepository{queries: mockQ}
 		input := &user.User{
 			Email:             user.Email(testUserEmailStr),
 			Name:              "Test User",
@@ -113,8 +127,12 @@ func TestUserRepository_FindByID(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 		row := newTestUserRow(t)
-		mockDB := mock.NewUserDBTX(row, nil, nil)
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindUserByID(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &userRepository{queries: mockQ}
 
 		result, err := repo.FindByID(ctx, testUserIDStr)
 		if err != nil {
@@ -130,7 +148,9 @@ func TestUserRepository_FindByID(t *testing.T) {
 
 	t.Run("無効なUUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &userRepository{queries: generated.New(mock.NewUserDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &userRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid UUID")
@@ -139,8 +159,12 @@ func TestUserRepository_FindByID(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewUserDBTX(nil, errors.New("db error"), nil)
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindUserByID(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &userRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -156,8 +180,12 @@ func TestUserRepository_DeleteUser(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewUserDBTX(nil, nil, nil)
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteUser(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &userRepository{queries: mockQ}
 		if err := repo.DeleteUser(ctx, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -165,7 +193,9 @@ func TestUserRepository_DeleteUser(t *testing.T) {
 
 	t.Run("無効なUUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &userRepository{queries: generated.New(mock.NewUserDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &userRepository{queries: mockQ}
 		if err := repo.DeleteUser(ctx, invalidUUID); err == nil {
 			t.Fatal("expected error for invalid UUID")
 		}
@@ -173,8 +203,12 @@ func TestUserRepository_DeleteUser(t *testing.T) {
 
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewUserDBTX(nil, nil, errors.New("exec error"))
-		repo := &userRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteUser(gomock.Any(), gomock.Any()).
+			Return(errors.New("exec error"))
+		repo := &userRepository{queries: mockQ}
 		if err := repo.DeleteUser(ctx, testUserIDStr); err == nil {
 			t.Fatal("expected exec error")
 		}

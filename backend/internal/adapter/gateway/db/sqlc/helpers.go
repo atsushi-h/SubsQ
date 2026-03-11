@@ -10,9 +10,9 @@ import (
 	driverdb "github.com/atsushi-h/subsq/backend/internal/driver/db"
 )
 
-func queriesForContext(ctx context.Context, q *generated.Queries) *generated.Queries {
+func queriesForContext(ctx context.Context, q generated.Querier) generated.Querier {
 	if tx := driverdb.TxFromContext(ctx); tx != nil {
-		return q.WithTx(tx)
+		return generated.New(tx)
 	}
 	return q
 }

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.uber.org/mock/gomock"
 
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/mock"
@@ -57,8 +58,12 @@ func TestPaymentMethodRepository_FindByID(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 		row := newTestPaymentMethod(t)
-		mockDB := mock.NewPaymentMethodDBTX(row, nil, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			GetPaymentMethodByID(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		result, err := repo.FindByID(ctx, testPMIDStr, testUserIDStr)
 		if err != nil {
@@ -77,7 +82,9 @@ func TestPaymentMethodRepository_FindByID(t *testing.T) {
 
 	t.Run("無効なID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, invalidUUID, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected error for invalid id UUID")
@@ -86,7 +93,9 @@ func TestPaymentMethodRepository_FindByID(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, testPMIDStr, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -95,9 +104,12 @@ func TestPaymentMethodRepository_FindByID(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		dbErr := errors.New("db error")
-		mockDB := mock.NewPaymentMethodDBTX(nil, dbErr, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			GetPaymentMethodByID(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, testPMIDStr, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -123,8 +135,12 @@ func TestPaymentMethodRepository_FindByUserID(t *testing.T) {
 				UpdatedAt: 2_000_001,
 			},
 		}
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithRows(rows)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListPaymentMethodsByUserID(gomock.Any(), gomock.Any()).
+			Return(rows, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		result, err := repo.FindByUserID(ctx, testUserIDStr)
 		if err != nil {
@@ -137,8 +153,12 @@ func TestPaymentMethodRepository_FindByUserID(t *testing.T) {
 
 	t.Run("空リスト", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithRows(nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListPaymentMethodsByUserID(gomock.Any(), gomock.Any()).
+			Return(nil, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		result, err := repo.FindByUserID(ctx, testUserIDStr)
 		if err != nil {
@@ -151,7 +171,9 @@ func TestPaymentMethodRepository_FindByUserID(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByUserID(ctx, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -160,8 +182,12 @@ func TestPaymentMethodRepository_FindByUserID(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithQueryErr(errors.New("db error"))
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListPaymentMethodsByUserID(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByUserID(ctx, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -187,8 +213,12 @@ func TestPaymentMethodRepository_FindByUserIDWithCount(t *testing.T) {
 				UsageCount: 3,
 			},
 		}
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithCountRows(countRows)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListPaymentMethodsWithCountByUserID(gomock.Any(), gomock.Any()).
+			Return(countRows, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		result, err := repo.FindByUserIDWithCount(ctx, testUserIDStr)
 		if err != nil {
@@ -204,8 +234,12 @@ func TestPaymentMethodRepository_FindByUserIDWithCount(t *testing.T) {
 
 	t.Run("空リスト", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithCountRows(nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListPaymentMethodsWithCountByUserID(gomock.Any(), gomock.Any()).
+			Return(nil, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		result, err := repo.FindByUserIDWithCount(ctx, testUserIDStr)
 		if err != nil {
@@ -218,7 +252,9 @@ func TestPaymentMethodRepository_FindByUserIDWithCount(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByUserIDWithCount(ctx, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -227,8 +263,12 @@ func TestPaymentMethodRepository_FindByUserIDWithCount(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithQueryErr(errors.New("db error"))
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListPaymentMethodsWithCountByUserID(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByUserIDWithCount(ctx, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -245,8 +285,12 @@ func TestPaymentMethodRepository_Create(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 		row := newTestPaymentMethod(t)
-		mockDB := mock.NewPaymentMethodDBTX(row, nil, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CreatePaymentMethod(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		input := newTestPaymentMethodDomain(t)
 		result, err := repo.Create(ctx, input)
@@ -260,7 +304,9 @@ func TestPaymentMethodRepository_Create(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		input := &domain.PaymentMethod{UserID: invalidUUID, Name: "Test"}
 		_, err := repo.Create(ctx, input)
 		if err == nil {
@@ -270,9 +316,12 @@ func TestPaymentMethodRepository_Create(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		dbErr := errors.New("db error")
-		mockDB := mock.NewPaymentMethodDBTX(nil, dbErr, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CreatePaymentMethod(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		input := newTestPaymentMethodDomain(t)
 		_, err := repo.Create(ctx, input)
 		if err == nil {
@@ -291,8 +340,12 @@ func TestPaymentMethodRepository_Update(t *testing.T) {
 		t.Parallel()
 		row := newTestPaymentMethod(t)
 		row.Name = "Updated Card"
-		mockDB := mock.NewPaymentMethodDBTX(row, nil, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpdatePaymentMethod(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		input := &domain.PaymentMethod{
 			ID:     testPMIDStr,
@@ -310,7 +363,9 @@ func TestPaymentMethodRepository_Update(t *testing.T) {
 
 	t.Run("無効なID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		input := &domain.PaymentMethod{ID: invalidUUID, UserID: testUserIDStr, Name: "Test"}
 		_, err := repo.Update(ctx, input)
 		if err == nil {
@@ -320,7 +375,9 @@ func TestPaymentMethodRepository_Update(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		input := &domain.PaymentMethod{ID: testPMIDStr, UserID: invalidUUID, Name: "Test"}
 		_, err := repo.Update(ctx, input)
 		if err == nil {
@@ -330,9 +387,12 @@ func TestPaymentMethodRepository_Update(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		dbErr := errors.New("db error")
-		mockDB := mock.NewPaymentMethodDBTX(nil, dbErr, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpdatePaymentMethod(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		input := &domain.PaymentMethod{ID: testPMIDStr, UserID: testUserIDStr, Name: "Test"}
 		_, err := repo.Update(ctx, input)
 		if err == nil {
@@ -349,8 +409,12 @@ func TestPaymentMethodRepository_Delete(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeletePaymentMethod(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.Delete(ctx, testPMIDStr, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -358,7 +422,9 @@ func TestPaymentMethodRepository_Delete(t *testing.T) {
 
 	t.Run("無効なID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.Delete(ctx, invalidUUID, testUserIDStr); err == nil {
 			t.Fatal("expected error for invalid id UUID")
 		}
@@ -366,7 +432,9 @@ func TestPaymentMethodRepository_Delete(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.Delete(ctx, testPMIDStr, invalidUUID); err == nil {
 			t.Fatal("expected error for invalid userID UUID")
 		}
@@ -374,8 +442,12 @@ func TestPaymentMethodRepository_Delete(t *testing.T) {
 
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, errors.New("exec error"))
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeletePaymentMethod(gomock.Any(), gomock.Any()).
+			Return(errors.New("exec error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.Delete(ctx, testPMIDStr, testUserIDStr); err == nil {
 			t.Fatal("expected exec error")
 		}
@@ -390,8 +462,12 @@ func TestPaymentMethodRepository_DeleteMany(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeletePaymentMethods(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{testPMIDStr, testPM2IDStr}, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -399,7 +475,9 @@ func TestPaymentMethodRepository_DeleteMany(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{testPMIDStr}, invalidUUID); err == nil {
 			t.Fatal("expected error for invalid userID UUID")
 		}
@@ -407,7 +485,9 @@ func TestPaymentMethodRepository_DeleteMany(t *testing.T) {
 
 	t.Run("無効なID UUID（ids内）", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{invalidUUID}, testUserIDStr); err == nil {
 			t.Fatal("expected error for invalid id in ids")
 		}
@@ -415,8 +495,12 @@ func TestPaymentMethodRepository_DeleteMany(t *testing.T) {
 
 	t.Run("空スライス", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeletePaymentMethods(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{}, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error for empty ids: %v", err)
 		}
@@ -424,8 +508,12 @@ func TestPaymentMethodRepository_DeleteMany(t *testing.T) {
 
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, errors.New("exec error"))
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeletePaymentMethods(gomock.Any(), gomock.Any()).
+			Return(errors.New("exec error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{testPMIDStr}, testUserIDStr); err == nil {
 			t.Fatal("expected exec error")
 		}
@@ -441,8 +529,12 @@ func TestPaymentMethodRepository_FindByIDs(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 		rows := []*generated.PaymentMethod{newTestPaymentMethod(t)}
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithRows(rows)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindPaymentMethodsByIDs(gomock.Any(), gomock.Any()).
+			Return(rows, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 
 		result, err := repo.FindByIDs(ctx, []string{testPMIDStr}, testUserIDStr)
 		if err != nil {
@@ -458,7 +550,9 @@ func TestPaymentMethodRepository_FindByIDs(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByIDs(ctx, []string{testPMIDStr}, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -467,7 +561,9 @@ func TestPaymentMethodRepository_FindByIDs(t *testing.T) {
 
 	t.Run("無効なID UUID（ids内）", func(t *testing.T) {
 		t.Parallel()
-		repo := &paymentMethodRepository{queries: generated.New(mock.NewPaymentMethodDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByIDs(ctx, []string{invalidUUID}, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected error for invalid id in ids")
@@ -476,8 +572,12 @@ func TestPaymentMethodRepository_FindByIDs(t *testing.T) {
 
 	t.Run("空スライス", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithRows(nil)
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindPaymentMethodsByIDs(gomock.Any(), gomock.Any()).
+			Return(nil, nil)
+		repo := &paymentMethodRepository{queries: mockQ}
 		result, err := repo.FindByIDs(ctx, []string{}, testUserIDStr)
 		if err != nil {
 			t.Fatalf("unexpected error for empty ids: %v", err)
@@ -489,8 +589,12 @@ func TestPaymentMethodRepository_FindByIDs(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewPaymentMethodDBTX(nil, nil, nil).WithQueryErr(errors.New("db error"))
-		repo := &paymentMethodRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindPaymentMethodsByIDs(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &paymentMethodRepository{queries: mockQ}
 		_, err := repo.FindByIDs(ctx, []string{testPMIDStr}, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
