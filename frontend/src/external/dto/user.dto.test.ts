@@ -155,6 +155,8 @@ describe('UserResponseSchema', () => {
     id: VALID_USER_ID,
     email: VALID_EMAIL,
     name: TEST_USER_NAME,
+    provider: PROVIDER,
+    providerAccountId: PROVIDER_ACCOUNT_ID,
     thumbnail: THUMBNAIL_URL,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -163,6 +165,18 @@ describe('UserResponseSchema', () => {
   it('有効なレスポンスをパースできる', () => {
     const result = UserResponseSchema.safeParse(validResponse)
     expect(result.success).toBe(true)
+  })
+
+  it('providerが欠落している場合エラーになる', () => {
+    const { provider, ...withoutProvider } = validResponse
+    const result = UserResponseSchema.safeParse(withoutProvider)
+    expect(result.success).toBe(false)
+  })
+
+  it('providerAccountIdが欠落している場合エラーになる', () => {
+    const { providerAccountId, ...withoutProviderAccountId } = validResponse
+    const result = UserResponseSchema.safeParse(withoutProviderAccountId)
+    expect(result.success).toBe(false)
   })
 
   it('thumbnailがnullの場合もパースできる', () => {

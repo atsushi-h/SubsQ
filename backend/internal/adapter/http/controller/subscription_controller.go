@@ -92,7 +92,7 @@ func (c *SubscriptionController) Create(ctx echo.Context) error {
 		ServiceName:     req.ServiceName,
 		Amount:          int(req.Amount),
 		BillingCycle:    domain.BillingCycle(req.BillingCycle),
-		BaseDate:        int(req.BaseDate),
+		BaseDate:        int(req.BaseDate.Unix()),
 		PaymentMethodID: pmID,
 		Memo:            req.Memo,
 	}); err != nil {
@@ -133,7 +133,7 @@ func (c *SubscriptionController) Update(ctx echo.Context, id openapi.ModelsUuid)
 
 	var baseDate *int
 	if req.BaseDate != nil {
-		bd := int(*req.BaseDate)
+		bd := int(req.BaseDate.Unix())
 		baseDate = &bd
 	}
 

@@ -10,10 +10,13 @@ export const mockSubscription: SubscriptionResponse = {
   amount: 1200,
   billingCycle: 'monthly',
   baseDate: '2024-01-01T00:00:00Z',
+  nextBillingDate: '2024-02-01',
   paymentMethod: {
     id: 'pm-test-001',
     name: 'クレジットカード',
   },
+  monthlyAmount: 1200,
+  yearlyAmount: 14400,
   memo: 'テスト用サブスクリプション',
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
@@ -29,16 +32,18 @@ export const mockSubscriptionList: ListSubscriptionsResponse = {
       amount: 980,
     },
   ],
-  totals: {
+  summary: {
     monthlyTotal: 2180,
-    yearlyTotal: 0,
+    yearlyTotal: 26160,
+    count: 2,
   },
 }
 
 export const emptySubscriptionList: ListSubscriptionsResponse = {
   subscriptions: [],
-  totals: {
+  summary: {
     monthlyTotal: 0,
     yearlyTotal: 0,
+    count: 0,
   },
 }

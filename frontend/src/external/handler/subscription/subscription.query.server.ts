@@ -51,10 +51,10 @@ export async function listSubscriptionsByUserIdQuery(
   )
 
   // SubscriptionTotalCalculatorを使って合計を計算
-  const totals = subscriptionTotalCalculator.calculate(subscriptions)
+  const summary = subscriptionTotalCalculator.calculate(subscriptions)
 
   return {
     subscriptions: subscriptionResponses,
-    totals,
+    summary,
   }
 }

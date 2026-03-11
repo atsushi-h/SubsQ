@@ -114,6 +114,7 @@ describe('PaymentMethodResponseSchema', () => {
     id: VALID_PAYMENT_METHOD_ID,
     userId: '123e4567-e89b-12d3-a456-426614174001',
     name: 'クレジットカード',
+    usageCount: 2,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   }
@@ -121,6 +122,18 @@ describe('PaymentMethodResponseSchema', () => {
   it('有効なレスポンスをパースできる', () => {
     const result = PaymentMethodResponseSchema.safeParse(validResponse)
     expect(result.success).toBe(true)
+  })
+
+  it('usageCountが小数でエラーになる', () => {
+    const invalid = { ...validResponse, usageCount: 1.5 }
+    const result = PaymentMethodResponseSchema.safeParse(invalid)
+    expect(result.success).toBe(false)
+  })
+
+  it('usageCountが欠落している場合エラーになる', () => {
+    const { usageCount, ...withoutUsageCount } = validResponse
+    const result = PaymentMethodResponseSchema.safeParse(withoutUsageCount)
+    expect(result.success).toBe(false)
   })
 
   it('idが不正なUUID形式でエラーになる', () => {

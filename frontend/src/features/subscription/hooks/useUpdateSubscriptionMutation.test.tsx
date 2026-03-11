@@ -49,7 +49,10 @@ describe('useUpdateSubscriptionMutation', () => {
     const mockResponse = {
       ...mockData,
       userId: 'user-1',
+      nextBillingDate: '2024-02-01',
       paymentMethod: { id: 'pm-2', name: '銀行振込' },
+      monthlyAmount: 1500,
+      yearlyAmount: 18000,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-10T00:00:00Z',
     }
@@ -82,7 +85,10 @@ describe('useUpdateSubscriptionMutation', () => {
     vi.mocked(updateSubscriptionCommandAction).mockResolvedValue({
       ...mockData,
       userId: 'user-1',
+      nextBillingDate: '2024-02-01',
       paymentMethod: null,
+      monthlyAmount: 1200,
+      yearlyAmount: 14400,
       memo: '',
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-10T00:00:00Z',

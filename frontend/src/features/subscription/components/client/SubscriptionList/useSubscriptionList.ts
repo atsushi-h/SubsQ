@@ -44,7 +44,7 @@ export function useSubscriptionList() {
 
   return {
     subscriptions: data?.subscriptions ?? [],
-    totals: data?.totals,
+    summary: data?.summary,
     isLoading,
     error,
     isDeleting: deleteMutation.isPending,

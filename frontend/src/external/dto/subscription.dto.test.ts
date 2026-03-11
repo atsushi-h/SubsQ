@@ -215,8 +215,12 @@ describe('SubscriptionResponseSchema', () => {
     amount: 1200,
     billingCycle: 'monthly' as const,
     baseDate: '2024-01-01T00:00:00.000Z',
+    nextBillingDate: '2024-02-01',
+    paymentMethodId: VALID_PAYMENT_METHOD_ID,
     paymentMethod: { id: VALID_PAYMENT_METHOD_ID, name: 'クレジットカード' },
     memo: 'スタンダードプラン',
+    monthlyAmount: 1200,
+    yearlyAmount: 14400,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   }
@@ -229,6 +233,12 @@ describe('SubscriptionResponseSchema', () => {
   it('paymentMethodがnullの場合もパースできる', () => {
     const response = { ...validResponse, paymentMethod: null }
     const result = SubscriptionResponseSchema.safeParse(response)
+    expect(result.success).toBe(true)
+  })
+
+  it('memoは省略可能', () => {
+    const { memo, ...withoutMemo } = validResponse
+    const result = SubscriptionResponseSchema.safeParse(withoutMemo)
     expect(result.success).toBe(true)
   })
 
@@ -261,15 +271,19 @@ describe('ListSubscriptionsResponseSchema', () => {
         amount: 1200,
         billingCycle: 'monthly' as const,
         baseDate: '2024-01-01T00:00:00.000Z',
+        nextBillingDate: '2024-02-01',
+        paymentMethodId: VALID_PAYMENT_METHOD_ID,
         paymentMethod: { id: VALID_PAYMENT_METHOD_ID, name: 'クレジットカード' },
-        memo: '',
+        monthlyAmount: 1200,
+        yearlyAmount: 14400,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
       },
     ],
-    totals: {
+    summary: {
       monthlyTotal: 1200,
       yearlyTotal: 14400,
+      count: 1,
     },
   }
 
@@ -281,22 +295,22 @@ describe('ListSubscriptionsResponseSchema', () => {
   it('subscriptionsが空配列でもパースできる', () => {
     const response = {
       subscriptions: [],
-      totals: { monthlyTotal: 0, yearlyTotal: 0 },
+      summary: { monthlyTotal: 0, yearlyTotal: 0, count: 0 },
     }
     const result = ListSubscriptionsResponseSchema.safeParse(response)
     expect(result.success).toBe(true)
   })
 
-  it('totalsフィールドが欠落している場合エラーになる', () => {
-    const { totals, ...withoutTotals } = validResponse
-    const result = ListSubscriptionsResponseSchema.safeParse(withoutTotals)
+  it('summaryフィールドが欠落している場合エラーになる', () => {
+    const { summary, ...withoutSummary } = validResponse
+    const result = ListSubscriptionsResponseSchema.safeParse(withoutSummary)
     expect(result.success).toBe(false)
   })
 
   it('monthlyTotalが負の数でもパースできる', () => {
     const response = {
       ...validResponse,
-      totals: { monthlyTotal: -100, yearlyTotal: 0 },
+      summary: { monthlyTotal: -100, yearlyTotal: 0, count: 0 },
     }
     const result = ListSubscriptionsResponseSchema.safeParse(response)
     expect(result.success).toBe(true)

@@ -439,11 +439,9 @@ components:
             - $ref: '#/components/schemas/Models.BillingCycle'
           description: 請求サイクル
         baseDate:
-          type: integer
-          format: int32
-          minimum: 1
-          maximum: 31
-          description: 基準日（1〜31）
+          type: string
+          format: date-time
+          description: サブスクリプション開始日（ISO 8601 UTC）
         paymentMethodId:
           allOf:
             - $ref: '#/components/schemas/Models.uuid'
@@ -508,7 +506,7 @@ components:
         summary:
           allOf:
             - $ref: '#/components/schemas/Models.SubscriptionListSummary'
-          description: サマリー情報
+          description: 合計情報
       description: サブスクリプション一覧レスポンス
     Models.NotFoundError:
       type: object
@@ -630,9 +628,9 @@ components:
             - $ref: '#/components/schemas/Models.BillingCycle'
           description: 請求サイクル
         baseDate:
-          type: integer
-          format: int32
-          description: 基準日（1〜31、月次の請求日）
+          type: string
+          format: date-time
+          description: サブスクリプション開始日（ISO 8601 UTC）
         nextBillingDate:
           type: string
           format: date
@@ -708,11 +706,9 @@ components:
             - $ref: '#/components/schemas/Models.BillingCycle'
           description: 請求サイクル
         baseDate:
-          type: integer
-          format: int32
-          minimum: 1
-          maximum: 31
-          description: 基準日（1〜31）
+          type: string
+          format: date-time
+          description: サブスクリプション開始日（ISO 8601 UTC）
         paymentMethodId:
           allOf:
             - $ref: '#/components/schemas/Models.uuid'

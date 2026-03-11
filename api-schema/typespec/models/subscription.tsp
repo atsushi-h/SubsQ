@@ -37,8 +37,8 @@ model SubscriptionResponse {
   /** 請求サイクル */
   billingCycle: BillingCycle;
 
-  /** 基準日（1〜31、月次の請求日） */
-  baseDate: int32;
+  /** サブスクリプション開始日（ISO 8601 UTC） */
+  baseDate: utcDateTime;
 
   /** 次回請求日（YYYY-MM-DD、時刻を持たない日付のみの値） */
   nextBillingDate: plainDate;
@@ -82,7 +82,7 @@ model ListSubscriptionsResponse {
   /** サブスクリプション一覧 */
   subscriptions: SubscriptionResponse[];
 
-  /** サマリー情報 */
+  /** 合計情報 */
   summary: SubscriptionListSummary;
 }
 
@@ -100,10 +100,8 @@ model CreateSubscriptionRequest {
   /** 請求サイクル */
   billingCycle: BillingCycle;
 
-  /** 基準日（1〜31） */
-  @minValue(1)
-  @maxValue(31)
-  baseDate: int32;
+  /** サブスクリプション開始日（ISO 8601 UTC） */
+  baseDate: utcDateTime;
 
   /** 支払い方法ID */
   paymentMethodId?: uuid;
@@ -130,10 +128,8 @@ model UpdateSubscriptionRequest {
   /** 請求サイクル */
   billingCycle?: BillingCycle;
 
-  /** 基準日（1〜31） */
-  @minValue(1)
-  @maxValue(31)
-  baseDate?: int32;
+  /** サブスクリプション開始日（ISO 8601 UTC） */
+  baseDate?: utcDateTime;
 
   /** 支払い方法ID */
   paymentMethodId?: uuid;

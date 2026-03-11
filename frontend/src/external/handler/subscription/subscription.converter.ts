@@ -17,8 +17,12 @@ export function toSubscriptionResponse(
     amount: plainSubscription.amount,
     billingCycle: plainSubscription.billingCycle as 'monthly' | 'yearly',
     baseDate: new Date(plainSubscription.baseDate * 1000).toISOString(),
+    nextBillingDate: subscription.calculateNextBillingDate().toISOString().split('T')[0],
+    paymentMethodId: plainSubscription.paymentMethodId ?? undefined,
     paymentMethod,
     memo: plainSubscription.memo,
+    monthlyAmount: subscription.toMonthlyAmount().getValue(),
+    yearlyAmount: subscription.toYearlyAmount().getValue(),
     createdAt: plainSubscription.createdAt.toISOString(),
     updatedAt: plainSubscription.updatedAt.toISOString(),
   }

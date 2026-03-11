@@ -22,6 +22,7 @@ describe('toPaymentMethodResponse', () => {
       id: VALID_PAYMENT_METHOD_ID,
       userId: VALID_USER_ID,
       name: 'クレジットカード',
+      usageCount: 0,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-02T00:00:00.000Z',
     })

@@ -1,5 +1,6 @@
 'use client'
 
+import type { SubscriptionListSummary } from '@/external/dto/subscription.dto'
 import type { Subscription } from '@/features/subscription/types/subscription.types'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
@@ -19,11 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table'
-import { DateUtil } from '@/shared/utils/date'
 
 type Props = {
   subscriptions: Subscription[]
-  totals?: { monthlyTotal: number; yearlyTotal: number }
+  summary?: Pick<SubscriptionListSummary, 'monthlyTotal' | 'yearlyTotal'>
   isLoading: boolean
   isDeleting: boolean
   deleteTarget: Subscription | null
@@ -37,7 +37,7 @@ type Props = {
 
 export function SubscriptionListPresenter({
   subscriptions,
-  totals,
+  summary,
   isLoading,
   isDeleting,
   deleteTarget,
@@ -68,16 +68,16 @@ export function SubscriptionListPresenter({
         <Button onClick={onCreate}>新規作成</Button>
       </div>
 
-      {totals && (
+      {summary && (
         <Card className="p-6 mb-6">
           <div className="flex gap-8">
             <div>
               <p className="text-sm text-muted-foreground">月額合計</p>
-              <p className="text-2xl font-bold">{formatAmount(totals.monthlyTotal)}</p>
+              <p className="text-2xl font-bold">{formatAmount(summary.monthlyTotal)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">年額合計</p>
-              <p className="text-2xl font-bold">{formatAmount(totals.yearlyTotal)}</p>
+              <p className="text-2xl font-bold">{formatAmount(summary.yearlyTotal)}</p>
             </div>
           </div>
         </Card>
@@ -110,7 +110,7 @@ export function SubscriptionListPresenter({
                   <TableCell className="font-medium">{subscription.serviceName}</TableCell>
                   <TableCell>{formatAmount(subscription.amount)}</TableCell>
                   <TableCell>{formatBillingCycle(subscription.billingCycle)}</TableCell>
-                  <TableCell>{DateUtil.formatDate(subscription.baseDate)}</TableCell>
+                  <TableCell>{subscription.nextBillingDate}</TableCell>
                   <TableCell>{subscription.paymentMethod?.name ?? '未設定'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">

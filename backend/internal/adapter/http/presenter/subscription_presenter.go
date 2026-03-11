@@ -91,7 +91,7 @@ func toSubscriptionResponse(sub *domain.Subscription, now time.Time) (openapi.Mo
 		Id:              id,
 		UserId:          userID,
 		Amount:          int64(sub.Amount),
-		BaseDate:        int32(sub.BaseDate),
+		BaseDate:        time.Unix(int64(sub.BaseDate), 0).UTC(),
 		BillingCycle:    openapi.ModelsBillingCycle(sub.BillingCycle),
 		CreatedAt:       sub.CreatedAt.UTC(),
 		ServiceName:     sub.ServiceName,
