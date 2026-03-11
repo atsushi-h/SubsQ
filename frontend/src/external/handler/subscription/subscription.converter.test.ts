@@ -32,21 +32,25 @@ describe('toSubscriptionResponse', () => {
 
     const result = toSubscriptionResponse(subscription, paymentMethod)
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       id: VALID_SUBSCRIPTION_ID,
       userId: VALID_USER_ID,
       serviceName: 'Netflix',
       amount: 1200,
       billingCycle: 'monthly',
       baseDate: '2024-01-01T00:00:00.000Z',
+      paymentMethodId: VALID_PAYMENT_METHOD_ID,
       paymentMethod: {
         id: VALID_PAYMENT_METHOD_ID,
         name: 'クレジットカード',
       },
       memo: 'スタンダードプラン',
+      monthlyAmount: 1200,
+      yearlyAmount: 14400,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-02T00:00:00.000Z',
     })
+    expect(typeof result.nextBillingDate).toBe('string')
   })
 
   it('paymentMethodがnullの場合も正しく変換する', () => {

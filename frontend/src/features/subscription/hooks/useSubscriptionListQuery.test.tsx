@@ -37,7 +37,10 @@ describe('useSubscriptionListQuery', () => {
           billingCycle: 'monthly' as const,
           userId: 'user-1',
           baseDate: '2024-01-01T00:00:00Z',
+          nextBillingDate: '2024-02-01',
           paymentMethod: null,
+          monthlyAmount: 1200,
+          yearlyAmount: 14400,
           memo: '',
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
@@ -49,13 +52,16 @@ describe('useSubscriptionListQuery', () => {
           billingCycle: 'monthly' as const,
           userId: 'user-1',
           baseDate: '2024-01-01T00:00:00Z',
+          nextBillingDate: '2024-02-01',
           paymentMethod: null,
+          monthlyAmount: 980,
+          yearlyAmount: 11760,
           memo: '',
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
         },
       ],
-      totals: { monthlyTotal: 2180, yearlyTotal: 0 },
+      summary: { monthlyTotal: 2180, yearlyTotal: 0, count: 2 },
     }
 
     vi.mocked(listSubscriptionsByUserIdQueryAction).mockResolvedValue(mockData)
@@ -68,7 +74,7 @@ describe('useSubscriptionListQuery', () => {
     // Assert
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data?.subscriptions).toHaveLength(2)
-    expect(result.current.data?.totals.monthlyTotal).toBe(2180)
+    expect(result.current.data?.summary.monthlyTotal).toBe(2180)
   })
 
   it('エラー時はerrorが設定される', async () => {

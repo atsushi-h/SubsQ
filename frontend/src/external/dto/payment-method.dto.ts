@@ -24,6 +24,7 @@ export const PaymentMethodResponseSchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
   name: z.string(),
+  usageCount: z.number().int(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 })

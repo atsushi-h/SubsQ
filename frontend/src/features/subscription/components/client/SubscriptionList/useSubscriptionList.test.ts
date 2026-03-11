@@ -20,7 +20,10 @@ const mockSubscription: Subscription = {
   billingCycle: 'monthly',
   userId: 'user-1',
   baseDate: '2024-01-01T00:00:00Z',
+  nextBillingDate: '2024-02-01',
   paymentMethod: { id: 'pm-1', name: 'クレジットカード' },
+  monthlyAmount: 1200,
+  yearlyAmount: 14400,
   memo: '',
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
@@ -35,7 +38,7 @@ describe('useSubscriptionList', () => {
     vi.mocked(useSubscriptionListQuery).mockReturnValue({
       data: {
         subscriptions: [mockSubscription],
-        totals: { monthlyTotal: 1200, yearlyTotal: 0 },
+        summary: { monthlyTotal: 1200, yearlyTotal: 0 },
       },
       isLoading: false,
       error: null,
@@ -50,7 +53,7 @@ describe('useSubscriptionList', () => {
 
     expect(result.current.subscriptions).toHaveLength(1)
     expect(result.current.subscriptions[0].serviceName).toBe('Netflix')
-    expect(result.current.totals?.monthlyTotal).toBe(1200)
+    expect(result.current.summary?.monthlyTotal).toBe(1200)
   })
 
   it('データがない場合は空配列を返す', () => {
@@ -68,7 +71,7 @@ describe('useSubscriptionList', () => {
     const { result } = renderHook(() => useSubscriptionList())
 
     expect(result.current.subscriptions).toEqual([])
-    expect(result.current.totals).toBeUndefined()
+    expect(result.current.summary).toBeUndefined()
   })
 
   it('削除確認ダイアログを開く', () => {

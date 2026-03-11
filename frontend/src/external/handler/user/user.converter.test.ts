@@ -28,6 +28,8 @@ describe('toUserResponse', () => {
       id: VALID_USER_ID,
       email: VALID_EMAIL,
       name: TEST_USER_NAME,
+      provider: PROVIDER,
+      providerAccountId: PROVIDER_ACCOUNT_ID,
       thumbnail: 'https://example.com/avatar.jpg',
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-02T00:00:00.000Z',

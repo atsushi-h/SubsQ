@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Subscription } from '../../domain/entities/subscription'
+import { Amount } from '../../domain/value-objects/amount'
 import type { BillingCycleType } from '../../domain/value-objects/billing-cycle'
 
 // Serviceをモック
@@ -72,6 +73,9 @@ describe('getSubscriptionByIdQuery', () => {
       userId: VALID_USER_ID,
       belongsTo: vi.fn(() => true),
       paymentMethodId: VALID_PAYMENT_METHOD_ID,
+      calculateNextBillingDate: vi.fn(() => new Date('2024-02-01T00:00:00.000Z')),
+      toMonthlyAmount: vi.fn(() => Amount.fromValue(1200)),
+      toYearlyAmount: vi.fn(() => Amount.fromValue(14400)),
       toPlainObject: vi.fn(() => ({
         id: VALID_SUBSCRIPTION_ID,
         userId: VALID_USER_ID,
@@ -112,6 +116,9 @@ describe('getSubscriptionByIdQuery', () => {
       userId: VALID_USER_ID,
       belongsTo: vi.fn(() => true),
       paymentMethodId: null,
+      calculateNextBillingDate: vi.fn(() => new Date('2024-02-01T00:00:00.000Z')),
+      toMonthlyAmount: vi.fn(() => Amount.fromValue(980)),
+      toYearlyAmount: vi.fn(() => Amount.fromValue(11760)),
       toPlainObject: vi.fn(() => ({
         id: VALID_SUBSCRIPTION_ID,
         userId: VALID_USER_ID,
@@ -149,6 +156,9 @@ describe('listSubscriptionsByUserIdQuery', () => {
         id: VALID_SUBSCRIPTION_ID,
         userId: VALID_USER_ID,
         paymentMethodId: VALID_PAYMENT_METHOD_ID,
+        calculateNextBillingDate: vi.fn(() => new Date('2024-02-01T00:00:00.000Z')),
+        toMonthlyAmount: vi.fn(() => Amount.fromValue(1200)),
+        toYearlyAmount: vi.fn(() => Amount.fromValue(14400)),
         toPlainObject: vi.fn(() => ({
           id: VALID_SUBSCRIPTION_ID,
           userId: VALID_USER_ID,
@@ -166,6 +176,9 @@ describe('listSubscriptionsByUserIdQuery', () => {
         id: ANOTHER_SUBSCRIPTION_ID,
         userId: VALID_USER_ID,
         paymentMethodId: null,
+        calculateNextBillingDate: vi.fn(() => new Date('2024-02-01T00:00:00.000Z')),
+        toMonthlyAmount: vi.fn(() => Amount.fromValue(980)),
+        toYearlyAmount: vi.fn(() => Amount.fromValue(11760)),
         toPlainObject: vi.fn(() => ({
           id: ANOTHER_SUBSCRIPTION_ID,
           userId: VALID_USER_ID,
@@ -194,6 +207,7 @@ describe('listSubscriptionsByUserIdQuery', () => {
     vi.mocked(subscriptionTotalCalculator.calculate).mockReturnValue({
       monthlyTotal: 2180,
       yearlyTotal: 26160,
+      count: 2,
     })
 
     const result = await listSubscriptionsByUserIdQuery(VALID_USER_ID)
@@ -201,8 +215,9 @@ describe('listSubscriptionsByUserIdQuery', () => {
     expect(result.subscriptions).toHaveLength(2)
     expect(result.subscriptions[0].serviceName).toBe('Netflix')
     expect(result.subscriptions[1].serviceName).toBe('Spotify')
-    expect(result.totals.monthlyTotal).toBe(2180)
-    expect(result.totals.yearlyTotal).toBe(26160)
+    expect(result.summary.monthlyTotal).toBe(2180)
+    expect(result.summary.yearlyTotal).toBe(26160)
+    expect(result.summary.count).toBe(2)
     expect(subscriptionService.getSubscriptionsByUserId).toHaveBeenCalledWith(VALID_USER_ID)
   })
 
@@ -211,12 +226,13 @@ describe('listSubscriptionsByUserIdQuery', () => {
     vi.mocked(subscriptionTotalCalculator.calculate).mockReturnValue({
       monthlyTotal: 0,
       yearlyTotal: 0,
+      count: 0,
     })
 
     const result = await listSubscriptionsByUserIdQuery(VALID_USER_ID)
 
     expect(result.subscriptions).toEqual([])
-    expect(result.totals.monthlyTotal).toBe(0)
-    expect(result.totals.yearlyTotal).toBe(0)
+    expect(result.summary.monthlyTotal).toBe(0)
+    expect(result.summary.yearlyTotal).toBe(0)
   })
 })

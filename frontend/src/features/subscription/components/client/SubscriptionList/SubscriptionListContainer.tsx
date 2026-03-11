@@ -6,7 +6,7 @@ import { useSubscriptionList } from './useSubscriptionList'
 export function SubscriptionListContainer() {
   const {
     subscriptions,
-    totals,
+    summary,
     isLoading,
     isDeleting,
     deleteTarget,
@@ -21,7 +21,7 @@ export function SubscriptionListContainer() {
   return (
     <SubscriptionListPresenter
       subscriptions={subscriptions}
-      totals={totals}
+      summary={summary}
       isLoading={isLoading}
       isDeleting={isDeleting}
       deleteTarget={deleteTarget}

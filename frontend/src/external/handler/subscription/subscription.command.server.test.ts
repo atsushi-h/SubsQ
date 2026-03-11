@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Subscription } from '../../domain/entities/subscription'
+import { Amount } from '../../domain/value-objects/amount'
 import type { BillingCycleType } from '../../domain/value-objects/billing-cycle'
 
 // Serviceをモック
@@ -70,6 +71,9 @@ describe('createSubscriptionCommand', () => {
       id: ANOTHER_SUBSCRIPTION_ID,
       userId: VALID_SUBSCRIPTION_ID,
       paymentMethodId: VALID_PAYMENT_METHOD_ID,
+      calculateNextBillingDate: vi.fn(() => new Date('2024-02-01T00:00:00.000Z')),
+      toMonthlyAmount: vi.fn(() => Amount.fromValue(1200)),
+      toYearlyAmount: vi.fn(() => Amount.fromValue(14400)),
       toPlainObject: vi.fn(() => ({
         id: ANOTHER_SUBSCRIPTION_ID,
         userId: VALID_SUBSCRIPTION_ID,
@@ -153,6 +157,9 @@ describe('updateSubscriptionCommand', () => {
       id: VALID_SUBSCRIPTION_ID,
       userId: VALID_USER_ID,
       paymentMethodId: null,
+      calculateNextBillingDate: vi.fn(() => new Date('2024-03-01T00:00:00.000Z')),
+      toMonthlyAmount: vi.fn(() => Amount.fromValue(980)),
+      toYearlyAmount: vi.fn(() => Amount.fromValue(11760)),
       toPlainObject: vi.fn(() => ({
         id: VALID_SUBSCRIPTION_ID,
         userId: VALID_USER_ID,
@@ -192,6 +199,9 @@ describe('updateSubscriptionCommand', () => {
       id: VALID_SUBSCRIPTION_ID,
       userId: VALID_USER_ID,
       paymentMethodId: null,
+      calculateNextBillingDate: vi.fn(() => new Date('2024-03-01T00:00:00.000Z')),
+      toMonthlyAmount: vi.fn(() => Amount.fromValue(1200)),
+      toYearlyAmount: vi.fn(() => Amount.fromValue(14400)),
       toPlainObject: vi.fn(() => ({
         id: VALID_SUBSCRIPTION_ID,
         userId: VALID_USER_ID,

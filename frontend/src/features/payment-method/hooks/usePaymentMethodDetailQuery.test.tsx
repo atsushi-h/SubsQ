@@ -26,6 +26,7 @@ describe('usePaymentMethodDetailQuery', () => {
     id: 'pm-1',
     name: 'クレジットカード',
     userId: 'user-1',
+    usageCount: 0,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   }

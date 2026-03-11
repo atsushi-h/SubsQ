@@ -30,6 +30,8 @@ export const UserResponseSchema = z.object({
   id: z.uuid(),
   email: z.email(),
   name: z.string(),
+  provider: z.string(),
+  providerAccountId: z.string(),
   thumbnail: z.string().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

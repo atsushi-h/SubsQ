@@ -10,6 +10,8 @@ export function toUserResponse(user: User): UserResponse {
     id: plainUser.id,
     email: plainUser.email,
     name: plainUser.name,
+    provider: plainUser.provider,
+    providerAccountId: plainUser.providerAccountId,
     thumbnail: plainUser.thumbnail,
     createdAt: plainUser.createdAt.toISOString(),
     updatedAt: plainUser.updatedAt.toISOString(),

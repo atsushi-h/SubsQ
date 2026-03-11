@@ -3,6 +3,7 @@ import type { Subscription } from '../entities/subscription'
 export type TotalAmounts = {
   monthlyTotal: number
   yearlyTotal: number
+  count: number
 }
 
 /**
@@ -38,6 +39,7 @@ export class SubscriptionTotalCalculator {
     return {
       monthlyTotal: Math.floor(monthlyTotal),
       yearlyTotal: Math.floor(yearlyTotal),
+      count: subscriptions.length,
     }
   }
 

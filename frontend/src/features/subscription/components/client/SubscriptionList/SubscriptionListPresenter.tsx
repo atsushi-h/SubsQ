@@ -23,7 +23,7 @@ import { DateUtil } from '@/shared/utils/date'
 
 type Props = {
   subscriptions: Subscription[]
-  totals?: { monthlyTotal: number; yearlyTotal: number }
+  summary?: { monthlyTotal: number; yearlyTotal: number }
   isLoading: boolean
   isDeleting: boolean
   deleteTarget: Subscription | null
@@ -37,7 +37,7 @@ type Props = {
 
 export function SubscriptionListPresenter({
   subscriptions,
-  totals,
+  summary,
   isLoading,
   isDeleting,
   deleteTarget,
@@ -68,16 +68,16 @@ export function SubscriptionListPresenter({
         <Button onClick={onCreate}>新規作成</Button>
       </div>
 
-      {totals && (
+      {summary && (
         <Card className="p-6 mb-6">
           <div className="flex gap-8">
             <div>
               <p className="text-sm text-muted-foreground">月額合計</p>
-              <p className="text-2xl font-bold">{formatAmount(totals.monthlyTotal)}</p>
+              <p className="text-2xl font-bold">{formatAmount(summary.monthlyTotal)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">年額合計</p>
-              <p className="text-2xl font-bold">{formatAmount(totals.yearlyTotal)}</p>
+              <p className="text-2xl font-bold">{formatAmount(summary.yearlyTotal)}</p>
             </div>
           </div>
         </Card>

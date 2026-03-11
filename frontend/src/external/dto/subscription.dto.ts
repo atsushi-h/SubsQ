@@ -42,17 +42,22 @@ export const SubscriptionResponseSchema = z.object({
   amount: z.number(),
   billingCycle: z.enum(['monthly', 'yearly']),
   baseDate: z.iso.datetime(),
+  nextBillingDate: z.string(),
+  paymentMethodId: z.uuid().nullable().optional(),
   paymentMethod: PaymentMethodInSubscriptionSchema.nullable(),
-  memo: z.string(),
+  memo: z.string().optional(),
+  monthlyAmount: z.number().int(),
+  yearlyAmount: z.number().int(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 })
 
 export const ListSubscriptionsResponseSchema = z.object({
   subscriptions: z.array(SubscriptionResponseSchema),
-  totals: z.object({
+  summary: z.object({
     monthlyTotal: z.number(),
     yearlyTotal: z.number(),
+    count: z.number().int(),
   }),
 })
 
@@ -63,5 +68,6 @@ export type GetSubscriptionByIdRequest = z.infer<typeof GetSubscriptionByIdReque
 export type GetSubscriptionsByUserIdRequest = z.infer<typeof GetSubscriptionsByUserIdRequestSchema>
 export type SubscriptionResponse = z.infer<typeof SubscriptionResponseSchema>
 export type ListSubscriptionsResponse = z.infer<typeof ListSubscriptionsResponseSchema>
+export type SubscriptionListSummary = z.infer<typeof ListSubscriptionsResponseSchema>['summary']
 export type CreateSubscriptionResponse = SubscriptionResponse
 export type UpdateSubscriptionResponse = SubscriptionResponse
