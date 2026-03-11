@@ -61,7 +61,7 @@ describe('useSubscriptionListQuery', () => {
           updatedAt: '2024-01-01T00:00:00Z',
         },
       ],
-      summary: { monthlyTotal: 2180, yearlyTotal: 0, count: 2 },
+      summary: { monthlyTotal: 2180, yearlyTotal: 26160, count: 2 },
     }
 
     vi.mocked(listSubscriptionsByUserIdQueryAction).mockResolvedValue(mockData)
