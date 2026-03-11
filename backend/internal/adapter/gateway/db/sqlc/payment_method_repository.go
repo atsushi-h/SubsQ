@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/payment_method"
@@ -15,11 +14,11 @@ import (
 var _ port.PaymentMethodRepository = (*paymentMethodRepository)(nil)
 
 type paymentMethodRepository struct {
-	queries *generated.Queries
+	queries generated.Querier
 }
 
-func NewPaymentMethodRepository(pool *pgxpool.Pool) port.PaymentMethodRepository {
-	return &paymentMethodRepository{queries: generated.New(pool)}
+func NewPaymentMethodRepository(q generated.Querier) port.PaymentMethodRepository {
+	return &paymentMethodRepository{queries: q}
 }
 
 func (r *paymentMethodRepository) FindByID(ctx context.Context, id, userID string) (*domain.PaymentMethod, error) {

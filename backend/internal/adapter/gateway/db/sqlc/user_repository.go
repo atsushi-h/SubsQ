@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	"github.com/atsushi-h/subsq/backend/internal/domain/user"
@@ -13,11 +12,11 @@ import (
 )
 
 type userRepository struct {
-	queries *generated.Queries
+	queries generated.Querier
 }
 
-func NewUserRepository(pool *pgxpool.Pool) port.UserRepository {
-	return &userRepository{queries: generated.New(pool)}
+func NewUserRepository(q generated.Querier) port.UserRepository {
+	return &userRepository{queries: q}
 }
 
 func (r *userRepository) UpsertUser(ctx context.Context, u *user.User) (*user.User, error) {

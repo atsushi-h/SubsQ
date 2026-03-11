@@ -88,6 +88,10 @@ migrate-new:
 .PHONY: mock
 mock:
 	$(DOCKER_EXEC) go generate ./internal/port/...
+	$(DOCKER_EXEC) go tool mockgen \
+		-source=./internal/adapter/gateway/db/sqlc/generated/querier.go \
+		-destination=./internal/adapter/gateway/db/sqlc/mock/mock_querier.go \
+		-package=mock
 
 .PHONY: fmt
 fmt:

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.uber.org/mock/gomock"
 
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/generated"
 	"github.com/atsushi-h/subsq/backend/internal/adapter/gateway/db/sqlc/mock"
@@ -82,9 +83,12 @@ func TestSubscriptionRepository_FindByID(t *testing.T) {
 
 	t.Run("成功（PM付き）", func(t *testing.T) {
 		t.Parallel()
-		getRow := newTestGetSubscriptionRow(t, true)
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithGetRow(getRow)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			GetSubscriptionByID(gomock.Any(), gomock.Any()).
+			Return(newTestGetSubscriptionRow(t, true), nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		result, err := repo.FindByID(ctx, testSubIDStr, testUserIDStr)
 		if err != nil {
@@ -103,9 +107,12 @@ func TestSubscriptionRepository_FindByID(t *testing.T) {
 
 	t.Run("成功（PMなし）", func(t *testing.T) {
 		t.Parallel()
-		getRow := newTestGetSubscriptionRow(t, false)
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithGetRow(getRow)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			GetSubscriptionByID(gomock.Any(), gomock.Any()).
+			Return(newTestGetSubscriptionRow(t, false), nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		result, err := repo.FindByID(ctx, testSubIDStr, testUserIDStr)
 		if err != nil {
@@ -121,7 +128,9 @@ func TestSubscriptionRepository_FindByID(t *testing.T) {
 
 	t.Run("無効なID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, invalidUUID, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected error for invalid id UUID")
@@ -130,7 +139,9 @@ func TestSubscriptionRepository_FindByID(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, testSubIDStr, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -139,8 +150,12 @@ func TestSubscriptionRepository_FindByID(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, errors.New("db error"), nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			GetSubscriptionByID(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByID(ctx, testSubIDStr, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -169,8 +184,12 @@ func TestSubscriptionRepository_FindByUserID(t *testing.T) {
 				UpdatedAt:    2_000_001,
 			},
 		}
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithListRows(listRows)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListSubscriptionsByUserID(gomock.Any(), gomock.Any()).
+			Return(listRows, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		result, err := repo.FindByUserID(ctx, testUserIDStr)
 		if err != nil {
@@ -183,8 +202,12 @@ func TestSubscriptionRepository_FindByUserID(t *testing.T) {
 
 	t.Run("空リスト", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithListRows(nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListSubscriptionsByUserID(gomock.Any(), gomock.Any()).
+			Return(nil, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		result, err := repo.FindByUserID(ctx, testUserIDStr)
 		if err != nil {
@@ -197,7 +220,9 @@ func TestSubscriptionRepository_FindByUserID(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByUserID(ctx, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -206,8 +231,12 @@ func TestSubscriptionRepository_FindByUserID(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithQueryErr(errors.New("db error"))
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			ListSubscriptionsByUserID(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByUserID(ctx, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -225,8 +254,12 @@ func TestSubscriptionRepository_Create(t *testing.T) {
 		t.Parallel()
 		row := newTestSubscription(t)
 		row.PaymentMethodID = mustUUID(t, testPMIDStr)
-		mockDB := mock.NewSubscriptionDBTX(row, nil, nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CreateSubscription(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		pmID := testPMIDStr
 		input := domain.NewSubscription(testUserIDStr, "Netflix", 980, domain.BillingCycleMonthly, 1, &pmID, nil)
@@ -242,8 +275,12 @@ func TestSubscriptionRepository_Create(t *testing.T) {
 	t.Run("成功（PMなし）", func(t *testing.T) {
 		t.Parallel()
 		row := newTestSubscription(t)
-		mockDB := mock.NewSubscriptionDBTX(row, nil, nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CreateSubscription(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		input := domain.NewSubscription(testUserIDStr, "Netflix", 980, domain.BillingCycleMonthly, 1, nil, nil)
 		result, err := repo.Create(ctx, input)
@@ -257,7 +294,9 @@ func TestSubscriptionRepository_Create(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		input := domain.NewSubscription(invalidUUID, "Netflix", 980, domain.BillingCycleMonthly, 1, nil, nil)
 		_, err := repo.Create(ctx, input)
 		if err == nil {
@@ -267,7 +306,9 @@ func TestSubscriptionRepository_Create(t *testing.T) {
 
 	t.Run("無効なPaymentMethodID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		badPMID := invalidUUID
 		input := domain.NewSubscription(testUserIDStr, "Netflix", 980, domain.BillingCycleMonthly, 1, &badPMID, nil)
 		_, err := repo.Create(ctx, input)
@@ -278,8 +319,12 @@ func TestSubscriptionRepository_Create(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, errors.New("db error"), nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CreateSubscription(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		input := domain.NewSubscription(testUserIDStr, "Netflix", 980, domain.BillingCycleMonthly, 1, nil, nil)
 		_, err := repo.Create(ctx, input)
 		if err == nil {
@@ -298,8 +343,12 @@ func TestSubscriptionRepository_Update(t *testing.T) {
 		t.Parallel()
 		row := newTestSubscription(t)
 		row.ServiceName = "Netflix Premium"
-		mockDB := mock.NewSubscriptionDBTX(row, nil, nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpdateSubscription(gomock.Any(), gomock.Any()).
+			Return(row, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		input := &domain.Subscription{
 			ID:           testSubIDStr,
@@ -320,7 +369,9 @@ func TestSubscriptionRepository_Update(t *testing.T) {
 
 	t.Run("無効なID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		input := &domain.Subscription{ID: invalidUUID, UserID: testUserIDStr, ServiceName: "Test"}
 		_, err := repo.Update(ctx, input)
 		if err == nil {
@@ -330,7 +381,9 @@ func TestSubscriptionRepository_Update(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		input := &domain.Subscription{ID: testSubIDStr, UserID: invalidUUID, ServiceName: "Test"}
 		_, err := repo.Update(ctx, input)
 		if err == nil {
@@ -340,8 +393,12 @@ func TestSubscriptionRepository_Update(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, errors.New("db error"), nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			UpdateSubscription(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		input := &domain.Subscription{
 			ID: testSubIDStr, UserID: testUserIDStr, ServiceName: "Test",
 			BillingCycle: domain.BillingCycleMonthly,
@@ -361,8 +418,12 @@ func TestSubscriptionRepository_Delete(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteSubscription(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.Delete(ctx, testSubIDStr, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -370,7 +431,9 @@ func TestSubscriptionRepository_Delete(t *testing.T) {
 
 	t.Run("無効なID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.Delete(ctx, invalidUUID, testUserIDStr); err == nil {
 			t.Fatal("expected error for invalid id UUID")
 		}
@@ -378,7 +441,9 @@ func TestSubscriptionRepository_Delete(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.Delete(ctx, testSubIDStr, invalidUUID); err == nil {
 			t.Fatal("expected error for invalid userID UUID")
 		}
@@ -386,8 +451,12 @@ func TestSubscriptionRepository_Delete(t *testing.T) {
 
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, errors.New("exec error"))
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteSubscription(gomock.Any(), gomock.Any()).
+			Return(errors.New("exec error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.Delete(ctx, testSubIDStr, testUserIDStr); err == nil {
 			t.Fatal("expected exec error")
 		}
@@ -402,8 +471,12 @@ func TestSubscriptionRepository_DeleteMany(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteSubscriptions(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{testSubIDStr, testSub2IDStr}, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -411,7 +484,9 @@ func TestSubscriptionRepository_DeleteMany(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{testSubIDStr}, invalidUUID); err == nil {
 			t.Fatal("expected error for invalid userID UUID")
 		}
@@ -419,7 +494,9 @@ func TestSubscriptionRepository_DeleteMany(t *testing.T) {
 
 	t.Run("無効なID UUID（ids内）", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{invalidUUID}, testUserIDStr); err == nil {
 			t.Fatal("expected error for invalid id in ids")
 		}
@@ -427,8 +504,12 @@ func TestSubscriptionRepository_DeleteMany(t *testing.T) {
 
 	t.Run("空スライス", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteSubscriptions(gomock.Any(), gomock.Any()).
+			Return(nil)
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{}, testUserIDStr); err != nil {
 			t.Fatalf("unexpected error for empty ids: %v", err)
 		}
@@ -436,8 +517,12 @@ func TestSubscriptionRepository_DeleteMany(t *testing.T) {
 
 	t.Run("execエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, errors.New("exec error"))
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			DeleteSubscriptions(gomock.Any(), gomock.Any()).
+			Return(errors.New("exec error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		if err := repo.DeleteMany(ctx, []string{testSubIDStr}, testUserIDStr); err == nil {
 			t.Fatal("expected exec error")
 		}
@@ -453,8 +538,12 @@ func TestSubscriptionRepository_FindByIDs(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 		baseRows := []*generated.Subscription{newTestSubscription(t)}
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithBaseRows(baseRows)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindSubscriptionsByIDs(gomock.Any(), gomock.Any()).
+			Return(baseRows, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		result, err := repo.FindByIDs(ctx, []string{testSubIDStr}, testUserIDStr)
 		if err != nil {
@@ -467,7 +556,9 @@ func TestSubscriptionRepository_FindByIDs(t *testing.T) {
 
 	t.Run("無効なuserID UUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByIDs(ctx, []string{testSubIDStr}, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid userID UUID")
@@ -476,7 +567,9 @@ func TestSubscriptionRepository_FindByIDs(t *testing.T) {
 
 	t.Run("無効なID UUID（ids内）", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByIDs(ctx, []string{invalidUUID}, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected error for invalid id in ids")
@@ -485,8 +578,12 @@ func TestSubscriptionRepository_FindByIDs(t *testing.T) {
 
 	t.Run("空スライス", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithBaseRows(nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindSubscriptionsByIDs(gomock.Any(), gomock.Any()).
+			Return(nil, nil)
+		repo := &subscriptionRepository{queries: mockQ}
 		result, err := repo.FindByIDs(ctx, []string{}, testUserIDStr)
 		if err != nil {
 			t.Fatalf("unexpected error for empty ids: %v", err)
@@ -498,8 +595,12 @@ func TestSubscriptionRepository_FindByIDs(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithQueryErr(errors.New("db error"))
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			FindSubscriptionsByIDs(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.FindByIDs(ctx, []string{testSubIDStr}, testUserIDStr)
 		if err == nil {
 			t.Fatal("expected DB error")
@@ -515,8 +616,12 @@ func TestSubscriptionRepository_CountByPaymentMethodID(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithCount(5)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CountSubscriptionsByPaymentMethodID(gomock.Any(), gomock.Any()).
+			Return(int64(5), nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		count, err := repo.CountByPaymentMethodID(ctx, testPMIDStr)
 		if err != nil {
@@ -529,7 +634,9 @@ func TestSubscriptionRepository_CountByPaymentMethodID(t *testing.T) {
 
 	t.Run("無効なUUID", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.CountByPaymentMethodID(ctx, invalidUUID)
 		if err == nil {
 			t.Fatal("expected error for invalid UUID")
@@ -545,8 +652,12 @@ func TestSubscriptionRepository_CountByPaymentMethodIDs(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, nil, nil).WithCount(3)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CountSubscriptionsByPaymentMethodIDs(gomock.Any(), gomock.Any()).
+			Return(int64(3), nil)
+		repo := &subscriptionRepository{queries: mockQ}
 
 		count, err := repo.CountByPaymentMethodIDs(ctx, []string{testPMIDStr})
 		if err != nil {
@@ -559,7 +670,9 @@ func TestSubscriptionRepository_CountByPaymentMethodIDs(t *testing.T) {
 
 	t.Run("無効なUUID（ids内）", func(t *testing.T) {
 		t.Parallel()
-		repo := &subscriptionRepository{queries: generated.New(mock.NewSubscriptionDBTX(nil, nil, nil))}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.CountByPaymentMethodIDs(ctx, []string{invalidUUID})
 		if err == nil {
 			t.Fatal("expected error for invalid UUID in ids")
@@ -568,8 +681,12 @@ func TestSubscriptionRepository_CountByPaymentMethodIDs(t *testing.T) {
 
 	t.Run("DBエラー", func(t *testing.T) {
 		t.Parallel()
-		mockDB := mock.NewSubscriptionDBTX(nil, errors.New("db error"), nil)
-		repo := &subscriptionRepository{queries: generated.New(mockDB)}
+		ctrl := gomock.NewController(t)
+		mockQ := mock.NewMockQuerier(ctrl)
+		mockQ.EXPECT().
+			CountSubscriptionsByPaymentMethodIDs(gomock.Any(), gomock.Any()).
+			Return(int64(0), errors.New("db error"))
+		repo := &subscriptionRepository{queries: mockQ}
 		_, err := repo.CountByPaymentMethodIDs(ctx, []string{testPMIDStr})
 		if err == nil {
 			t.Fatal("expected DB error")
