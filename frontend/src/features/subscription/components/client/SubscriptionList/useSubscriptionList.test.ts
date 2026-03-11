@@ -38,7 +38,7 @@ describe('useSubscriptionList', () => {
     vi.mocked(useSubscriptionListQuery).mockReturnValue({
       data: {
         subscriptions: [mockSubscription],
-        summary: { monthlyTotal: 1200, yearlyTotal: 0 },
+        summary: { monthlyTotal: 1200, yearlyTotal: 14400 },
       },
       isLoading: false,
       error: null,

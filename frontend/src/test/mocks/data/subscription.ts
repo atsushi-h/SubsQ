@@ -34,7 +34,7 @@ export const mockSubscriptionList: ListSubscriptionsResponse = {
   ],
   summary: {
     monthlyTotal: 2180,
-    yearlyTotal: 0,
+    yearlyTotal: 26160,
     count: 2,
   },
 }
