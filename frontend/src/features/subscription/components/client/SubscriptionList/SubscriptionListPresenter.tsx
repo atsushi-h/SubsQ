@@ -19,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table'
-import { DateUtil } from '@/shared/utils/date'
 
 type Props = {
   subscriptions: Subscription[]
@@ -110,7 +109,7 @@ export function SubscriptionListPresenter({
                   <TableCell className="font-medium">{subscription.serviceName}</TableCell>
                   <TableCell>{formatAmount(subscription.amount)}</TableCell>
                   <TableCell>{formatBillingCycle(subscription.billingCycle)}</TableCell>
-                  <TableCell>{DateUtil.formatDate(subscription.baseDate)}</TableCell>
+                  <TableCell>{subscription.nextBillingDate}</TableCell>
                   <TableCell>{subscription.paymentMethod?.name ?? '未設定'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
