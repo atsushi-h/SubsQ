@@ -1,3 +1,5 @@
+//go:generate go tool mockgen -source=tx_port.go -destination=../usecase/mock/mock_tx.go -package=mockusecase
+
 package port
 
 import "context"

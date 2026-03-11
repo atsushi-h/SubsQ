@@ -85,6 +85,10 @@ migrate-new:
 # Tools
 # -------------------------------------------------------------------
 
+.PHONY: mock
+mock:
+	$(DOCKER_EXEC) go generate ./internal/port/...
+
 .PHONY: fmt
 fmt:
 	$(DOCKER_EXEC) golangci-lint fmt ./...
