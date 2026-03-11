@@ -441,7 +441,7 @@ components:
         baseDate:
           type: string
           format: date-time
-          description: 基準日
+          description: サブスクリプション開始日（ISO 8601 UTC）
         paymentMethodId:
           allOf:
             - $ref: '#/components/schemas/Models.uuid'
@@ -630,7 +630,7 @@ components:
         baseDate:
           type: string
           format: date-time
-          description: 基準日
+          description: サブスクリプション開始日（ISO 8601 UTC）
         nextBillingDate:
           type: string
           format: date
@@ -708,7 +708,7 @@ components:
         baseDate:
           type: string
           format: date-time
-          description: 基準日
+          description: サブスクリプション開始日（ISO 8601 UTC）
         paymentMethodId:
           allOf:
             - $ref: '#/components/schemas/Models.uuid'

@@ -37,7 +37,7 @@ model SubscriptionResponse {
   /** 請求サイクル */
   billingCycle: BillingCycle;
 
-  /** 基準日 */
+  /** サブスクリプション開始日（ISO 8601 UTC） */
   baseDate: utcDateTime;
 
   /** 次回請求日（YYYY-MM-DD、時刻を持たない日付のみの値） */
@@ -100,7 +100,7 @@ model CreateSubscriptionRequest {
   /** 請求サイクル */
   billingCycle: BillingCycle;
 
-  /** 基準日 */
+  /** サブスクリプション開始日（ISO 8601 UTC） */
   baseDate: utcDateTime;
 
   /** 支払い方法ID */
@@ -128,7 +128,7 @@ model UpdateSubscriptionRequest {
   /** 請求サイクル */
   billingCycle?: BillingCycle;
 
-  /** 基準日 */
+  /** サブスクリプション開始日（ISO 8601 UTC） */
   baseDate?: utcDateTime;
 
   /** 支払い方法ID */

@@ -51,7 +51,7 @@ type ModelsCreateSubscriptionRequest struct {
 	// Amount 金額（円）
 	Amount int64 `json:"amount"`
 
-	// BaseDate 基準日
+	// BaseDate サブスクリプション開始日（ISO 8601 UTC）
 	BaseDate time.Time `json:"baseDate"`
 
 	// BillingCycle 請求サイクル
@@ -147,7 +147,7 @@ type ModelsSubscriptionResponse struct {
 	// Amount 金額（円）
 	Amount int64 `json:"amount"`
 
-	// BaseDate 基準日
+	// BaseDate サブスクリプション開始日（ISO 8601 UTC）
 	BaseDate time.Time `json:"baseDate"`
 
 	// BillingCycle 請求サイクル
@@ -201,7 +201,7 @@ type ModelsUpdateSubscriptionRequest struct {
 	// Amount 金額（円）
 	Amount *int64 `json:"amount,omitempty"`
 
-	// BaseDate 基準日
+	// BaseDate サブスクリプション開始日（ISO 8601 UTC）
 	BaseDate *time.Time `json:"baseDate,omitempty"`
 
 	// BillingCycle 請求サイクル
