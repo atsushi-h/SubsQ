@@ -1,5 +1,6 @@
 'use client'
 
+import type { SubscriptionListSummary } from '@/external/dto/subscription.dto'
 import type { Subscription } from '@/features/subscription/types/subscription.types'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
@@ -22,7 +23,7 @@ import {
 
 type Props = {
   subscriptions: Subscription[]
-  summary?: { monthlyTotal: number; yearlyTotal: number }
+  summary?: Pick<SubscriptionListSummary, 'monthlyTotal' | 'yearlyTotal'>
   isLoading: boolean
   isDeleting: boolean
   deleteTarget: Subscription | null
