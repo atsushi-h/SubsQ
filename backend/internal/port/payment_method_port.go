@@ -1,3 +1,5 @@
+//go:generate go tool mockgen -source=payment_method_port.go -destination=../usecase/mock/mock_payment_method_usecase.go -package=mockusecase
+
 package port
 
 import (
