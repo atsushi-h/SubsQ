@@ -327,6 +327,62 @@ paths:
                   - $ref: '#/components/schemas/Models.UnauthorizedError'
       tags:
         - Subscriptions
+  /api/v1/users:
+    post:
+      operationId: Users_upsertUser
+      summary: Create or get user via OAuth
+      description: OAuth ユーザー作成または取得（認証不要・OAuth フロー用）
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UserResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.BadRequestError'
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.UpsertUserRequest'
+  /api/v1/users/by-email:
+    get:
+      operationId: Users_getUserByEmail
+      summary: Get user by email
+      description: メールアドレスでユーザーを検索（OAuth フロー内部用）
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UserResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.NotFoundError'
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+      tags:
+        - Users
   /api/v1/users/me:
     get:
       operationId: Users_getCurrentUser
@@ -348,6 +404,34 @@ paths:
                 $ref: '#/components/schemas/Models.UnauthorizedError'
       tags:
         - Users
+    patch:
+      operationId: Users_updateCurrentUser
+      summary: Update current user
+      description: 現在のユーザープロフィールを更新（認証必須）
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UserResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.UpdateUserRequest'
     delete:
       operationId: Users_deleteCurrentUser
       summary: Delete current user
@@ -717,6 +801,44 @@ components:
           type: string
           description: メモ
       description: サブスクリプション更新リクエスト
+    Models.UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 表示名
+        thumbnail:
+          type: string
+          nullable: true
+          format: uri
+          description: プロフィール画像URL（null で削除）
+      description: ユーザープロフィール更新リクエスト
+    Models.UpsertUserRequest:
+      type: object
+      required:
+        - email
+        - name
+        - provider
+        - providerAccountId
+      properties:
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        name:
+          type: string
+          description: 表示名
+        provider:
+          type: string
+          description: 'OAuthプロバイダー（例: google）'
+        providerAccountId:
+          type: string
+          description: プロバイダー側のアカウントID
+        thumbnail:
+          type: string
+          format: uri
+          description: プロフィール画像URL
+      description: OAuth ユーザー作成/取得リクエスト（createOrGet）
     Models.UserResponse:
       type: object
       required:

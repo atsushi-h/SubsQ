@@ -25,10 +25,6 @@ export class UserService {
     private transactionManager: ITransactionManager<DbClient>,
   ) {}
 
-  async findByProvider(provider: string, providerAccountId: string): Promise<User | null> {
-    return this.userRepository.findByProviderAccount(provider, providerAccountId)
-  }
-
   async getUserById(id: string): Promise<User | null> {
     return this.userRepository.findById(id)
   }
@@ -60,7 +56,10 @@ export class UserService {
     providerAccountId: string,
     createInput: CreateUserInput,
   ): Promise<User> {
-    const existingUser = await this.findByProvider(provider, providerAccountId)
+    const existingUser = await this.userRepository.findByProviderAccount(
+      provider,
+      providerAccountId,
+    )
 
     if (existingUser) {
       // OAuthプロバイダーから取得した最新情報でプロフィールを更新
