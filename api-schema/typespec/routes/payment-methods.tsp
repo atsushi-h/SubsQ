@@ -10,6 +10,7 @@ namespace SubsQ.Routes;
 
 @route("/api/v1/payment-methods")
 @tag("PaymentMethods")
+@useAuth(SubsQAuth)
 interface PaymentMethods {
   /** 支払い方法一覧を取得 */
   @get
