@@ -322,6 +322,21 @@ func (mr *MockQuerierMockRecorder) UpdateSubscription(ctx, arg any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscription", reflect.TypeOf((*MockQuerier)(nil).UpdateSubscription), ctx, arg)
 }
 
+// UpdateUser mocks base method.
+func (m *MockQuerier) UpdateUser(ctx context.Context, arg *generated.UpdateUserParams) (*generated.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, arg)
+	ret0, _ := ret[0].(*generated.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockQuerierMockRecorder) UpdateUser(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockQuerier)(nil).UpdateUser), ctx, arg)
+}
+
 // UpsertUser mocks base method.
 func (m *MockQuerier) UpsertUser(ctx context.Context, arg *generated.UpsertUserParams) (*generated.User, error) {
 	m.ctrl.T.Helper()

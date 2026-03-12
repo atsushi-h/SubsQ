@@ -15,3 +15,11 @@ SELECT * FROM users WHERE id = $1;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
+
+-- name: UpdateUser :one
+UPDATE users
+SET name       = COALESCE(sqlc.narg('name'), name),
+    thumbnail  = CASE WHEN sqlc.narg('set_thumbnail')::boolean THEN sqlc.narg('thumbnail') ELSE thumbnail END,
+    updated_at = sqlc.arg('updated_at')
+WHERE id = sqlc.arg('id')
+RETURNING *;

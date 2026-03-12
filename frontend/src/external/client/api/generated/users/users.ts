@@ -3,7 +3,9 @@
  * // Source: SubsQ API v0.0.0
  */
 import type {
+  ModelsBadRequestError,
   ModelsUnauthorizedError,
+  ModelsUpdateUserRequest,
   ModelsUserResponse
 } from '../model';
 
@@ -56,6 +58,50 @@ export const usersGetCurrentUser = async ( options?: RequestInit): Promise<users
     method: 'GET'
     
     
+  }
+);}
+  
+
+/**
+ * 現在のユーザープロフィールを更新（認証必須）
+ * @summary Update current user
+ */
+export type usersUpdateCurrentUserResponse200 = {
+  data: ModelsUserResponse
+  status: 200
+}
+
+export type usersUpdateCurrentUserResponseDefault = {
+  data: ModelsUnauthorizedError | ModelsBadRequestError
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type usersUpdateCurrentUserResponseSuccess = (usersUpdateCurrentUserResponse200) & {
+  headers: Headers;
+};
+export type usersUpdateCurrentUserResponseError = (usersUpdateCurrentUserResponseDefault) & {
+  headers: Headers;
+};
+
+export type usersUpdateCurrentUserResponse = (usersUpdateCurrentUserResponseSuccess | usersUpdateCurrentUserResponseError)
+
+export const getUsersUpdateCurrentUserUrl = () => {
+
+
+  
+
+  return `/api/v1/users/me`
+}
+
+export const usersUpdateCurrentUser = async (modelsUpdateUserRequest: ModelsUpdateUserRequest, options?: RequestInit): Promise<usersUpdateCurrentUserResponse> => {
+  
+  return customFetch<usersUpdateCurrentUserResponse>(getUsersUpdateCurrentUserUrl(),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      modelsUpdateUserRequest,)
   }
 );}
   

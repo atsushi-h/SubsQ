@@ -11,6 +11,6 @@ import type { ModelsSubscriptionResponse } from './modelsSubscriptionResponse';
 export interface ModelsListSubscriptionsResponse {
   /** サブスクリプション一覧 */
   subscriptions: ModelsSubscriptionResponse[];
-  /** サマリー情報 */
+  /** 合計情報 */
   summary: ModelsSubscriptionListSummary;
 }

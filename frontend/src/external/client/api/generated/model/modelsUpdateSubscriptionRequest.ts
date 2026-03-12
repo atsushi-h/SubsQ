@@ -22,12 +22,8 @@ export interface ModelsUpdateSubscriptionRequest {
   amount?: number;
   /** 請求サイクル */
   billingCycle?: ModelsBillingCycle;
-  /**
-   * 基準日（1〜31）
-   * @minimum 1
-   * @maximum 31
-   */
-  baseDate?: number;
+  /** サブスクリプション開始日（ISO 8601 UTC） */
+  baseDate?: string;
   /** 支払い方法ID */
   paymentMethodId?: ModelsUuid;
   /** メモ */

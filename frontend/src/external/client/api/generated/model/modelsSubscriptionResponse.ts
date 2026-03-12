@@ -20,8 +20,8 @@ export interface ModelsSubscriptionResponse {
   amount: number;
   /** 請求サイクル */
   billingCycle: ModelsBillingCycle;
-  /** 基準日（1〜31、月次の請求日） */
-  baseDate: number;
+  /** サブスクリプション開始日（ISO 8601 UTC） */
+  baseDate: string;
   /** 次回請求日（YYYY-MM-DD、時刻を持たない日付のみの値） */
   nextBillingDate: string;
   /** 支払い方法ID */

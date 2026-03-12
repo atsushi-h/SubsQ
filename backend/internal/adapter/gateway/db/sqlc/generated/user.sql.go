@@ -40,6 +40,45 @@ func (q *Queries) FindUserByID(ctx context.Context, id pgtype.UUID) (*User, erro
 	return &i, err
 }
 
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET name       = COALESCE($1, name),
+    thumbnail  = CASE WHEN $2::boolean THEN $3 ELSE thumbnail END,
+    updated_at = $4
+WHERE id = $5
+RETURNING id, email, name, provider, provider_account_id, thumbnail, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	Name         *string     `db:"name" json:"name"`
+	SetThumbnail *bool       `db:"set_thumbnail" json:"set_thumbnail"`
+	Thumbnail    *string     `db:"thumbnail" json:"thumbnail"`
+	UpdatedAt    int32       `db:"updated_at" json:"updated_at"`
+	ID           pgtype.UUID `db:"id" json:"id"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.Name,
+		arg.SetThumbnail,
+		arg.Thumbnail,
+		arg.UpdatedAt,
+		arg.ID,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.Provider,
+		&i.ProviderAccountID,
+		&i.Thumbnail,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
 const upsertUser = `-- name: UpsertUser :one
 INSERT INTO users (email, name, provider, provider_account_id, thumbnail,
 created_at, updated_at)

@@ -83,6 +83,10 @@ func (s *Server) UsersGetCurrentUser(ctx echo.Context) error {
 	return s.user.GetCurrentUser(ctx)
 }
 
+func (s *Server) UsersUpdateCurrentUser(ctx echo.Context) error {
+	return s.user.UpdateCurrentUser(ctx)
+}
+
 func (s *Server) UsersDeleteCurrentUser(ctx echo.Context) error {
 	return s.user.DeleteCurrentUser(ctx)
 }

@@ -13,6 +13,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
+)
+
 // Defines values for ModelsBillingCycle.
 const (
 	ModelsBillingCycleMonthly ModelsBillingCycle = "monthly"
@@ -217,6 +221,15 @@ type ModelsUpdateSubscriptionRequest struct {
 	ServiceName *string `json:"serviceName,omitempty"`
 }
 
+// ModelsUpdateUserRequest ユーザープロフィール更新リクエスト
+type ModelsUpdateUserRequest struct {
+	// Name 表示名
+	Name *string `json:"name,omitempty"`
+
+	// Thumbnail プロフィール画像URL（null で削除）
+	Thumbnail *string `json:"thumbnail,omitempty"`
+}
+
 // ModelsUserResponse ユーザー情報レスポンス
 type ModelsUserResponse struct {
 	// CreatedAt 作成日時
@@ -275,6 +288,9 @@ type SubscriptionsCreateSubscriptionJSONRequestBody = ModelsCreateSubscriptionRe
 // SubscriptionsUpdateSubscriptionJSONRequestBody defines body for SubscriptionsUpdateSubscription for application/json ContentType.
 type SubscriptionsUpdateSubscriptionJSONRequestBody = ModelsUpdateSubscriptionRequest
 
+// UsersUpdateCurrentUserJSONRequestBody defines body for UsersUpdateCurrentUser for application/json ContentType.
+type UsersUpdateCurrentUserJSONRequestBody = ModelsUpdateUserRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Delete multiple payment methods
@@ -319,6 +335,9 @@ type ServerInterface interface {
 	// Get current user
 	// (GET /api/v1/users/me)
 	UsersGetCurrentUser(ctx echo.Context) error
+	// Update current user
+	// (PATCH /api/v1/users/me)
+	UsersUpdateCurrentUser(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -330,6 +349,8 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) PaymentMethodsDeletePaymentMethods(ctx echo.Context) error {
 	var err error
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsDeletePaymentMethods(ctx)
 	return err
@@ -339,6 +360,8 @@ func (w *ServerInterfaceWrapper) PaymentMethodsDeletePaymentMethods(ctx echo.Con
 func (w *ServerInterfaceWrapper) PaymentMethodsListPaymentMethods(ctx echo.Context) error {
 	var err error
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsListPaymentMethods(ctx)
 	return err
@@ -347,6 +370,8 @@ func (w *ServerInterfaceWrapper) PaymentMethodsListPaymentMethods(ctx echo.Conte
 // PaymentMethodsCreatePaymentMethod converts echo context to params.
 func (w *ServerInterfaceWrapper) PaymentMethodsCreatePaymentMethod(ctx echo.Context) error {
 	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsCreatePaymentMethod(ctx)
@@ -364,6 +389,8 @@ func (w *ServerInterfaceWrapper) PaymentMethodsDeletePaymentMethod(ctx echo.Cont
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsDeletePaymentMethod(ctx, id)
 	return err
@@ -379,6 +406,8 @@ func (w *ServerInterfaceWrapper) PaymentMethodsGetPaymentMethod(ctx echo.Context
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsGetPaymentMethod(ctx, id)
@@ -396,6 +425,8 @@ func (w *ServerInterfaceWrapper) PaymentMethodsUpdatePaymentMethod(ctx echo.Cont
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PaymentMethodsUpdatePaymentMethod(ctx, id)
 	return err
@@ -404,6 +435,8 @@ func (w *ServerInterfaceWrapper) PaymentMethodsUpdatePaymentMethod(ctx echo.Cont
 // SubscriptionsDeleteSubscriptions converts echo context to params.
 func (w *ServerInterfaceWrapper) SubscriptionsDeleteSubscriptions(ctx echo.Context) error {
 	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SubscriptionsDeleteSubscriptions(ctx)
@@ -414,6 +447,8 @@ func (w *ServerInterfaceWrapper) SubscriptionsDeleteSubscriptions(ctx echo.Conte
 func (w *ServerInterfaceWrapper) SubscriptionsListSubscriptions(ctx echo.Context) error {
 	var err error
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SubscriptionsListSubscriptions(ctx)
 	return err
@@ -422,6 +457,8 @@ func (w *ServerInterfaceWrapper) SubscriptionsListSubscriptions(ctx echo.Context
 // SubscriptionsCreateSubscription converts echo context to params.
 func (w *ServerInterfaceWrapper) SubscriptionsCreateSubscription(ctx echo.Context) error {
 	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SubscriptionsCreateSubscription(ctx)
@@ -439,6 +476,8 @@ func (w *ServerInterfaceWrapper) SubscriptionsDeleteSubscription(ctx echo.Contex
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SubscriptionsDeleteSubscription(ctx, id)
 	return err
@@ -454,6 +493,8 @@ func (w *ServerInterfaceWrapper) SubscriptionsGetSubscription(ctx echo.Context) 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SubscriptionsGetSubscription(ctx, id)
@@ -471,6 +512,8 @@ func (w *ServerInterfaceWrapper) SubscriptionsUpdateSubscription(ctx echo.Contex
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SubscriptionsUpdateSubscription(ctx, id)
 	return err
@@ -479,6 +522,8 @@ func (w *ServerInterfaceWrapper) SubscriptionsUpdateSubscription(ctx echo.Contex
 // UsersDeleteCurrentUser converts echo context to params.
 func (w *ServerInterfaceWrapper) UsersDeleteCurrentUser(ctx echo.Context) error {
 	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.UsersDeleteCurrentUser(ctx)
@@ -489,8 +534,21 @@ func (w *ServerInterfaceWrapper) UsersDeleteCurrentUser(ctx echo.Context) error 
 func (w *ServerInterfaceWrapper) UsersGetCurrentUser(ctx echo.Context) error {
 	var err error
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.UsersGetCurrentUser(ctx)
+	return err
+}
+
+// UsersUpdateCurrentUser converts echo context to params.
+func (w *ServerInterfaceWrapper) UsersUpdateCurrentUser(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UsersUpdateCurrentUser(ctx)
 	return err
 }
 
@@ -536,5 +594,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PATCH(baseURL+"/api/v1/subscriptions/:id", wrapper.SubscriptionsUpdateSubscription)
 	router.DELETE(baseURL+"/api/v1/users/me", wrapper.UsersDeleteCurrentUser)
 	router.GET(baseURL+"/api/v1/users/me", wrapper.UsersGetCurrentUser)
+	router.PATCH(baseURL+"/api/v1/users/me", wrapper.UsersUpdateCurrentUser)
 
 }
