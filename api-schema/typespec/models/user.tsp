@@ -15,25 +15,6 @@ model UpdateUserRequest {
   thumbnail?: string | null;
 }
 
-/** OAuth ユーザー作成/取得リクエスト（createOrGet） */
-model UpsertUserRequest {
-  /** メールアドレス */
-  @format("email")
-  email: string;
-
-  /** 表示名 */
-  name: string;
-
-  /** OAuthプロバイダー（例: google） */
-  provider: string;
-
-  /** プロバイダー側のアカウントID */
-  providerAccountId: string;
-
-  /** プロフィール画像URL */
-  @format("uri")
-  thumbnail?: string;
-}
 
 /** ユーザー情報レスポンス */
 model UserResponse {

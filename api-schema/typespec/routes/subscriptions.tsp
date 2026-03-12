@@ -10,6 +10,7 @@ namespace SubsQ.Routes;
 
 @route("/api/v1/subscriptions")
 @tag("Subscriptions")
+@useAuth(SubsQAuth)
 interface Subscriptions {
   /** サブスクリプション一覧を取得 */
   @get

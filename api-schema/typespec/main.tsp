@@ -1,5 +1,6 @@
 import "@typespec/http";
 import "@typespec/openapi3";
+import "./models/auth.tsp";
 import "./models/common.tsp";
 import "./models/user.tsp";
 import "./models/subscription.tsp";
