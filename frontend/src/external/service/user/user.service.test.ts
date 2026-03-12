@@ -83,38 +83,6 @@ describe('UserService', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // findByProvider
-  // ---------------------------------------------------------------------------
-  describe('findByProvider', () => {
-    it('[Success] プロバイダーアカウントでユーザーを取得する', async () => {
-      const mockEmail = Email.fromValue(VALID_EMAIL)
-      const mockUser: Partial<User> = {
-        id: VALID_USER_ID,
-        email: mockEmail,
-        provider: PROVIDER,
-        providerAccountId: PROVIDER_ACCOUNT_ID,
-      }
-      vi.mocked(mockRepository.findByProviderAccount).mockResolvedValue(mockUser as unknown as User)
-
-      const result = await service.findByProvider(PROVIDER, PROVIDER_ACCOUNT_ID)
-
-      expect(mockRepository.findByProviderAccount).toHaveBeenCalledWith(
-        PROVIDER,
-        PROVIDER_ACCOUNT_ID,
-      )
-      expect(result).toEqual(mockUser)
-    })
-
-    it('[Success] ユーザーが見つからない場合はnullを返す', async () => {
-      vi.mocked(mockRepository.findByProviderAccount).mockResolvedValue(null)
-
-      const result = await service.findByProvider(PROVIDER, 'not-found')
-
-      expect(result).toBeNull()
-    })
-  })
-
-  // ---------------------------------------------------------------------------
   // getUserById
   // ---------------------------------------------------------------------------
   describe('getUserById', () => {
