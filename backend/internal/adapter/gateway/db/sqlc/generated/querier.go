@@ -30,6 +30,7 @@ type Querier interface {
 	ListSubscriptionsByUserID(ctx context.Context, userID pgtype.UUID) ([]*ListSubscriptionsByUserIDRow, error)
 	UpdatePaymentMethod(ctx context.Context, arg *UpdatePaymentMethodParams) (*PaymentMethod, error)
 	UpdateSubscription(ctx context.Context, arg *UpdateSubscriptionParams) (*Subscription, error)
+	UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error)
 	UpsertUser(ctx context.Context, arg *UpsertUserParams) (*User, error)
 }
 

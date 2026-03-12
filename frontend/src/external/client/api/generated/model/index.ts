@@ -29,6 +29,7 @@ export * from './modelsUnauthorizedErrorStatus';
 export * from './modelsUnauthorizedErrorTitle';
 export * from './modelsUpdatePaymentMethodRequest';
 export * from './modelsUpdateSubscriptionRequest';
+export * from './modelsUpdateUserRequest';
 export * from './modelsUserResponse';
 export * from './modelsUuid';
 export * from './routesDeletePaymentMethodsRequest';

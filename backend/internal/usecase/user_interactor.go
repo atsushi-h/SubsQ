@@ -37,6 +37,22 @@ func (i *UserInteractor) GetCurrentUser(ctx context.Context, userID string) erro
 	return i.output.PresentUser(ctx, u)
 }
 
+// UpdateCurrentUser updates the current user profile.
+func (i *UserInteractor) UpdateCurrentUser(ctx context.Context, userID string, name *string, thumbnail *string) error {
+	u, err := i.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrUserNotFound
+		}
+		return fmt.Errorf("failed to find user: %w", err)
+	}
+	updated, err := i.userRepo.UpdateUser(ctx, u.ID, name, thumbnail)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+	return i.output.PresentUser(ctx, updated)
+}
+
 // DeleteCurrentUser deletes the current user by id.
 func (i *UserInteractor) DeleteCurrentUser(ctx context.Context, userID string) error {
 	if _, err := i.userRepo.FindByID(ctx, userID); err != nil {

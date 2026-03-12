@@ -69,6 +69,20 @@ func (mr *MockUserInputPortMockRecorder) GetCurrentUser(ctx, userID any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentUser", reflect.TypeOf((*MockUserInputPort)(nil).GetCurrentUser), ctx, userID)
 }
 
+// UpdateCurrentUser mocks base method.
+func (m *MockUserInputPort) UpdateCurrentUser(ctx context.Context, userID string, name, thumbnail *string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCurrentUser", ctx, userID, name, thumbnail)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCurrentUser indicates an expected call of UpdateCurrentUser.
+func (mr *MockUserInputPortMockRecorder) UpdateCurrentUser(ctx, userID, name, thumbnail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrentUser", reflect.TypeOf((*MockUserInputPort)(nil).UpdateCurrentUser), ctx, userID, name, thumbnail)
+}
+
 // MockUserOutputPort is a mock of UserOutputPort interface.
 type MockUserOutputPort struct {
 	ctrl     *gomock.Controller
@@ -158,6 +172,21 @@ func (m *MockUserRepository) FindByID(ctx context.Context, id string) (*user.Use
 func (mr *MockUserRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockUserRepository)(nil).FindByID), ctx, id)
+}
+
+// UpdateUser mocks base method.
+func (m *MockUserRepository) UpdateUser(ctx context.Context, id string, name, thumbnail *string) (*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, id, name, thumbnail)
+	ret0, _ := ret[0].(*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockUserRepositoryMockRecorder) UpdateUser(ctx, id, name, thumbnail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepository)(nil).UpdateUser), ctx, id, name, thumbnail)
 }
 
 // UpsertUser mocks base method.

@@ -21,6 +21,8 @@ import type {
 
 export const getUsersGetCurrentUserResponseMock = (overrideResponse: Partial<Extract<ModelsUserResponse, object>> = {}): ModelsUserResponse => ({id: faker.string.uuid(), email: faker.internet.email(), name: faker.string.alpha({length: {min: 10, max: 20}}), provider: faker.string.alpha({length: {min: 10, max: 20}}), providerAccountId: faker.string.alpha({length: {min: 10, max: 20}}), thumbnail: faker.helpers.arrayElement([faker.internet.url(), undefined]), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', updatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', ...overrideResponse})
 
+export const getUsersUpdateCurrentUserResponseMock = (overrideResponse: Partial<Extract<ModelsUserResponse, object>> = {}): ModelsUserResponse => ({id: faker.string.uuid(), email: faker.internet.email(), name: faker.string.alpha({length: {min: 10, max: 20}}), provider: faker.string.alpha({length: {min: 10, max: 20}}), providerAccountId: faker.string.alpha({length: {min: 10, max: 20}}), thumbnail: faker.helpers.arrayElement([faker.internet.url(), undefined]), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', updatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', ...overrideResponse})
+
 
 export const getUsersGetCurrentUserMockHandler = (overrideResponse?: ModelsUserResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ModelsUserResponse> | ModelsUserResponse), options?: RequestHandlerOptions) => {
   return http.get('*/api/v1/users/me', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
@@ -29,6 +31,18 @@ export const getUsersGetCurrentUserMockHandler = (overrideResponse?: ModelsUserR
     return HttpResponse.json(overrideResponse !== undefined
     ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
     : getUsersGetCurrentUserResponseMock(),
+      { status: 200
+      })
+  }, options)
+}
+
+export const getUsersUpdateCurrentUserMockHandler = (overrideResponse?: ModelsUserResponse | ((info: Parameters<Parameters<typeof http.patch>[1]>[0]) => Promise<ModelsUserResponse> | ModelsUserResponse), options?: RequestHandlerOptions) => {
+  return http.patch('*/api/v1/users/me', async (info: Parameters<Parameters<typeof http.patch>[1]>[0]) => {
+  
+  
+    return HttpResponse.json(overrideResponse !== undefined
+    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
+    : getUsersUpdateCurrentUserResponseMock(),
       { status: 200
       })
   }, options)
@@ -45,5 +59,6 @@ export const getUsersDeleteCurrentUserMockHandler = (overrideResponse?: void | (
 }
 export const getUsersMock = () => [
   getUsersGetCurrentUserMockHandler(),
+  getUsersUpdateCurrentUserMockHandler(),
   getUsersDeleteCurrentUserMockHandler()
 ]

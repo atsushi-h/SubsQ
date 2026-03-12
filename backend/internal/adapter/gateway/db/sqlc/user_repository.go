@@ -52,6 +52,32 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*user.User, e
 	return toUserDomain(row), nil
 }
 
+func (r *userRepository) UpdateUser(ctx context.Context, id string, name *string, thumbnail *string) (*user.User, error) {
+	var pgID pgtype.UUID
+	if err := pgID.Scan(id); err != nil {
+		return nil, err
+	}
+
+	now := int32(time.Now().Unix()) //nolint:gosec // sqlc generated schema uses int32 for timestamps
+
+	params := &generated.UpdateUserParams{
+		ID:        pgID,
+		Name:      name,
+		UpdatedAt: now,
+	}
+	if thumbnail != nil {
+		t := true
+		params.SetThumbnail = &t
+		params.Thumbnail = thumbnail
+	}
+
+	row, err := queriesForContext(ctx, r.queries).UpdateUser(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return toUserDomain(row), nil
+}
+
 func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 	var pgID pgtype.UUID
 	if err := pgID.Scan(id); err != nil {
