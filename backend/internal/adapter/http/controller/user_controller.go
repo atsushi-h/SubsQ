@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/labstack/echo/v4"
 
@@ -61,6 +62,11 @@ func (c *UserController) UpdateCurrentUser(ctx echo.Context) error {
 	var req openapi.UsersUpdateCurrentUserJSONRequestBody
 	if err := ctx.Bind(&req); err != nil {
 		return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "invalid request body")
+	}
+	if req.Thumbnail != nil {
+		if _, err := url.ParseRequestURI(*req.Thumbnail); err != nil {
+			return errorJSON(ctx, http.StatusBadRequest, "Bad Request", "thumbnail must be a valid URL")
+		}
 	}
 
 	input, p := c.newIO()

@@ -39,14 +39,13 @@ func (i *UserInteractor) GetCurrentUser(ctx context.Context, userID string) erro
 
 // UpdateCurrentUser updates the current user profile.
 func (i *UserInteractor) UpdateCurrentUser(ctx context.Context, userID string, name *string, thumbnail *string) error {
-	u, err := i.userRepo.FindByID(ctx, userID)
-	if err != nil {
+	if _, err := i.userRepo.FindByID(ctx, userID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrUserNotFound
 		}
 		return fmt.Errorf("failed to find user: %w", err)
 	}
-	updated, err := i.userRepo.UpdateUser(ctx, u.ID, name, thumbnail)
+	updated, err := i.userRepo.UpdateUser(ctx, userID, name, thumbnail)
 	if err != nil {
 		return fmt.Errorf("failed to update user: %w", err)
 	}

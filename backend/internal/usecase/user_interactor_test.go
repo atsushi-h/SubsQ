@@ -73,6 +73,11 @@ func TestUserInteractor_UpdateCurrentUser(t *testing.T) {
 		wantError error
 	}{
 		{
+			name:     "[Success] 全フィールド nil（no-op）の場合も正常終了する",
+			userID:   "user-1",
+			findUser: &user.User{ID: "user-1"},
+		},
+		{
 			name:     "[Success] name のみ更新する",
 			userID:   "user-1",
 			reqName:  strPtr("新しい名前"),
