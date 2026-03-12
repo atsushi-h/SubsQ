@@ -56,7 +56,10 @@ export class UserService {
     providerAccountId: string,
     createInput: CreateUserInput,
   ): Promise<User> {
-    const existingUser = await this.userRepository.findByProviderAccount(provider, providerAccountId)
+    const existingUser = await this.userRepository.findByProviderAccount(
+      provider,
+      providerAccountId,
+    )
 
     if (existingUser) {
       // OAuthプロバイダーから取得した最新情報でプロフィールを更新
