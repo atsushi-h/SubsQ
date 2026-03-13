@@ -1,11 +1,12 @@
 'use client'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePathname, useRouter } from 'next/navigation'
-import { signOut, useSession } from '@/features/auth/lib/better-auth-client'
+import { useCurrentUserQuery } from '@/features/auth/hooks/useCurrentUserQuery'
+import { signOut } from '@/features/auth/lib/auth-client'
 import { clearServiceWorkerCache } from '@/shared/lib/clearServiceWorkerCache'
 
 export function useHeader() {
-  const { data: session } = useSession()
+  const { data: user } = useCurrentUserQuery()
   const router = useRouter()
   const pathname = usePathname()
   const queryClient = useQueryClient()
@@ -23,10 +24,9 @@ export function useHeader() {
   }
 
   return {
-    userName: session?.user?.name || undefined,
-    userEmail: session?.user?.email || undefined,
-    // カスタムセッションのaccount.thumbnailを使用
-    userImage: session?.account?.thumbnail || session?.user?.image || undefined,
+    userName: user?.name || undefined,
+    userEmail: user?.email || undefined,
+    userImage: user?.thumbnail || undefined,
     handleSignOut,
     pathname,
   }

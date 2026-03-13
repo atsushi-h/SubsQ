@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
-import { signOut } from '@/features/auth/lib/better-auth-client'
+import { signOut } from '@/features/auth/lib/auth-client'
 import { clearServiceWorkerCache } from '@/shared/lib/clearServiceWorkerCache'
 
 export function useDeleteUserAccountMutation() {

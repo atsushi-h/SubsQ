@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
 import {
   type GetPaymentMethodByIdRequest,
   GetPaymentMethodByIdRequestSchema,
@@ -10,25 +11,18 @@ import { toPaymentMethodResponse } from './payment-method.converter'
 
 export async function getPaymentMethodByIdQuery(
   request: GetPaymentMethodByIdRequest,
-  userId: string,
 ): Promise<PaymentMethodResponse | null> {
+  await requireAuthServer()
   const validated = GetPaymentMethodByIdRequestSchema.parse(request)
 
-  const paymentMethod = await paymentMethodService.getPaymentMethodById(validated.id)
-  if (!paymentMethod) return null
+  const data = await paymentMethodService.getPaymentMethodById(validated.id)
+  if (!data) return null
 
-  // 認可チェック：自分の支払い方法のみ取得可能
-  if (!paymentMethod.belongsTo(userId)) {
-    throw new Error('Forbidden: You can only access your own payment methods')
-  }
-
-  return toPaymentMethodResponse(paymentMethod)
+  return toPaymentMethodResponse(data)
 }
 
-export async function listPaymentMethodsByUserIdQuery(
-  userId: string,
-): Promise<PaymentMethodResponse[]> {
-  const paymentMethods = await paymentMethodService.getPaymentMethodsByUserId(userId)
-
-  return paymentMethods.map((paymentMethod) => toPaymentMethodResponse(paymentMethod))
+export async function listPaymentMethodsByUserIdQuery(): Promise<PaymentMethodResponse[]> {
+  await requireAuthServer()
+  const data = await paymentMethodService.listPaymentMethods()
+  return data.map((item) => toPaymentMethodResponse(item))
 }
