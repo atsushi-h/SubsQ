@@ -11,5 +11,5 @@
 # Serena MCP
 .serena/
 
-# Backend plan docs (local only)
-backend/docs/plan/
+# plan docs (local only)
+**/plan/
