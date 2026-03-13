@@ -1,9 +1,7 @@
 import 'server-only'
 
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
 import {
-  type CreateOrGetUserRequest,
-  CreateOrGetUserRequestSchema,
-  type CreateOrGetUserResponse,
   type UpdateUserRequest,
   UpdateUserRequestSchema,
   type UpdateUserResponse,
@@ -11,50 +9,15 @@ import {
 import { userService } from '../../service/user/user.service'
 import { toUserResponse } from './user.converter'
 
-/**
- * OAuth認証時に呼ばれるため、認証チェックなし
- * better-auth の onSuccess / customSession から呼ばれる
- */
-export async function createOrGetUserCommand(
-  request: CreateOrGetUserRequest,
-): Promise<CreateOrGetUserResponse> {
-  const validated = CreateOrGetUserRequestSchema.parse(request)
-
-  const domainUser = await userService.createOrGet(
-    validated.provider,
-    validated.providerAccountId,
-    validated,
-  )
-
-  return toUserResponse(domainUser)
-}
-
-export async function updateUserCommand(
-  request: UpdateUserRequest,
-  userId: string,
-): Promise<UpdateUserResponse> {
+export async function updateUserCommand(request: UpdateUserRequest): Promise<UpdateUserResponse> {
+  await requireAuthServer()
   const validated = UpdateUserRequestSchema.parse(request)
 
-  if (userId !== validated.id) {
-    throw new Error('Forbidden: Can only update your own user profile')
-  }
-
-  const updatedUser = await userService.update(validated.id, validated)
-
-  return toUserResponse(updatedUser)
+  const data = await userService.updateUser(validated)
+  return toUserResponse(data)
 }
 
-/**
- * ユーザーアカウント削除コマンド
- *
- * 認証済みユーザーのアカウントを完全に削除する
- * - 関連する全てのSubscriptionsを削除
- * - 関連する全てのPaymentMethodsを削除
- * - Userレコードを削除
- *
- * @param userId 削除対象のユーザーID（withAuthから取得）
- * @throws Error ユーザーが存在しない場合、またはトランザクション失敗時
- */
-export async function deleteUserAccountCommand(userId: string): Promise<void> {
-  await userService.deleteAccount(userId)
+export async function deleteUserAccountCommand(): Promise<void> {
+  await requireAuthServer()
+  await userService.deleteUser()
 }

@@ -1,13 +1,10 @@
 'use client'
 
-import { signIn } from '@/features/auth/lib/better-auth-client'
+import { getSignInUrl } from '@/features/auth/lib/auth-client'
 
 export function useLoginClient() {
-  const handleGoogleLogin = async () => {
-    await signIn.social({
-      provider: 'google',
-      callbackURL: '/subscriptions',
-    })
+  const handleGoogleLogin = () => {
+    window.location.href = getSignInUrl()
   }
 
   return {

@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
 import {
   type CreateSubscriptionRequest,
   CreateSubscriptionRequestSchema,
@@ -13,60 +14,36 @@ import { toSubscriptionResponse } from './subscription.converter'
 
 export async function createSubscriptionCommand(
   request: CreateSubscriptionRequest,
-  userId: string,
 ): Promise<CreateSubscriptionResponse> {
-  const validated = CreateSubscriptionRequestSchema.parse(request)
+  await requireAuthServer()
+  const { paymentMethodId, ...rest } = CreateSubscriptionRequestSchema.parse(request)
 
-  if (userId !== validated.userId) {
-    throw new Error('Forbidden: Can only create subscriptions for yourself')
-  }
-
-  // ISO datetime文字列をUnix秒に変換
-  const subscription = await subscriptionService.create({
-    ...validated,
-    baseDate: Math.floor(new Date(validated.baseDate).getTime() / 1000),
+  const data = await subscriptionService.createSubscription({
+    ...rest,
+    paymentMethodId: paymentMethodId ?? undefined,
   })
-
-  const paymentMethod = await subscriptionService.getPaymentMethodForSubscription(
-    subscription.paymentMethodId,
-  )
-
-  return toSubscriptionResponse(subscription, paymentMethod)
+  return toSubscriptionResponse(data)
 }
 
 export async function updateSubscriptionCommand(
   request: UpdateSubscriptionRequest,
-  userId: string,
 ): Promise<UpdateSubscriptionResponse> {
-  const validated = UpdateSubscriptionRequestSchema.parse(request)
+  await requireAuthServer()
+  const { id, paymentMethodId, ...rest } = UpdateSubscriptionRequestSchema.parse(request)
 
-  // ISO datetime文字列をUnix秒に変換（指定されている場合のみ）
-  const updateInput = {
-    ...validated,
-    baseDate: validated.baseDate
-      ? Math.floor(new Date(validated.baseDate).getTime() / 1000)
-      : undefined,
-  }
-
-  const updatedSubscription = await subscriptionService.update(validated.id, userId, updateInput)
-
-  const paymentMethod = await subscriptionService.getPaymentMethodForSubscription(
-    updatedSubscription.paymentMethodId,
-  )
-
-  return toSubscriptionResponse(updatedSubscription, paymentMethod)
+  const data = await subscriptionService.updateSubscription(id, {
+    ...rest,
+    paymentMethodId: paymentMethodId ?? undefined,
+  })
+  return toSubscriptionResponse(data)
 }
 
-export async function deleteSubscriptionCommand(
-  subscriptionId: string,
-  userId: string,
-): Promise<void> {
-  await subscriptionService.delete(subscriptionId, userId)
+export async function deleteSubscriptionCommand(subscriptionId: string): Promise<void> {
+  await requireAuthServer()
+  await subscriptionService.deleteSubscription(subscriptionId)
 }
 
-export async function deleteSubscriptionsCommand(
-  subscriptionIds: string[],
-  userId: string,
-): Promise<void> {
-  await subscriptionService.deleteMany(subscriptionIds, userId)
+export async function deleteSubscriptionsCommand(subscriptionIds: string[]): Promise<void> {
+  await requireAuthServer()
+  await subscriptionService.deleteSubscriptions(subscriptionIds)
 }

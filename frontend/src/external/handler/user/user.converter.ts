@@ -1,21 +1,6 @@
-import type { User } from '../../domain/entities/user'
+import type { ModelsUserResponse } from '@/external/client/api/generated/model'
 import { type UserResponse, UserResponseSchema } from '../../dto/user.dto'
 
-/**
- * User ドメインエンティティを UserResponse DTO に変換する
- */
-export function toUserResponse(user: User): UserResponse {
-  const plainUser = user.toPlainObject()
-  const response = {
-    id: plainUser.id,
-    email: plainUser.email,
-    name: plainUser.name,
-    provider: plainUser.provider,
-    providerAccountId: plainUser.providerAccountId,
-    thumbnail: plainUser.thumbnail,
-    createdAt: plainUser.createdAt.toISOString(),
-    updatedAt: plainUser.updatedAt.toISOString(),
-  }
-
-  return UserResponseSchema.parse(response)
+export function toUserResponse(model: ModelsUserResponse): UserResponse {
+  return UserResponseSchema.parse(model)
 }

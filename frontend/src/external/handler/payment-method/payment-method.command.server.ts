@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
 import {
   type CreatePaymentMethodRequest,
   CreatePaymentMethodRequestSchema,
@@ -13,40 +14,30 @@ import { toPaymentMethodResponse } from './payment-method.converter'
 
 export async function createPaymentMethodCommand(
   request: CreatePaymentMethodRequest,
-  userId: string,
 ): Promise<CreatePaymentMethodResponse> {
+  await requireAuthServer()
   const validated = CreatePaymentMethodRequestSchema.parse(request)
 
-  if (userId !== validated.userId) {
-    throw new Error('Forbidden: Can only create payment methods for yourself')
-  }
-
-  const paymentMethod = await paymentMethodService.create(validated)
-
-  return toPaymentMethodResponse(paymentMethod)
+  const data = await paymentMethodService.createPaymentMethod(validated)
+  return toPaymentMethodResponse(data)
 }
 
 export async function updatePaymentMethodCommand(
   request: UpdatePaymentMethodRequest,
-  userId: string,
 ): Promise<UpdatePaymentMethodResponse> {
-  const validated = UpdatePaymentMethodRequestSchema.parse(request)
+  await requireAuthServer()
+  const { id, ...body } = UpdatePaymentMethodRequestSchema.parse(request)
 
-  const updatedPaymentMethod = await paymentMethodService.update(validated.id, userId, validated)
-
-  return toPaymentMethodResponse(updatedPaymentMethod)
+  const data = await paymentMethodService.updatePaymentMethod(id, body)
+  return toPaymentMethodResponse(data)
 }
 
-export async function deletePaymentMethodCommand(
-  paymentMethodId: string,
-  userId: string,
-): Promise<void> {
-  await paymentMethodService.delete(paymentMethodId, userId)
+export async function deletePaymentMethodCommand(paymentMethodId: string): Promise<void> {
+  await requireAuthServer()
+  await paymentMethodService.deletePaymentMethod(paymentMethodId)
 }
 
-export async function deletePaymentMethodsCommand(
-  paymentMethodIds: string[],
-  userId: string,
-): Promise<void> {
-  await paymentMethodService.deleteMany(paymentMethodIds, userId)
+export async function deletePaymentMethodsCommand(paymentMethodIds: string[]): Promise<void> {
+  await requireAuthServer()
+  await paymentMethodService.deletePaymentMethods(paymentMethodIds)
 }

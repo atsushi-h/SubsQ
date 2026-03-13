@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteUserAccountCommandAction } from '@/external/handler/user/user.command.action'
-import { signOut } from '@/features/auth/lib/better-auth-client'
+import { signOut } from '@/features/auth/lib/auth-client'
 import { useDeleteUserAccountMutation } from './useDeleteUserAccountMutation'
 
 vi.mock('next/navigation', () => ({
@@ -13,7 +13,7 @@ vi.mock('next/navigation', () => ({
   })),
 }))
 
-vi.mock('@/features/auth/lib/better-auth-client', () => ({
+vi.mock('@/features/auth/lib/auth-client', () => ({
   signOut: vi.fn(),
 }))
 

@@ -8,9 +8,9 @@ import {
 import { withAuth } from '@/features/auth/servers/auth.guard'
 
 export async function getPaymentMethodByIdQueryAction(request: GetPaymentMethodByIdRequest) {
-  return withAuth(({ userId }) => getPaymentMethodByIdQuery(request, userId))
+  return withAuth(() => getPaymentMethodByIdQuery(request))
 }
 
 export async function listPaymentMethodsByUserIdQueryAction() {
-  return withAuth(({ userId }) => listPaymentMethodsByUserIdQuery(userId))
+  return withAuth(() => listPaymentMethodsByUserIdQuery())
 }

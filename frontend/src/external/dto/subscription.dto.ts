@@ -2,7 +2,6 @@ import { z } from 'zod'
 
 // Request schemas
 export const CreateSubscriptionRequestSchema = z.object({
-  userId: z.uuid(),
   serviceName: z.string().min(1).max(100),
   amount: z.number().int().min(0).max(1000000),
   billingCycle: z.enum(['monthly', 'yearly']),
@@ -25,10 +24,6 @@ export const GetSubscriptionByIdRequestSchema = z.object({
   id: z.uuid(),
 })
 
-export const GetSubscriptionsByUserIdRequestSchema = z.object({
-  userId: z.uuid(),
-})
-
 // Response schemas
 export const PaymentMethodInSubscriptionSchema = z.object({
   id: z.uuid(),
@@ -44,7 +39,7 @@ export const SubscriptionResponseSchema = z.object({
   baseDate: z.iso.datetime(),
   nextBillingDate: z.string(),
   paymentMethodId: z.uuid().nullable().optional(),
-  paymentMethod: PaymentMethodInSubscriptionSchema.nullable(),
+  paymentMethod: PaymentMethodInSubscriptionSchema.nullable().optional(),
   memo: z.string().optional(),
   monthlyAmount: z.number().int(),
   yearlyAmount: z.number().int(),
@@ -65,7 +60,6 @@ export const ListSubscriptionsResponseSchema = z.object({
 export type CreateSubscriptionRequest = z.infer<typeof CreateSubscriptionRequestSchema>
 export type UpdateSubscriptionRequest = z.infer<typeof UpdateSubscriptionRequestSchema>
 export type GetSubscriptionByIdRequest = z.infer<typeof GetSubscriptionByIdRequestSchema>
-export type GetSubscriptionsByUserIdRequest = z.infer<typeof GetSubscriptionsByUserIdRequestSchema>
 export type SubscriptionResponse = z.infer<typeof SubscriptionResponseSchema>
 export type ListSubscriptionsResponse = z.infer<typeof ListSubscriptionsResponseSchema>
 export type SubscriptionListSummary = z.infer<typeof ListSubscriptionsResponseSchema>['summary']
