@@ -5,6 +5,7 @@ import "./models/common.tsp";
 import "./models/user.tsp";
 import "./models/subscription.tsp";
 import "./models/payment-method.tsp";
+import "./routes/auth.tsp";
 import "./routes/users.tsp";
 import "./routes/subscriptions.tsp";
 import "./routes/payment-methods.tsp";

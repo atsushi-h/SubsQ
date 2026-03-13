@@ -101,6 +101,11 @@ type ModelsListSubscriptionsResponse struct {
 	Summary ModelsSubscriptionListSummary `json:"summary"`
 }
 
+// ModelsLogoutResponse ログアウトレスポンス
+type ModelsLogoutResponse struct {
+	Message string `json:"message"`
+}
+
 // ModelsNotFoundError RFC 7807 Problem Details エラーレスポンス
 type ModelsNotFoundError = ModelsErrorResponse
 
@@ -293,6 +298,9 @@ type UsersUpdateCurrentUserJSONRequestBody = ModelsUpdateUserRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Logout
+	// (POST /api/v1/auth/logout)
+	AuthLogout(ctx echo.Context) error
 	// Delete multiple payment methods
 	// (DELETE /api/v1/payment-methods)
 	PaymentMethodsDeletePaymentMethods(ctx echo.Context) error
@@ -343,6 +351,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// AuthLogout converts echo context to params.
+func (w *ServerInterfaceWrapper) AuthLogout(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AuthLogout(ctx)
+	return err
 }
 
 // PaymentMethodsDeletePaymentMethods converts echo context to params.
@@ -580,6 +597,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/api/v1/auth/logout", wrapper.AuthLogout)
 	router.DELETE(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsDeletePaymentMethods)
 	router.GET(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsListPaymentMethods)
 	router.POST(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsCreatePaymentMethod)

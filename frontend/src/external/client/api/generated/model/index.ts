@@ -17,6 +17,7 @@ export * from './modelsForbiddenError';
 export * from './modelsForbiddenErrorStatus';
 export * from './modelsForbiddenErrorTitle';
 export * from './modelsListSubscriptionsResponse';
+export * from './modelsLogoutResponse';
 export * from './modelsNotFoundError';
 export * from './modelsNotFoundErrorStatus';
 export * from './modelsNotFoundErrorTitle';

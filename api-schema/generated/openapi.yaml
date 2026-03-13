@@ -3,10 +3,26 @@ info:
   title: SubsQ API
   version: 0.0.0
 tags:
+  - name: Auth
   - name: Users
   - name: Subscriptions
   - name: PaymentMethods
 paths:
+  /api/v1/auth/logout:
+    post:
+      operationId: Auth_logout
+      summary: Logout
+      description: ログアウト（subsq_token クッキーを削除）
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.LogoutResponse'
+      tags:
+        - Auth
   /api/v1/payment-methods:
     get:
       operationId: PaymentMethods_listPaymentMethods
@@ -566,6 +582,14 @@ components:
             - $ref: '#/components/schemas/Models.SubscriptionListSummary'
           description: 合計情報
       description: サブスクリプション一覧レスポンス
+    Models.LogoutResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+      description: ログアウトレスポンス
     Models.NotFoundError:
       type: object
       required:
