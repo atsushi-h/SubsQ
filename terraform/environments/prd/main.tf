@@ -39,7 +39,7 @@ module "cloud_run" {
   memory = "512Mi"
 
   # スケーリング設定
-  min_instances = 1  # コールドスタートによるセッション消失を防止
+  min_instances = 0  # コスト削減のためゼロにスケール
   max_instances = 10 # 開発初期は控えめに設定（必要に応じて後で増やす）
 
   # CPU割り当て
@@ -111,7 +111,7 @@ module "cloud_run_backend" {
   cpu    = "1"
   memory = "512Mi"
 
-  min_instances = 1 # コールドスタート防止
+  min_instances = 0 # コスト削減のためゼロにスケール
   max_instances = 10
 
   cpu_always_allocated = false
