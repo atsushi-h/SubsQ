@@ -53,12 +53,12 @@ module "cloud_run" {
 
   # 環境変数
   env_vars = {
-    NODE_ENV                = "production"
-    NEXT_TELEMETRY_DISABLED = "1"
-    NEXT_PUBLIC_APP_ENV     = "dev"
-    DATABASE_URL            = var.database_url
-    GOOGLE_CLIENT_ID        = var.google_client_id
-    GOOGLE_CLIENT_SECRET    = var.google_client_secret
+    NODE_ENV                     = "production"
+    NEXT_TELEMETRY_DISABLED      = "1"
+    NEXT_PUBLIC_APP_ENV          = "dev"
+    DATABASE_URL                 = var.database_url
+    GOOGLE_CLIENT_ID             = var.google_client_id
+    GOOGLE_CLIENT_SECRET         = var.google_client_secret
     BETTER_AUTH_SECRET           = var.better_auth_secret
     BETTER_AUTH_URL              = var.better_auth_url
     NEXT_PUBLIC_APP_URL          = var.next_public_app_url
