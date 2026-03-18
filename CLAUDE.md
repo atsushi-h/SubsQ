@@ -1,35 +1,54 @@
 # SubsQ プロジェクト
 
-サブスクリプション管理 Web アプリケーション（日本市場向け）
-Next.js 15+ App Router + TypeScript + TailwindCSS + Drizzle ORM + Better Auth
+サブスクリプション管理 Web アプリケーション
+モノレポ構成: Frontend (Next.js) + Backend (Go) + API Schema (TypeSpec) + Terraform (GCP/Cloudflare)
 
 ## ディレクトリ構造
 
 ```
-frontend/src/
-├── app/                      # App Router（薄く保つ）
-│   ├── (guest)/              # 未認証ルート
-│   └── (authenticated)/      # 認証必須ルート
-├── features/                 # 機能モジュール
-│   ├── subscription/
-│   │   ├── components/
-│   │   │   ├── server/       # Server Components
-│   │   │   └── client/       # Client Components（Container/Presenter）
-│   │   ├── hooks/            # TanStack Query フック
-│   │   ├── queries/          # Query Keys
-│   │   ├── schemas/          # Zod スキーマ
-│   │   └── types/
-│   └── ...
-├── shared/                   # 共通ユーティリティ
-└── external/                 # 外部連携層（DB/API）
-    ├── handler/              # CQRS ハンドラ
-    ├── service/              # ビジネスロジック
-    ├── repository/           # データベース操作
-    └── domain/               # ドメインモデル
+subsq/
+├── frontend/       # Next.js 15+ フロントエンド
+├── backend/        # Go API サーバー（Clean Architecture）
+├── api-schema/     # TypeSpec API 定義
+├── terraform/      # IaC (GCP Cloud Run + Cloudflare)
+└── compose.yml     # ローカル開発環境（backend + db）
+```
+
+**Frontend (frontend/src/)**
+```
+├── app/          # App Router（薄く保つ）
+├── features/     # 機能モジュール（components / hooks / queries / schemas / types）
+├── shared/       # 共通ユーティリティ
+└── external/     # 外部連携層（handler / service / repository / domain）
+```
+
+**Backend (backend/)**
+```
+├── cmd/api/           # エントリーポイント
+├── internal/
+│   ├── adapter/       # HTTP Controller + DB Gateway
+│   ├── usecase/       # ビジネスロジック
+│   ├── domain/        # ドメインモデル
+│   ├── port/          # インターフェース定義
+│   └── driver/        # フレームワーク設定・DI
+└── migrations/        # DB マイグレーション
+```
+
+**Terraform (terraform/)**
+```
+├── environments/
+│   ├── dev/
+│   └── prd/
+└── modules/
+    ├── cloud-run/
+    ├── artifact-registry/
+    ├── cloudflare/
+    └── budget-alert/
 ```
 
 ## 開発コマンド
 
+**Frontend (frontend/)**
 ```bash
 pnpm dev          # 開発サーバー
 pnpm build        # 本番ビルド
@@ -39,14 +58,56 @@ pnpm lint:fix     # Lint 自動修正
 pnpm type:check   # 型チェック
 ```
 
+**Backend (backend/) ※ Docker コンテナ内で実行**
+```bash
+make test         # テスト実行
+make lint         # golangci-lint 静的解析
+make fmt          # golangci-lint フォーマット
+make sqlc         # sqlc によるコード生成
+make mock         # モック生成（sqlc 後に実行）
+make openapi      # OpenAPI から Go コード生成
+make migrate-up   # マイグレーション適用
+make migrate-down # マイグレーション 1 件ロールバック
+make migrate-new NAME=<name>  # 新規マイグレーションファイル作成
+make docker-up    # ローカル環境起動（ルートの compose.yml）
+make docker-down  # ローカル環境停止
+```
+
+**API Schema (api-schema/)**
+```bash
+pnpm generate           # OpenAPI + TypeScript クライアント全生成
+pnpm generate:openapi   # OpenAPI YAML のみ生成
+pnpm generate:ts        # TypeScript クライアントのみ生成
+```
+
+**Terraform (terraform/)**
+```bash
+make fmt        # Terraform ファイルをフォーマット
+make fmt-check  # フォーマットチェック（CI 用）
+make validate   # Terraform 設定を検証（構文チェック）
+make lint       # TFLint による静的解析
+```
+
+**Docker Compose (ルート)**
+```bash
+docker compose up -d   # ローカル環境起動（backend + db）
+docker compose down    # ローカル環境停止
+```
+
 ## 設計方針
 
+**Frontend**
 - Server Components 優先（クライアント JS 最小化）
 - Container/Presenter パターン（Client Components）
 - CQRS パターン（Query/Command 分離）
 - TanStack Query（データフェッチング）
 - Zod バリデーション（型安全性）
 - 1 ファイル = 1 コンポーネント
+
+**Backend**
+- Clean Architecture（adapter → usecase → domain）
+- OpenAPI 契約駆動（TypeSpec → OpenAPI → Go / TS 自動生成）
+- sqlc による型安全な DB アクセス
 
 ## ブランチ命名規則
 
