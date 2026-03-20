@@ -1,15 +1,11 @@
 import path from 'node:path'
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler', { target: '19' }]],
-      },
-    }),
-  ],
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
+  },
   test: {
     globals: true,
     environment: 'jsdom',
