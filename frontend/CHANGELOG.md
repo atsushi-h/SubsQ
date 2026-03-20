@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-03-20)
+
+
+### Features
+
+* **api-schema:** User CRUD エンドポイントと認証スキームを TypeSpec に追加する ([#194](https://github.com/atsushi-h/SubsQ/issues/194)) ([3d86b58](https://github.com/atsushi-h/SubsQ/commit/3d86b588171d419a91d031cbffb0db133088808c))
+* **user:** PATCH /api/v1/users/me エンドポイントを実装する ([#196](https://github.com/atsushi-h/SubsQ/issues/196)) ([2f49740](https://github.com/atsushi-h/SubsQ/commit/2f4974069b91ef786ad3b7448da908bcf25d1803))
+
+
+### Bug Fixes
+
+* **ci:** CIビルドの環境変数とmiddleware非推奨警告を修正 ([#184](https://github.com/atsushi-h/SubsQ/issues/184)) ([a98031e](https://github.com/atsushi-h/SubsQ/commit/a98031eef26ca09f55e211e552a8079d21d59877))
+
 ## [1.4.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.3.0...frontend-v1.4.0) (2026-02-28)
 
 
