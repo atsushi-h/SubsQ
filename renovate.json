@@ -2,46 +2,61 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    ":semanticCommitTypeAll(chore)"
+    ":semanticCommitTypeAll(chore)",
+    "customManagers:biomeVersions"
   ],
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "packageRules": [
     {
-      "matchUpdateTypes": ["major"],
-      "labels": ["dependencies", "major"]
-    },
-    {
-      "matchUpdateTypes": ["minor"],
-      "labels": ["dependencies", "minor"]
-    },
-    {
-      "matchUpdateTypes": ["patch"],
-      "labels": ["dependencies", "patch"],
-      "automerge": true
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "automerge": true
-    },
-    {
-      "matchDepTypes": ["devDependencies"],
-      "addLabels": ["devDependencies"]
-    },
-    {
-      "matchPackageNames": ["@biomejs/biome"],
-      "groupName": "biome"
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": ["^frontend/biome\\.json$"],
-      "matchStrings": [
-        "\"https://biomejs\\.dev/schemas/(?<currentValue>[0-9.]+)/schema\\.json\""
+      "matchUpdateTypes": [
+        "major"
       ],
-      "depNameTemplate": "@biomejs/biome",
-      "datasourceTemplate": "npm",
-      "versioningTemplate": "npm"
+      "labels": [
+        "dependencies",
+        "major"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "labels": [
+        "dependencies",
+        "minor"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "labels": [
+        "dependencies",
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "automerge": true
+    },
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "addLabels": [
+        "devDependencies"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "@biomejs/biome"
+      ],
+      "groupName": "biome",
+      "minimumReleaseAge": "3 days"
     }
   ],
   "prConcurrentLimit": 30,
@@ -52,10 +67,15 @@
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
   "vulnerabilityAlerts": {
-    "labels": ["dependencies", "security"],
+    "labels": [
+      "dependencies",
+      "security"
+    ],
     "automerge": false
   },
-  "postUpdateOptions": ["pnpmDedupe"],
+  "postUpdateOptions": [
+    "pnpmDedupe"
+  ],
   "npm": {
     "minimumReleaseAge": "3 days"
   }
