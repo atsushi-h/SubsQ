@@ -32,7 +32,6 @@ export function useSessionWithRetry() {
 
       const timer = setTimeout(() => {
         retryCount.current += 1
-        console.log(`[useSessionWithRetry] retry ${retryCount.current}/${MAX_RETRIES}`)
         refetch()
       }, delay)
 
