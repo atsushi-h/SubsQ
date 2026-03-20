@@ -30,7 +30,10 @@ describe('SubscriptionResponseSchema', () => {
   })
 
   it('billingCycleが不正な値でエラーになる', () => {
-    const result = SubscriptionResponseSchema.safeParse({ ...validSubscription, billingCycle: 'weekly' })
+    const result = SubscriptionResponseSchema.safeParse({
+      ...validSubscription,
+      billingCycle: 'weekly',
+    })
     expect(result.success).toBe(false)
   })
 
@@ -80,7 +83,10 @@ describe('CreateSubscriptionRequestSchema', () => {
   })
 
   it('serviceNameが100文字を超えるとエラーになる', () => {
-    const result = CreateSubscriptionRequestSchema.safeParse({ ...validRequest, serviceName: 'a'.repeat(101) })
+    const result = CreateSubscriptionRequestSchema.safeParse({
+      ...validRequest,
+      serviceName: 'a'.repeat(101),
+    })
     expect(result.success).toBe(false)
   })
 
@@ -100,14 +106,19 @@ describe('CreateSubscriptionRequestSchema', () => {
   })
 
   it('paymentMethodIdはnullを許容する', () => {
-    const result = CreateSubscriptionRequestSchema.safeParse({ ...validRequest, paymentMethodId: null })
+    const result = CreateSubscriptionRequestSchema.safeParse({
+      ...validRequest,
+      paymentMethodId: null,
+    })
     expect(result.success).toBe(true)
   })
 })
 
 describe('UpdateSubscriptionRequestSchema', () => {
   it('idのみ必須で他はオプショナル', () => {
-    const result = UpdateSubscriptionRequestSchema.safeParse({ id: '123e4567-e89b-12d3-a456-426614174000' })
+    const result = UpdateSubscriptionRequestSchema.safeParse({
+      id: '123e4567-e89b-12d3-a456-426614174000',
+    })
     expect(result.success).toBe(true)
   })
 
@@ -119,7 +130,9 @@ describe('UpdateSubscriptionRequestSchema', () => {
 
 describe('GetSubscriptionByIdRequestSchema', () => {
   it('有効なUUIDをパースできる', () => {
-    const result = GetSubscriptionByIdRequestSchema.safeParse({ id: '123e4567-e89b-12d3-a456-426614174000' })
+    const result = GetSubscriptionByIdRequestSchema.safeParse({
+      id: '123e4567-e89b-12d3-a456-426614174000',
+    })
     expect(result.success).toBe(true)
   })
 

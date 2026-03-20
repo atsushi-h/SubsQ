@@ -35,7 +35,7 @@ describe('customFetch - サーバーサイド（node環境）', () => {
   it('subsq_tokenがある場合はCookieヘッダーを付与する', async () => {
     vi.mocked(cookies).mockResolvedValue({
       get: vi.fn().mockReturnValue({ value: 'my-jwt-token' }),
-    } as any)
+    } as never)
     mockFetch.mockResolvedValue(makeResponse(200, { result: 'ok' }))
 
     await customFetch('/api/v1/test', { method: 'GET' })
@@ -47,7 +47,7 @@ describe('customFetch - サーバーサイド（node環境）', () => {
   it('subsq_tokenがない場合はCookieヘッダーを付与しない', async () => {
     vi.mocked(cookies).mockResolvedValue({
       get: vi.fn().mockReturnValue(undefined),
-    } as any)
+    } as never)
     mockFetch.mockResolvedValue(makeResponse(200, { result: 'ok' }))
 
     await customFetch('/api/v1/test', { method: 'GET' })
@@ -57,7 +57,7 @@ describe('customFetch - サーバーサイド（node環境）', () => {
   })
 
   it('ベースURLを正しく使用してfetchを呼び出す', async () => {
-    vi.mocked(cookies).mockResolvedValue({ get: vi.fn().mockReturnValue(undefined) } as any)
+    vi.mocked(cookies).mockResolvedValue({ get: vi.fn().mockReturnValue(undefined) } as never)
     mockFetch.mockResolvedValue(makeResponse(200, {}))
 
     await customFetch('/api/v1/test', { method: 'GET' })
@@ -69,14 +69,16 @@ describe('customFetch - サーバーサイド（node環境）', () => {
 
 describe('customFetch - レスポンス処理', () => {
   beforeEach(() => {
-    vi.mocked(cookies).mockResolvedValue({ get: vi.fn().mockReturnValue(undefined) } as any)
+    vi.mocked(cookies).mockResolvedValue({ get: vi.fn().mockReturnValue(undefined) } as never)
   })
 
   it('200レスポンスでdataとstatusを返す', async () => {
     const responseData = { id: '1', name: 'test' }
     mockFetch.mockResolvedValue(makeResponse(200, responseData))
 
-    const result = await customFetch<{ data: unknown; status: number }>('/api/v1/test', { method: 'GET' })
+    const result = await customFetch<{ data: unknown; status: number }>('/api/v1/test', {
+      method: 'GET',
+    })
 
     expect(result.data).toEqual(responseData)
     expect(result.status).toBe(200)
@@ -91,7 +93,9 @@ describe('customFetch - レスポンス処理', () => {
       text: vi.fn(),
     } as unknown as Response)
 
-    const result = await customFetch<{ data: unknown; status: number }>('/api/v1/test', { method: 'DELETE' })
+    const result = await customFetch<{ data: unknown; status: number }>('/api/v1/test', {
+      method: 'DELETE',
+    })
 
     expect(result.status).toBe(204)
     // text()は呼ばれない（bodyを読まない）
@@ -124,13 +128,15 @@ describe('customFetch - レスポンス処理', () => {
       text: vi.fn().mockResolvedValue('not-json'),
     } as unknown as Response)
 
-    await expect(customFetch('/api/v1/test', { method: 'GET' })).rejects.toThrow('invalid response body')
+    await expect(customFetch('/api/v1/test', { method: 'GET' })).rejects.toThrow(
+      'invalid response body',
+    )
   })
 
   it('options.headersが既存のCookieヘッダーを上書きできる', async () => {
     vi.mocked(cookies).mockResolvedValue({
       get: vi.fn().mockReturnValue({ value: 'server-token' }),
-    } as any)
+    } as never)
     mockFetch.mockResolvedValue(makeResponse(200, {}))
 
     await customFetch('/api/v1/test', {

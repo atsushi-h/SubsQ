@@ -26,7 +26,10 @@ describe('PaymentMethodResponseSchema', () => {
   })
 
   it('idが不正なUUIDでエラーになる', () => {
-    const result = PaymentMethodResponseSchema.safeParse({ ...validPaymentMethod, id: 'not-a-uuid' })
+    const result = PaymentMethodResponseSchema.safeParse({
+      ...validPaymentMethod,
+      id: 'not-a-uuid',
+    })
     expect(result.success).toBe(false)
   })
 })
@@ -73,7 +76,9 @@ describe('UpdatePaymentMethodRequestSchema', () => {
 
 describe('GetPaymentMethodByIdRequestSchema', () => {
   it('有効なUUIDをパースできる', () => {
-    const result = GetPaymentMethodByIdRequestSchema.safeParse({ id: '123e4567-e89b-12d3-a456-426614174000' })
+    const result = GetPaymentMethodByIdRequestSchema.safeParse({
+      id: '123e4567-e89b-12d3-a456-426614174000',
+    })
     expect(result.success).toBe(true)
   })
 

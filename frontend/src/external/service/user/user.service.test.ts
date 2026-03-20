@@ -25,14 +25,14 @@ beforeEach(() => {
 
 describe('getCurrentUser', () => {
   it('ユーザー情報を正常に取得できる', async () => {
-    vi.mocked(usersGetCurrentUser).mockResolvedValue({ status: 200, data: mockUser } as any)
+    vi.mocked(usersGetCurrentUser).mockResolvedValue({ status: 200, data: mockUser } as never)
 
     const result = await getCurrentUser()
     expect(result).toEqual(mockUser)
   })
 
   it('200以外のステータスでnullを返す', async () => {
-    vi.mocked(usersGetCurrentUser).mockResolvedValue({ status: 401, data: null } as any)
+    vi.mocked(usersGetCurrentUser).mockResolvedValue({ status: 401, data: null } as never)
 
     const result = await getCurrentUser()
     expect(result).toBeNull()
@@ -49,14 +49,14 @@ describe('getCurrentUser', () => {
 describe('updateUser', () => {
   it('ユーザー情報を正常に更新できる', async () => {
     const updated = { ...mockUser, name: '新しい名前' }
-    vi.mocked(usersUpdateCurrentUser).mockResolvedValue({ status: 200, data: updated } as any)
+    vi.mocked(usersUpdateCurrentUser).mockResolvedValue({ status: 200, data: updated } as never)
 
     const result = await updateUser({ name: '新しい名前' })
     expect(result.name).toBe('新しい名前')
   })
 
   it('200以外のステータスでエラーをスローする', async () => {
-    vi.mocked(usersUpdateCurrentUser).mockResolvedValue({ status: 400, data: null } as any)
+    vi.mocked(usersUpdateCurrentUser).mockResolvedValue({ status: 400, data: null } as never)
 
     await expect(updateUser({ name: '名前' })).rejects.toThrow('ユーザー情報の更新に失敗しました')
   })
@@ -64,13 +64,13 @@ describe('updateUser', () => {
 
 describe('deleteUser', () => {
   it('アカウントを正常に削除できる', async () => {
-    vi.mocked(usersDeleteCurrentUser).mockResolvedValue({ status: 204, data: null } as any)
+    vi.mocked(usersDeleteCurrentUser).mockResolvedValue({ status: 204, data: null } as never)
 
     await expect(deleteUser()).resolves.toBeUndefined()
   })
 
   it('204以外のステータスでエラーをスローする', async () => {
-    vi.mocked(usersDeleteCurrentUser).mockResolvedValue({ status: 500, data: null } as any)
+    vi.mocked(usersDeleteCurrentUser).mockResolvedValue({ status: 500, data: null } as never)
 
     await expect(deleteUser()).rejects.toThrow('アカウントの削除に失敗しました')
   })

@@ -45,14 +45,20 @@ describe('listSubscriptions', () => {
       subscriptions: [mockSubscription],
       summary: { monthlyTotal: 1490, yearlyTotal: 17880, count: 1 },
     }
-    vi.mocked(subscriptionsListSubscriptions).mockResolvedValue({ status: 200, data: mockResponse } as any)
+    vi.mocked(subscriptionsListSubscriptions).mockResolvedValue({
+      status: 200,
+      data: mockResponse,
+    } as never)
 
     const result = await listSubscriptions()
     expect(result).toEqual(mockResponse)
   })
 
   it('200以外のステータスでエラーをスローする', async () => {
-    vi.mocked(subscriptionsListSubscriptions).mockResolvedValue({ status: 500, data: null } as any)
+    vi.mocked(subscriptionsListSubscriptions).mockResolvedValue({
+      status: 500,
+      data: null,
+    } as never)
 
     await expect(listSubscriptions()).rejects.toThrow('サブスクリプション一覧の取得に失敗しました')
   })
@@ -60,14 +66,17 @@ describe('listSubscriptions', () => {
 
 describe('getSubscriptionById', () => {
   it('サブスクリプションを正常に取得できる', async () => {
-    vi.mocked(subscriptionsGetSubscription).mockResolvedValue({ status: 200, data: mockSubscription } as any)
+    vi.mocked(subscriptionsGetSubscription).mockResolvedValue({
+      status: 200,
+      data: mockSubscription,
+    } as never)
 
     const result = await getSubscriptionById('123e4567-e89b-12d3-a456-426614174000')
     expect(result).toEqual(mockSubscription)
   })
 
   it('200以外のステータスでnullを返す', async () => {
-    vi.mocked(subscriptionsGetSubscription).mockResolvedValue({ status: 404, data: null } as any)
+    vi.mocked(subscriptionsGetSubscription).mockResolvedValue({ status: 404, data: null } as never)
 
     const result = await getSubscriptionById('not-found')
     expect(result).toBeNull()
@@ -90,44 +99,70 @@ describe('createSubscription', () => {
   }
 
   it('サブスクリプションを正常に作成できる', async () => {
-    vi.mocked(subscriptionsCreateSubscription).mockResolvedValue({ status: 201, data: mockSubscription } as any)
+    vi.mocked(subscriptionsCreateSubscription).mockResolvedValue({
+      status: 201,
+      data: mockSubscription,
+    } as never)
 
     const result = await createSubscription(request)
     expect(result).toEqual(mockSubscription)
   })
 
   it('201以外のステータスでエラーをスローする', async () => {
-    vi.mocked(subscriptionsCreateSubscription).mockResolvedValue({ status: 400, data: null } as any)
+    vi.mocked(subscriptionsCreateSubscription).mockResolvedValue({
+      status: 400,
+      data: null,
+    } as never)
 
-    await expect(createSubscription(request)).rejects.toThrow('サブスクリプションの作成に失敗しました')
+    await expect(createSubscription(request)).rejects.toThrow(
+      'サブスクリプションの作成に失敗しました',
+    )
   })
 })
 
 describe('updateSubscription', () => {
   it('サブスクリプションを正常に更新できる', async () => {
     const updated = { ...mockSubscription, serviceName: 'Netflix Premium' }
-    vi.mocked(subscriptionsUpdateSubscription).mockResolvedValue({ status: 200, data: updated } as any)
+    vi.mocked(subscriptionsUpdateSubscription).mockResolvedValue({
+      status: 200,
+      data: updated,
+    } as never)
 
-    const result = await updateSubscription('123e4567-e89b-12d3-a456-426614174000', { serviceName: 'Netflix Premium' })
+    const result = await updateSubscription('123e4567-e89b-12d3-a456-426614174000', {
+      serviceName: 'Netflix Premium',
+    })
     expect(result.serviceName).toBe('Netflix Premium')
   })
 
   it('200以外のステータスでエラーをスローする', async () => {
-    vi.mocked(subscriptionsUpdateSubscription).mockResolvedValue({ status: 404, data: null } as any)
+    vi.mocked(subscriptionsUpdateSubscription).mockResolvedValue({
+      status: 404,
+      data: null,
+    } as never)
 
-    await expect(updateSubscription('id', {})).rejects.toThrow('サブスクリプションの更新に失敗しました')
+    await expect(updateSubscription('id', {})).rejects.toThrow(
+      'サブスクリプションの更新に失敗しました',
+    )
   })
 })
 
 describe('deleteSubscription', () => {
   it('正常に削除できる', async () => {
-    vi.mocked(subscriptionsDeleteSubscription).mockResolvedValue({ status: 204, data: null } as any)
+    vi.mocked(subscriptionsDeleteSubscription).mockResolvedValue({
+      status: 204,
+      data: null,
+    } as never)
 
-    await expect(deleteSubscription('123e4567-e89b-12d3-a456-426614174000')).resolves.toBeUndefined()
+    await expect(
+      deleteSubscription('123e4567-e89b-12d3-a456-426614174000'),
+    ).resolves.toBeUndefined()
   })
 
   it('204以外のステータスでエラーをスローする', async () => {
-    vi.mocked(subscriptionsDeleteSubscription).mockResolvedValue({ status: 404, data: null } as any)
+    vi.mocked(subscriptionsDeleteSubscription).mockResolvedValue({
+      status: 404,
+      data: null,
+    } as never)
 
     await expect(deleteSubscription('id')).rejects.toThrow('サブスクリプションの削除に失敗しました')
   })
@@ -140,15 +175,23 @@ describe('deleteSubscriptions', () => {
   })
 
   it('複数IDを正常に削除できる', async () => {
-    vi.mocked(subscriptionsDeleteSubscriptions).mockResolvedValue({ status: 204, data: null } as any)
+    vi.mocked(subscriptionsDeleteSubscriptions).mockResolvedValue({
+      status: 204,
+      data: null,
+    } as never)
 
     await expect(deleteSubscriptions(['id-1', 'id-2'])).resolves.toBeUndefined()
     expect(subscriptionsDeleteSubscriptions).toHaveBeenCalledWith({ ids: ['id-1', 'id-2'] })
   })
 
   it('204以外のステータスでエラーをスローする', async () => {
-    vi.mocked(subscriptionsDeleteSubscriptions).mockResolvedValue({ status: 500, data: null } as any)
+    vi.mocked(subscriptionsDeleteSubscriptions).mockResolvedValue({
+      status: 500,
+      data: null,
+    } as never)
 
-    await expect(deleteSubscriptions(['id-1'])).rejects.toThrow('サブスクリプションの削除に失敗しました')
+    await expect(deleteSubscriptions(['id-1'])).rejects.toThrow(
+      'サブスクリプションの削除に失敗しました',
+    )
   })
 })
