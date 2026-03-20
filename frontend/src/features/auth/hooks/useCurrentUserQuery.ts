@@ -3,10 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { ModelsUserResponse } from '@/external/client/api/generated/model'
 import { usersGetCurrentUser } from '@/external/client/api/generated/users/users'
-
-export const currentUserKeys = {
-  all: ['currentUser'] as const,
-}
+import { currentUserKeys } from '@/features/auth/queries/auth.query-keys'
 
 export function useCurrentUserQuery() {
   return useQuery<ModelsUserResponse | null>({
