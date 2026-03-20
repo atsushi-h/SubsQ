@@ -6,11 +6,7 @@ import { afterEach, vi } from 'vitest'
 process.env.SKIP_ENV_VALIDATION = 'true'
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
 process.env.NEXT_PUBLIC_APP_ENV = 'dev'
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
-process.env.BETTER_AUTH_SECRET = 'test-secret-32-characters-long-test'
-process.env.GOOGLE_CLIENT_ID = 'test-google-client-id'
-process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-secret'
-process.env.BETTER_AUTH_URL = 'http://localhost:3000/api/auth'
+process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost:8080'
 
 afterEach(() => {
   cleanup()

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { subscriptionTotalCalculator } from '../../domain/services'
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
 import {
   type GetSubscriptionByIdRequest,
   GetSubscriptionByIdRequestSchema,
@@ -8,53 +8,22 @@ import {
   type SubscriptionResponse,
 } from '../../dto/subscription.dto'
 import { subscriptionService } from '../../service/subscription/subscription.service'
-import { toSubscriptionResponse } from './subscription.converter'
+import { toListSubscriptionsResponse, toSubscriptionResponse } from './subscription.converter'
 
 export async function getSubscriptionByIdQuery(
   request: GetSubscriptionByIdRequest,
-  userId: string,
 ): Promise<SubscriptionResponse | null> {
+  await requireAuthServer()
   const validated = GetSubscriptionByIdRequestSchema.parse(request)
 
-  const subscription = await subscriptionService.getSubscriptionById(validated.id)
-  if (!subscription) return null
+  const data = await subscriptionService.getSubscriptionById(validated.id)
+  if (!data) return null
 
-  // 認可チェック：自分のサブスクリプションのみ取得可能
-  if (!subscription.belongsTo(userId)) {
-    throw new Error('Forbidden: You can only access your own subscriptions')
-  }
-
-  const paymentMethod = await subscriptionService.getPaymentMethodForSubscription(
-    subscription.paymentMethodId,
-  )
-
-  return toSubscriptionResponse(subscription, paymentMethod)
+  return toSubscriptionResponse(data)
 }
 
-export async function listSubscriptionsByUserIdQuery(
-  userId: string,
-): Promise<ListSubscriptionsResponse> {
-  const subscriptions = await subscriptionService.getSubscriptionsByUserId(userId)
-
-  // 各subscriptionのpaymentMethodを並列取得
-  const subscriptionsWithPaymentMethods = await Promise.all(
-    subscriptions.map(async (subscription) => {
-      const paymentMethod = await subscriptionService.getPaymentMethodForSubscription(
-        subscription.paymentMethodId,
-      )
-      return { subscription, paymentMethod }
-    }),
-  )
-
-  const subscriptionResponses = subscriptionsWithPaymentMethods.map(
-    ({ subscription, paymentMethod }) => toSubscriptionResponse(subscription, paymentMethod),
-  )
-
-  // SubscriptionTotalCalculatorを使って合計を計算
-  const summary = subscriptionTotalCalculator.calculate(subscriptions)
-
-  return {
-    subscriptions: subscriptionResponses,
-    summary,
-  }
+export async function listSubscriptionsByUserIdQuery(): Promise<ListSubscriptionsResponse> {
+  await requireAuthServer()
+  const data = await subscriptionService.listSubscriptions()
+  return toListSubscriptionsResponse(data)
 }

@@ -8,9 +8,9 @@ import {
 import { withAuth } from '@/features/auth/servers/auth.guard'
 
 export async function getSubscriptionByIdQueryAction(request: GetSubscriptionByIdRequest) {
-  return withAuth(({ userId }) => getSubscriptionByIdQuery(request, userId))
+  return withAuth(() => getSubscriptionByIdQuery(request))
 }
 
 export async function listSubscriptionsByUserIdQueryAction() {
-  return withAuth(({ userId }) => listSubscriptionsByUserIdQuery(userId))
+  return withAuth(() => listSubscriptionsByUserIdQuery())
 }

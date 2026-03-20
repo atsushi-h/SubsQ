@@ -1,31 +1,20 @@
-import type { Subscription } from '../../domain/entities/subscription'
-import { type SubscriptionResponse, SubscriptionResponseSchema } from '../../dto/subscription.dto'
+import type {
+  ModelsListSubscriptionsResponse,
+  ModelsSubscriptionResponse,
+} from '@/external/client/api/generated/model'
+import {
+  type ListSubscriptionsResponse,
+  ListSubscriptionsResponseSchema,
+  type SubscriptionResponse,
+  SubscriptionResponseSchema,
+} from '../../dto/subscription.dto'
 
-/**
- * Subscription ドメインエンティティを SubscriptionResponse DTO に変換する
- */
-export function toSubscriptionResponse(
-  subscription: Subscription,
-  paymentMethod: { id: string; name: string } | null,
-): SubscriptionResponse {
-  const plainSubscription = subscription.toPlainObject()
+export function toSubscriptionResponse(model: ModelsSubscriptionResponse): SubscriptionResponse {
+  return SubscriptionResponseSchema.parse(model)
+}
 
-  const response = {
-    id: plainSubscription.id,
-    userId: plainSubscription.userId,
-    serviceName: plainSubscription.serviceName,
-    amount: plainSubscription.amount,
-    billingCycle: plainSubscription.billingCycle as 'monthly' | 'yearly',
-    baseDate: new Date(plainSubscription.baseDate * 1000).toISOString(),
-    nextBillingDate: subscription.calculateNextBillingDate().toISOString().split('T')[0],
-    paymentMethodId: plainSubscription.paymentMethodId ?? undefined,
-    paymentMethod,
-    memo: plainSubscription.memo,
-    monthlyAmount: subscription.toMonthlyAmount().getValue(),
-    yearlyAmount: subscription.toYearlyAmount().getValue(),
-    createdAt: plainSubscription.createdAt.toISOString(),
-    updatedAt: plainSubscription.updatedAt.toISOString(),
-  }
-
-  return SubscriptionResponseSchema.parse(response)
+export function toListSubscriptionsResponse(
+  model: ModelsListSubscriptionsResponse,
+): ListSubscriptionsResponse {
+  return ListSubscriptionsResponseSchema.parse(model)
 }
