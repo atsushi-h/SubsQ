@@ -83,12 +83,13 @@ const upsertUser = `-- name: UpsertUser :one
 INSERT INTO users (email, name, provider, provider_account_id, thumbnail,
 created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-ON CONFLICT (provider, provider_account_id)
+ON CONFLICT (email)
 DO UPDATE SET
-    email      = EXCLUDED.email,
-    name       = EXCLUDED.name,
-    thumbnail  = EXCLUDED.thumbnail,
-    updated_at = EXCLUDED.updated_at
+    name               = EXCLUDED.name,
+    provider           = EXCLUDED.provider,
+    provider_account_id = EXCLUDED.provider_account_id,
+    thumbnail          = EXCLUDED.thumbnail,
+    updated_at         = EXCLUDED.updated_at
 RETURNING id, email, name, provider, provider_account_id, thumbnail, created_at, updated_at
 `
 
