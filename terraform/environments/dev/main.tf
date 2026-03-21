@@ -110,7 +110,7 @@ module "cloud_run_backend" {
     JWT_SECRET           = var.jwt_secret
     GOOGLE_CLIENT_ID     = var.google_client_id
     GOOGLE_CLIENT_SECRET = var.google_client_secret
-    FRONTEND_URL         = "${var.next_public_app_url}/subscriptions"
+    FRONTEND_URL         = "${var.next_public_app_url}/subscriptions" # ログイン後のリダイレクト先
     CLIENT_ORIGIN        = var.next_public_app_url
     GOOGLE_REDIRECT_URL  = "https://api-${var.cloudflare_subdomain}.${var.cloudflare_domain}/api/v1/auth/google/callback"
   }
