@@ -97,8 +97,6 @@ variable "google_client_secret" {
   sensitive   = true
 }
 
-
-
 variable "next_public_app_url" {
   description = "Next.jsパブリックアプリケーションURL (例: https://subsq-app.com)"
   type        = string
