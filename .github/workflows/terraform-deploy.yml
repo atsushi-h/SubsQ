@@ -54,8 +54,6 @@ jobs:
       TF_VAR_database_url: ${{ secrets.DATABASE_URL }}
       TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
       TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      TF_VAR_better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
-      TF_VAR_better_auth_url: ${{ secrets.BETTER_AUTH_URL }}
       TF_VAR_next_public_app_url: ${{ secrets.NEXT_PUBLIC_APP_URL }}
       TF_VAR_next_public_contact_form_url: ${{ secrets.NEXT_PUBLIC_CONTACT_FORM_URL }}
       TF_VAR_billing_account_id: ${{ secrets.BILLING_ACCOUNT_ID }}
