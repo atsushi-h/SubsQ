@@ -56,13 +56,9 @@ module "cloud_run" {
     NODE_ENV                     = "production"
     NEXT_TELEMETRY_DISABLED      = "1"
     NEXT_PUBLIC_APP_ENV          = "prd"
-    DATABASE_URL                 = var.database_url
-    GOOGLE_CLIENT_ID             = var.google_client_id
-    GOOGLE_CLIENT_SECRET         = var.google_client_secret
-    BETTER_AUTH_SECRET           = var.better_auth_secret
-    BETTER_AUTH_URL              = var.better_auth_url
     NEXT_PUBLIC_APP_URL          = var.next_public_app_url
     NEXT_PUBLIC_CONTACT_FORM_URL = var.next_public_contact_form_url
+    NEXT_PUBLIC_API_BASE_URL     = var.next_public_api_base_url
   }
 }
 
@@ -124,9 +120,15 @@ module "cloud_run_backend" {
   health_check_path = "/health"
   health_check_port = 8080
 
-  # 環境変数（フロントエンドと同一DBを使用）
+  # 環境変数
   env_vars = {
-    DATABASE_URL = var.database_url
+    DATABASE_URL         = var.database_url
+    JWT_SECRET           = var.jwt_secret
+    GOOGLE_CLIENT_ID     = var.google_client_id
+    GOOGLE_CLIENT_SECRET = var.google_client_secret
+    FRONTEND_URL         = "${var.next_public_app_url}/subscriptions" # ログイン後のリダイレクト先（変更時はここも更新）
+    CLIENT_ORIGIN        = var.next_public_app_url
+    GOOGLE_REDIRECT_URL  = "https://api.${var.cloudflare_domain}/api/v1/auth/google/callback"
   }
 }
 
