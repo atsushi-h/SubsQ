@@ -103,16 +103,7 @@ variable "google_client_secret" {
   sensitive   = true
 }
 
-variable "better_auth_secret" {
-  description = "Better Authシークレットキー"
-  type        = string
-  sensitive   = true
-}
 
-variable "better_auth_url" {
-  description = "Better Auth URL (例: https://dev.subsq.example.com)"
-  type        = string
-}
 
 variable "next_public_app_url" {
   description = "Next.jsパブリックアプリケーションURL (例: https://dev.subsq.example.com)"
@@ -121,6 +112,17 @@ variable "next_public_app_url" {
 
 variable "next_public_contact_form_url" {
   description = "お問い合わせフォームURL (Google Forms等)"
+  type        = string
+}
+
+variable "jwt_secret" {
+  description = "JWT署名シークレット"
+  type        = string
+  sensitive   = true
+}
+
+variable "next_public_api_base_url" {
+  description = "GoバックエンドAPIのベースURL (例: https://api-dev.subsq-app.com)"
   type        = string
 }
 

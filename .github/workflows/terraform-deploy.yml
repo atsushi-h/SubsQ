@@ -59,6 +59,8 @@ jobs:
       TF_VAR_next_public_app_url: ${{ secrets.NEXT_PUBLIC_APP_URL }}
       TF_VAR_next_public_contact_form_url: ${{ secrets.NEXT_PUBLIC_CONTACT_FORM_URL }}
       TF_VAR_billing_account_id: ${{ secrets.BILLING_ACCOUNT_ID }}
+      TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+      TF_VAR_next_public_api_base_url: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
 
     steps:
       - name: Checkout repository
