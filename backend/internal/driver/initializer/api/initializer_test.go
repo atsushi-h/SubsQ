@@ -40,7 +40,7 @@ func TestBuildServer_Wiring(t *testing.T) {
 		Endpoint:     google.Endpoint,
 	}
 	authInteractor := factory.NewAuthInteractorFactory(oauthConfig, "dummy-jwt-secret")(userRepoFactory())
-	authController := httpcontroller.NewAuthController(authInteractor, "http://localhost:3000")
+	authController := httpcontroller.NewAuthController(authInteractor, "http://localhost:3000", "")
 	healthController := httpcontroller.NewHealthController()
 
 	subController := httpcontroller.NewSubscriptionController(subInputFactory, subOutputFactory, subRepoFactory, pmRepoFactory)

@@ -58,7 +58,7 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 		Endpoint:     google.Endpoint,
 	}
 	authInteractor := factory.NewAuthInteractorFactory(oauthConfig, cfg.JWTSecret)(userRepoFactory())
-	authController := httpcontroller.NewAuthController(authInteractor, cfg.FrontendURL)
+	authController := httpcontroller.NewAuthController(authInteractor, cfg.FrontendURL, cfg.CookieDomain)
 	healthController := httpcontroller.NewHealthController()
 
 	// Controllers

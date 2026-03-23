@@ -12,12 +12,14 @@ import (
 type AuthController struct {
 	authInteractor *usecase.AuthInteractor
 	frontendURL    string
+	cookieDomain   string
 }
 
-func NewAuthController(authInteractor *usecase.AuthInteractor, frontendURL string) *AuthController {
+func NewAuthController(authInteractor *usecase.AuthInteractor, frontendURL, cookieDomain string) *AuthController {
 	return &AuthController{
 		authInteractor: authInteractor,
 		frontendURL:    frontendURL,
+		cookieDomain:   cookieDomain,
 	}
 }
 
@@ -66,6 +68,7 @@ func (c *AuthController) GoogleCallback(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "subsq_token",
 		Value:    jwtToken,
+		Domain:   c.cookieDomain,
 		MaxAge:   int((30 * 24 * time.Hour).Seconds()),
 		HttpOnly: true,
 		Secure:   true,
@@ -81,6 +84,7 @@ func (c *AuthController) Logout(ctx echo.Context) error {
 	ctx.SetCookie(&http.Cookie{
 		Name:     "subsq_token",
 		Value:    "",
+		Domain:   c.cookieDomain,
 		MaxAge:   -1,
 		Path:     "/",
 		HttpOnly: true,

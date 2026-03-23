@@ -21,7 +21,8 @@ type Config struct {
 	GoogleRedirectURL  string
 
 	// Frontend
-	FrontendURL string
+	FrontendURL  string
+	CookieDomain string
 }
 
 func Load() (*Config, error) {
@@ -64,6 +65,8 @@ func Load() (*Config, error) {
 		port = parsedPort
 	}
 
+	cookieDomain := os.Getenv("COOKIE_DOMAIN") // オプション: 空の場合はドメイン制限なし（ローカル開発用）
+
 	origins := parseAllowedOrigins(os.Getenv("CLIENT_ORIGIN"))
 
 	return &Config{
@@ -75,6 +78,7 @@ func Load() (*Config, error) {
 		GoogleClientSecret: googleClientSecret,
 		GoogleRedirectURL:  googleRedirectURL,
 		FrontendURL:        frontendURL,
+		CookieDomain:       cookieDomain,
 	}, nil
 }
 

@@ -112,6 +112,7 @@ module "cloud_run_backend" {
     GOOGLE_CLIENT_SECRET = var.google_client_secret
     FRONTEND_URL         = "${var.next_public_app_url}/subscriptions" # ログイン後のリダイレクト先
     CLIENT_ORIGIN        = var.next_public_app_url
+    COOKIE_DOMAIN        = ".${var.cloudflare_domain}"
     GOOGLE_REDIRECT_URL  = "https://api-${var.cloudflare_subdomain}.${var.cloudflare_domain}/api/v1/auth/google/callback"
   }
 }
