@@ -26,7 +26,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
     defaults:
       run:
-        working-directory: frontend
+        working-directory: backend
 
     steps:
       - name: Checkout repository
@@ -37,24 +37,20 @@ jobs:
         with:
           install: true
           cache: true
-          working_directory: frontend
+          working_directory: backend
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
+      - name: Cache Go modules
         uses: actions/cache@v5.0.4
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-go-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install golang-migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
       - name: Validate DATABASE_URL
         run: |
@@ -68,15 +64,12 @@ jobs:
       - name: Display migration files
         run: |
           echo "=== Migration files to be applied ==="
-          ls -lh drizzle/*.sql || echo "No SQL files found"
-          echo ""
-          echo "=== Migration journal ==="
-          cat drizzle/meta/_journal.json
+          ls -lh migrations/*.sql || echo "No SQL files found"
 
       - name: Run migrations
         run: |
           echo "Starting migration for ${{ inputs.environment }} environment..."
-          pnpm db:migrate
+          migrate -path migrations -database "$DATABASE_URL" up
           echo "Migration completed successfully"
 
       - name: Report success
