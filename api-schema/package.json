@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.31.1",
-    "@typespec/compiler": "1.10.0",
+    "@typespec/compiler": "1.11.0",
     "@typespec/http": "1.10.0",
     "@typespec/openapi3": "1.10.0"
   }
