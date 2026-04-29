@@ -1,6 +1,6 @@
 ---
 name: project-guidelines
-description: SubsQプロジェクト固有のアーキテクチャ、ファイル構造、コードパターン（Container/Presenter、CQRS、TanStack Query）、テスト要件、デプロイワークフローのガイドライン。Next.js App Router、Drizzle ORM、Better Auth使用。
+description: SubsQプロジェクト固有のアーキテクチャ、ファイル構造、コードパターン（Container/Presenter、CQRS、TanStack Query）、テスト要件、デプロイワークフローのガイドライン。Next.js App Router、Go バックエンド (Echo + sqlc) を OpenAPI (Orval) 経由で利用。
 ---
 
 # プロジェクトガイドライン
@@ -23,13 +23,15 @@ SubsQプロジェクトで作業する際にこのスキルを参照すること
 ## アーキテクチャ概要
 
 **技術スタック:**
-- **フロントエンド**: Next.js 15+ (App Router), TypeScript, React
-- **状態管理**: TanStack Query
-- **データベース**: Neon PostgreSQL
-- **ORM**: Drizzle ORM
-- **認証**: Better Auth (Google OAuth, Stateless mode)
+- **フロントエンド**: Next.js 15+ (App Router), TypeScript, React 19
+- **状態管理**: TanStack Query v5
+- **API クライアント**: TypeSpec → OpenAPI → Orval 自動生成 (`fetch` ベース)
+- **バックエンド**: Go (Echo + sqlc) ※ Frontend は HTTP 経由でのみ通信
+- **認証**: Go バックエンド発行の JWT を HTTPOnly Cookie (`subsq_token`) で保持。Google OAuth はバックエンドで処理
 - **バリデーション**: Zod
 - **スタイリング**: Tailwind CSS
+- **Lint / Format**: Biome
+- **テスト**: Vitest (Unit), Playwright + MSW (E2E)
 - **デプロイ**: GCP Cloud Run + Cloudflare
 
 **サービス構成:**
@@ -39,21 +41,29 @@ SubsQプロジェクトで作業する際にこのスキルを参照すること
 │  Next.js 15+ (App Router) + TypeScript + TailwindCSS       │
 │  デプロイ先: GCP Cloud Run                                  │
 └─────────────────────────────────────────────────────────────┘
+                              │ HTTP (OpenAPI)
+                              ▼
+                  ┌─────────────────────────┐
+                  │   Go バックエンド API     │
+                  │   Echo + sqlc + JWT      │
+                  │   デプロイ先: Cloud Run   │
+                  └───────────┬─────────────┘
                               │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐   ┌──────────┐   ┌──────────┐
-        │   Neon   │   │  Better  │   │Cloudflare│
-        │PostgreSQL│   │   Auth   │   │CDN / DNS │
-        └──────────┘   └──────────┘   └──────────┘
+                              ▼
+                       ┌──────────────┐
+                       │  PostgreSQL  │
+                       │    (Neon)    │
+                       └──────────────┘
+
+  Cloudflare: CDN / DNS / カスタムドメイン管理
 ```
 
 **設計原則:**
 1. **Server Components優先** - クライアントサイドJSを最小化
 2. **型安全性** - TypeScript + Zodによる完全な型カバレッジ
-3. **関心の分離** - 各レイヤーの責務を明確化
-4. **テスタビリティ** - 各レイヤーを独立してテスト可能に
-5. **変更容易性** - バックエンド移行を容易に（DB → 外部API）
+3. **OpenAPI 契約駆動** - TypeSpec でスキーマ定義、Frontend / Backend ともに自動生成コードで型を共有
+4. **関心の分離** - 各レイヤーの責務を明確化（Handler / Service / Client）
+5. **テスタビリティ** - 各レイヤーを独立してテスト可能に
 
 ---
 
@@ -100,8 +110,8 @@ frontend/src/
 │   ├── lib/
 │   └── providers/
 │
-└── external/                 # 外部連携層（DB/API）
-    ├── dto/                  # データ転送オブジェクト
+└── external/                 # 外部連携層（Go バックエンド API）
+    ├── dto/                  # 入出力 DTO（Zod スキーマ + 型）
     ├── handler/              # エントリーポイント（CQRS）
     │   └── subscription/
     │       ├── subscription.query.server.ts
@@ -109,11 +119,17 @@ frontend/src/
     │       ├── subscription.command.server.ts
     │       ├── subscription.command.action.ts
     │       └── subscription.converter.ts
-    ├── service/              # ビジネスロジック
-    ├── repository/           # データベース操作
-    ├── domain/               # ドメインモデル
-    └── client/               # DB接続
+    ├── service/              # Go バックエンド呼び出し + データ変換
+    │   └── subscription/
+    │       └── subscription.service.ts
+    └── client/               # OpenAPI 自動生成クライアント (Orval)
+        └── api/
+            ├── fetcher.ts    # 共通 fetch ラッパー
+            └── generated/    # Orval 生成物（手動編集禁止）
 ```
+
+> **NOTE**: 旧構成にあった `external/repository/` `external/domain/` は廃止済み。
+> Frontend は DB に直接接続せず、Go バックエンドの REST API のみを呼び出す。
 
 ---
 
@@ -190,42 +206,37 @@ export { SubscriptionListContainer as SubscriptionList } from './SubscriptionLis
 // external/handler/subscription/subscription.query.server.ts
 import 'server-only'
 
-import { getAuthenticatedSessionServer } from '@/features/auth/servers/redirect.server'
-import { subscriptionService } from '@/external/service/subscription.service'
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
+import * as subscriptionService from '@/external/service/subscription/subscription.service'
+import { toListSubscriptionsResponse } from './subscription.converter'
 import type { ListSubscriptionsResponse } from '@/external/dto/subscription.dto'
 
-export async function listSubscriptionsByUserIdQuery(
-  userId: string
-): Promise<ListSubscriptionsResponse> {
-  return await subscriptionService.listSubscriptions(userId)
+export async function listSubscriptionsByUserIdQuery(): Promise<ListSubscriptionsResponse> {
+  await requireAuthServer()
+  const data = await subscriptionService.listSubscriptions()
+  return toListSubscriptionsResponse(data)
 }
 ```
 
+> ユーザー ID は Go バックエンド側で JWT Cookie から解決されるため、Frontend からは渡さない。
+
 **Server Action（Client Componentから呼び出し）:**
+
+`*.action.ts` は `withAuth()` で包み、認証エラー時のリダイレクトとレスポンス整形を統一する。
+
 ```ts
 // external/handler/subscription/subscription.query.action.ts
 'use server'
 
-import { getAuthenticatedSessionServer } from '@/features/auth/servers/redirect.server'
+import { withAuth } from '@/features/auth/servers/auth.guard'
 import { listSubscriptionsByUserIdQuery } from './subscription.query.server'
 
-export type ListSubscriptionsResult =
-  | { success: true; data: ListSubscriptionsResponse }
-  | { success: false; error: string }
-
-export async function listSubscriptionsByUserIdQueryAction(): Promise<ListSubscriptionsResult> {
-  try {
-    const session = await getAuthenticatedSessionServer()
-    const data = await listSubscriptionsByUserIdQuery(session.user.id)
-    return { success: true, data }
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : '取得に失敗しました',
-    }
-  }
+export async function listSubscriptionsByUserIdQueryAction() {
+  return withAuth(() => listSubscriptionsByUserIdQuery())
 }
 ```
+
+`withAuth()` は `{ success: true; data } | { success: false; error }` 形式の判別共用体を返す（呼び出し側のフックは `success` フラグで分岐する）。
 
 **命名規則:**
 | 種類 | ファイル | 関数名 | 呼び出し元 |
@@ -253,18 +264,16 @@ export const subscriptionKeys = {
 // features/subscription/components/server/SubscriptionListPageTemplate/SubscriptionListPageTemplate.tsx
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { listSubscriptionsByUserIdQuery } from '@/external/handler/subscription/subscription.query.server'
-import { getAuthenticatedSessionServer } from '@/features/auth/servers/redirect.server'
 import { SubscriptionList } from '@/features/subscription/components/client/SubscriptionList'
 import { subscriptionKeys } from '@/features/subscription/queries/subscription.query-keys'
 import { getQueryClient } from '@/shared/lib/query-client'
 
 export async function SubscriptionListPageTemplate() {
-  const session = await getAuthenticatedSessionServer()
   const queryClient = getQueryClient()
 
   await queryClient.prefetchQuery({
     queryKey: subscriptionKeys.lists(),
-    queryFn: () => listSubscriptionsByUserIdQuery(session.user.id),
+    queryFn: () => listSubscriptionsByUserIdQuery(),
   })
 
   return (
@@ -274,6 +283,8 @@ export async function SubscriptionListPageTemplate() {
   )
 }
 ```
+
+> 認証チェックは `*.query.server.ts` 内の `requireAuthServer()` で行うため、PageTemplate では明示しない。
 
 **クライアントサイドQueryフック:**
 ```ts
@@ -318,6 +329,44 @@ export function useCreateSubscriptionMutation() {
 }
 ```
 
+### Service 層 / OpenAPI クライアント
+
+Service は OpenAPI 自動生成クライアント (`external/client/api/generated/`) を直接呼び出す薄い層。
+ステータスコード分岐とエラーメッセージの統一のみ行い、データ変換は Handler の `*.converter.ts` に委譲する。
+
+```ts
+// external/service/subscription/subscription.service.ts
+import {
+  subscriptionsListSubscriptions,
+  subscriptionsCreateSubscription,
+} from '@/external/client/api/generated/subscriptions/subscriptions'
+import type {
+  ModelsListSubscriptionsResponse,
+  ModelsCreateSubscriptionRequest,
+  ModelsSubscriptionResponse,
+} from '@/external/client/api/generated/model'
+
+export async function listSubscriptions(): Promise<ModelsListSubscriptionsResponse> {
+  const res = await subscriptionsListSubscriptions()
+  if (res.status !== 200) {
+    throw new Error('サブスクリプション一覧の取得に失敗しました')
+  }
+  return res.data
+}
+
+export async function createSubscription(
+  request: ModelsCreateSubscriptionRequest,
+): Promise<ModelsSubscriptionResponse> {
+  const res = await subscriptionsCreateSubscription(request)
+  if (res.status !== 201) {
+    throw new Error('サブスクリプションの作成に失敗しました')
+  }
+  return res.data
+}
+```
+
+> `external/client/api/generated/` は `pnpm gen:api` で再生成されるため、**手動編集禁止**。
+
 ### DTOとZod
 
 ```ts
@@ -358,50 +407,71 @@ export type SubscriptionResponse = z.infer<typeof SubscriptionResponseSchema>
 
 ### 認証ヘルパー
 
+認証は **Go バックエンドの JWT を HTTPOnly Cookie (`subsq_token`) で保持**する方式。
+Frontend のセッション取得は Go バックエンドの `/api/v1/users/me` を Orval 生成クライアント経由で呼ぶ。
+
 ```ts
-// セッション情報が不要な場合
+// セッション情報が不要な場合（認証チェックのみ）
+import { requireAuthServer } from '@/features/auth/servers/redirect.server'
+
 export async function listSubscriptionsQuery() {
-  await requireAuthServer()  // 認証チェックのみ
+  await requireAuthServer()  // 未認証なら /login へリダイレクト
   // ...
 }
 
 // セッション情報が必要な場合
-export async function createSubscriptionCommand(request: unknown) {
+import { getAuthenticatedSessionServer } from '@/features/auth/servers/redirect.server'
+
+export async function getMyProfileQuery() {
   const session = await getAuthenticatedSessionServer()  // 認証 + セッション取得
-  // session.user.id を使用
+  return session.user                                    // バックエンドが解決したユーザー情報
 }
 ```
+
+> ユーザー識別は Cookie の JWT を Go バックエンドが解決するため、Frontend → Backend の呼び出しに `userId` を明示的に渡す必要はない。
 
 ---
 
 ## テスト要件
 
-### ユニットテスト（Vitest）
+詳細な戦略は以下のドキュメントを参照:
+- `frontend/docs/09_testing_strategy.md` - フロントエンド全体のテスト戦略
+- `frontend/docs/10_bff_testing_strategy.md` - BFF 層 (`external/`) のテスト戦略
+
+### テスト対象の方針
+
+| レイヤー | テスト | 理由 |
+|---------|-------|------|
+| カスタム Hook (`useXxx*`) | ✅ Vitest 必須 | ビジネスロジックの核心 |
+| Query Keys | ✅ Vitest 必須 | キャッシュ管理の要 |
+| Utils / 計算関数 | ✅ Vitest 推奨 | 純粋関数で検証容易 |
+| DTO / Zod スキーマ | ✅ Vitest 必須 | API 契約の検証 |
+| Service / Converter | ✅ Vitest 必須 | データ変換ロジック |
+| Handler (`*.action.ts` 等) | ✅ Vitest 推奨 | 認証 + バリデーション |
+| Container / Presenter | ❌ E2E でカバー | Server Actions モックのコスパが悪く UI 変更頻度も高い |
+| OpenAPI Client (Orval) | ❌ 自動生成 | テスト不要 |
+| 主要画面遷移 | ✅ Playwright + MSW 必須 | E2E |
+
+### コマンド
 
 ```bash
-# 全テスト実行
-pnpm test
-
-# カバレッジ付き
-pnpm test --coverage
-
-# 特定ファイル
-pnpm test subscription.test.ts
+pnpm test           # 全 Unit テスト実行 (Vitest)
+pnpm test:watch     # ウォッチモード
+pnpm test:coverage  # カバレッジ付き
+pnpm e2e            # E2E テスト (Playwright)
+pnpm e2e:ui         # E2E UI モード
 ```
 
-**テスト構造:**
+### 配置とパターン
+
+- **コロケーション**: テストは対象ファイルと同じディレクトリに `*.test.ts` / `*.test.tsx`
+- **AAA パターン**: Arrange → Act → Assert
+- **テスト名**: 日本語で「〜する」「〜の場合、〜を返す」形式
+
 ```ts
 // features/subscription/utils/calculation.test.ts
 import { describe, it, expect } from 'vitest'
-import { calculateNextBillingDate, toMonthlyAmount } from './calculation'
-
-describe('calculateNextBillingDate', () => {
-  it('月額サブスクの次回請求日を計算する', () => {
-    const baseDate = new Date('2024-01-15').getTime() / 1000
-    const result = calculateNextBillingDate(baseDate, 'monthly')
-    expect(result).toBeDefined()
-  })
-})
+import { toMonthlyAmount } from './calculation'
 
 describe('toMonthlyAmount', () => {
   it('年額を月額に換算する', () => {
@@ -410,34 +480,6 @@ describe('toMonthlyAmount', () => {
 
   it('月額はそのまま返す', () => {
     expect(toMonthlyAmount(1000, 'monthly')).toBe(1000)
-  })
-})
-```
-
-### コンポーネントテスト
-
-```tsx
-// features/subscription/components/client/SubscriptionList/SubscriptionList.test.tsx
-import { render, screen } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { SubscriptionList } from './SubscriptionList'
-
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } }
-  })
-
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
-}
-
-describe('SubscriptionList', () => {
-  it('サブスク一覧を表示する', async () => {
-    render(<SubscriptionList />, { wrapper: createWrapper() })
-    expect(await screen.findByText('Netflix')).toBeInTheDocument()
   })
 })
 ```
@@ -454,32 +496,39 @@ describe('SubscriptionList', () => {
 - [ ] ビルド成功（`pnpm build`）
 - [ ] ハードコードされたシークレットがない
 - [ ] 環境変数がドキュメント化されている
-- [ ] DBマイグレーション準備完了
+- [ ] OpenAPI スキーマに変更がある場合は `pnpm gen:api` で再生成済み
+- [ ] DB マイグレーションが必要な場合は Backend 側で準備完了
 
 ### 環境変数
 
+Frontend で使用するのは `NEXT_PUBLIC_*` のみ。`@t3-oss/env-nextjs` で `frontend/src/shared/lib/env.ts` に定義。
+
 ```bash
-# データベース
-DATABASE_URL=postgresql://...
+NEXT_PUBLIC_APP_URL=...               # Frontend 自身の URL
+NEXT_PUBLIC_APP_ENV=dev|prd           # アプリ環境
+NEXT_PUBLIC_CONTACT_FORM_URL=...      # 問い合わせフォーム URL
+NEXT_PUBLIC_API_BASE_URL=...          # Go バックエンド URL（任意、未指定時は localhost:8080）
 
-# 認証
-BETTER_AUTH_SECRET=...
-BETTER_AUTH_URL=https://...
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-
-# アプリ
-NEXT_PUBLIC_APP_URL=https://...
+# E2E テスト用（任意）
+E2E_TEST_PASSWORD=...
+PLAYWRIGHT_E2E_MODE=...
 ```
+
+> `DATABASE_URL` / `BETTER_AUTH_*` / `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` などは **Backend (Go) のみ**で使用。Frontend のビルドや Cloud Run 環境変数には含めないこと。
 
 ### CI/CD（GitHub Actions）
 
 ```yaml
 # .github/workflows/frontend-ci.yml
-- pnpm lint
-- pnpm type:check
-- pnpm build
+- pnpm lint            # Biome
+- pnpm next typegen    # Next.js 型生成
+- pnpm type:check      # TypeScript
+- pnpm test            # Vitest
+- pnpm build           # Next.js ビルド
+# - pnpm e2e           # Playwright（Go バックエンドの E2E 認証実装後に有効化予定）
 ```
+
+デプロイ (`frontend-deploy.yml`) は手動トリガー。Docker イメージを Artifact Registry にプッシュし Cloud Run にデプロイ。
 
 ---
 
@@ -492,7 +541,8 @@ NEXT_PUBLIC_APP_URL=https://...
 3. **Presenterでstate/effectを使用** - useState、useEffectは禁止
 4. **他のPresenterを呼び出す** - ContainerのみがPresenterを呼び出せる
 5. **1ファイルに複数コンポーネント** - 1ファイル1コンポーネント
-6. **API Routesの使用** - Server Actionsを使用する
+6. **業務ロジックを API Routes (`route.ts`) に書く** - Server Actions / Server Functions を使用する
+   - 例外: ヘルスチェックなどインフラ目的のエンドポイント（`/api/health` 等）は許容
 
 ### 必須事項
 
@@ -529,4 +579,5 @@ NEXT_PUBLIC_APP_URL=https://...
 
 ## 関連スキル
 
-- `coding-standards.md` - TypeScript/Reactベストプラクティス
+- `coding-standards` - TypeScript/React ベストプラクティス
+- `testing` - Frontend / BFF 層のテスト戦略
