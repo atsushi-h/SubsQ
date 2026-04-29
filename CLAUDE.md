@@ -136,6 +136,6 @@ chore(deps): パッケージを更新
 
 ## 詳細ドキュメント
 
-アーキテクチャとパターン: @.claude/skills/project-guidelines/SKILL.md
+フロントエンドガイドライン: @.claude/skills/frontend-guidelines/SKILL.md
 コーディング規約: @.claude/skills/coding-standards/SKILL.md
 テスト戦略: @.claude/skills/testing/SKILL.md

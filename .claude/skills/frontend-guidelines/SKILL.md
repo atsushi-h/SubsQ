@@ -1,11 +1,11 @@
 ---
-name: project-guidelines
-description: SubsQプロジェクト固有のアーキテクチャ、ファイル構造、コードパターン（Container/Presenter、CQRS、TanStack Query）、テスト要件、デプロイワークフローのガイドライン。Next.js App Router、Go バックエンド (Echo + sqlc) を OpenAPI (Orval) 経由で利用。
+name: frontend-guidelines
+description: SubsQ フロントエンド (Next.js App Router) のアーキテクチャ、ファイル構造、コードパターン（Container/Presenter、CQRS、TanStack Query）、テスト要件、デプロイワークフローのガイドライン。Go バックエンド (Echo + sqlc) を OpenAPI (Orval) 経由で利用。
 ---
 
-# プロジェクトガイドライン
+# フロントエンドガイドライン
 
-SubsQ - サブスクリプション管理Webアプリケーション（日本市場向け）
+SubsQ フロントエンド - サブスクリプション管理 Web アプリケーション（日本市場向け）
 
 ---
 
