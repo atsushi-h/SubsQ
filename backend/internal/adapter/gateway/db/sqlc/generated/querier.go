@@ -17,6 +17,8 @@ type Querier interface {
 	CreateSubscription(ctx context.Context, arg *CreateSubscriptionParams) (*Subscription, error)
 	DeletePaymentMethod(ctx context.Context, arg *DeletePaymentMethodParams) error
 	DeletePaymentMethods(ctx context.Context, arg *DeletePaymentMethodsParams) error
+	DeletePushSubscriptionByEndpoint(ctx context.Context, arg *DeletePushSubscriptionByEndpointParams) error
+	DeletePushSubscriptionByID(ctx context.Context, id pgtype.UUID) error
 	DeleteSubscription(ctx context.Context, arg *DeleteSubscriptionParams) error
 	DeleteSubscriptions(ctx context.Context, arg *DeleteSubscriptionsParams) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
@@ -25,12 +27,15 @@ type Querier interface {
 	FindUserByID(ctx context.Context, id pgtype.UUID) (*User, error)
 	GetPaymentMethodByID(ctx context.Context, arg *GetPaymentMethodByIDParams) (*PaymentMethod, error)
 	GetSubscriptionByID(ctx context.Context, arg *GetSubscriptionByIDParams) (*GetSubscriptionByIDRow, error)
+	ListAllPushSubscriptions(ctx context.Context) ([]*PushSubscription, error)
 	ListPaymentMethodsByUserID(ctx context.Context, userID pgtype.UUID) ([]*PaymentMethod, error)
 	ListPaymentMethodsWithCountByUserID(ctx context.Context, userID pgtype.UUID) ([]*ListPaymentMethodsWithCountByUserIDRow, error)
+	ListPushSubscriptionsByUserID(ctx context.Context, userID pgtype.UUID) ([]*PushSubscription, error)
 	ListSubscriptionsByUserID(ctx context.Context, userID pgtype.UUID) ([]*ListSubscriptionsByUserIDRow, error)
 	UpdatePaymentMethod(ctx context.Context, arg *UpdatePaymentMethodParams) (*PaymentMethod, error)
 	UpdateSubscription(ctx context.Context, arg *UpdateSubscriptionParams) (*Subscription, error)
 	UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error)
+	UpsertPushSubscription(ctx context.Context, arg *UpsertPushSubscriptionParams) (*PushSubscription, error)
 	UpsertUser(ctx context.Context, arg *UpsertUserParams) (*User, error)
 }
 

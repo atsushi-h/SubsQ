@@ -16,6 +16,17 @@ type PaymentMethod struct {
 	UpdatedAt int32       `db:"updated_at" json:"updated_at"`
 }
 
+type PushSubscription struct {
+	ID        pgtype.UUID `db:"id" json:"id"`
+	UserID    pgtype.UUID `db:"user_id" json:"user_id"`
+	Endpoint  string      `db:"endpoint" json:"endpoint"`
+	P256dh    string      `db:"p256dh" json:"p256dh"`
+	Auth      string      `db:"auth" json:"auth"`
+	UserAgent *string     `db:"user_agent" json:"user_agent"`
+	CreatedAt int32       `db:"created_at" json:"created_at"`
+	UpdatedAt int32       `db:"updated_at" json:"updated_at"`
+}
+
 type Subscription struct {
 	ID              pgtype.UUID `db:"id" json:"id"`
 	UserID          pgtype.UUID `db:"user_id" json:"user_id"`

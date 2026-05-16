@@ -130,6 +130,34 @@ func (mr *MockQuerierMockRecorder) DeletePaymentMethods(ctx, arg any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePaymentMethods", reflect.TypeOf((*MockQuerier)(nil).DeletePaymentMethods), ctx, arg)
 }
 
+// DeletePushSubscriptionByEndpoint mocks base method.
+func (m *MockQuerier) DeletePushSubscriptionByEndpoint(ctx context.Context, arg *generated.DeletePushSubscriptionByEndpointParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePushSubscriptionByEndpoint", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePushSubscriptionByEndpoint indicates an expected call of DeletePushSubscriptionByEndpoint.
+func (mr *MockQuerierMockRecorder) DeletePushSubscriptionByEndpoint(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePushSubscriptionByEndpoint", reflect.TypeOf((*MockQuerier)(nil).DeletePushSubscriptionByEndpoint), ctx, arg)
+}
+
+// DeletePushSubscriptionByID mocks base method.
+func (m *MockQuerier) DeletePushSubscriptionByID(ctx context.Context, id pgtype.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePushSubscriptionByID", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePushSubscriptionByID indicates an expected call of DeletePushSubscriptionByID.
+func (mr *MockQuerierMockRecorder) DeletePushSubscriptionByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePushSubscriptionByID", reflect.TypeOf((*MockQuerier)(nil).DeletePushSubscriptionByID), ctx, id)
+}
+
 // DeleteSubscription mocks base method.
 func (m *MockQuerier) DeleteSubscription(ctx context.Context, arg *generated.DeleteSubscriptionParams) error {
 	m.ctrl.T.Helper()
@@ -247,6 +275,21 @@ func (mr *MockQuerierMockRecorder) GetSubscriptionByID(ctx, arg any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionByID", reflect.TypeOf((*MockQuerier)(nil).GetSubscriptionByID), ctx, arg)
 }
 
+// ListAllPushSubscriptions mocks base method.
+func (m *MockQuerier) ListAllPushSubscriptions(ctx context.Context) ([]*generated.PushSubscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllPushSubscriptions", ctx)
+	ret0, _ := ret[0].([]*generated.PushSubscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllPushSubscriptions indicates an expected call of ListAllPushSubscriptions.
+func (mr *MockQuerierMockRecorder) ListAllPushSubscriptions(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllPushSubscriptions", reflect.TypeOf((*MockQuerier)(nil).ListAllPushSubscriptions), ctx)
+}
+
 // ListPaymentMethodsByUserID mocks base method.
 func (m *MockQuerier) ListPaymentMethodsByUserID(ctx context.Context, userID pgtype.UUID) ([]*generated.PaymentMethod, error) {
 	m.ctrl.T.Helper()
@@ -275,6 +318,21 @@ func (m *MockQuerier) ListPaymentMethodsWithCountByUserID(ctx context.Context, u
 func (mr *MockQuerierMockRecorder) ListPaymentMethodsWithCountByUserID(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPaymentMethodsWithCountByUserID", reflect.TypeOf((*MockQuerier)(nil).ListPaymentMethodsWithCountByUserID), ctx, userID)
+}
+
+// ListPushSubscriptionsByUserID mocks base method.
+func (m *MockQuerier) ListPushSubscriptionsByUserID(ctx context.Context, userID pgtype.UUID) ([]*generated.PushSubscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPushSubscriptionsByUserID", ctx, userID)
+	ret0, _ := ret[0].([]*generated.PushSubscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPushSubscriptionsByUserID indicates an expected call of ListPushSubscriptionsByUserID.
+func (mr *MockQuerierMockRecorder) ListPushSubscriptionsByUserID(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPushSubscriptionsByUserID", reflect.TypeOf((*MockQuerier)(nil).ListPushSubscriptionsByUserID), ctx, userID)
 }
 
 // ListSubscriptionsByUserID mocks base method.
@@ -335,6 +393,21 @@ func (m *MockQuerier) UpdateUser(ctx context.Context, arg *generated.UpdateUserP
 func (mr *MockQuerierMockRecorder) UpdateUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockQuerier)(nil).UpdateUser), ctx, arg)
+}
+
+// UpsertPushSubscription mocks base method.
+func (m *MockQuerier) UpsertPushSubscription(ctx context.Context, arg *generated.UpsertPushSubscriptionParams) (*generated.PushSubscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertPushSubscription", ctx, arg)
+	ret0, _ := ret[0].(*generated.PushSubscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpsertPushSubscription indicates an expected call of UpsertPushSubscription.
+func (mr *MockQuerierMockRecorder) UpsertPushSubscription(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPushSubscription", reflect.TypeOf((*MockQuerier)(nil).UpsertPushSubscription), ctx, arg)
 }
 
 // UpsertUser mocks base method.
