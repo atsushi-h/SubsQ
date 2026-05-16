@@ -6,7 +6,135 @@ tags:
   - name: Users
   - name: Subscriptions
   - name: PaymentMethods
+  - name: Notifications
+  - name: AdminNotifications
 paths:
+  /api/v1/admin/notifications/broadcast:
+    post:
+      operationId: AdminNotifications_broadcast
+      summary: Broadcast push notification to all users
+      description: 全ユーザーにPush通知を一斉配信する
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - AdminNotifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.BroadcastRequest'
+      security:
+        - ApiKeyAuth_: []
+  /api/v1/notifications/subscriptions:
+    post:
+      operationId: Notifications_subscribe
+      summary: Subscribe to push notifications
+      description: Push購読を登録する
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.PushSubscriptionResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.SubscribePushRequest'
+      security:
+        - ApiKeyAuth: []
+    delete:
+      operationId: Notifications_unsubscribe
+      summary: Unsubscribe from push notifications
+      description: Push購読を解除する
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Models.BadRequestError'
+                  - $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Models.UnsubscribePushRequest'
+      security:
+        - ApiKeyAuth: []
+  /api/v1/notifications/subscriptions/me:
+    get:
+      operationId: Notifications_listMySubscriptions
+      summary: List my push subscriptions
+      description: 自分のPush購読一覧を取得する
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.ListPushSubscriptionsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Notifications
+      security:
+        - ApiKeyAuth: []
+  /api/v1/notifications/test:
+    post:
+      operationId: Notifications_sendTest
+      summary: Send test notification
+      description: 自分宛にテスト通知を送信する
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models.UnauthorizedError'
+      tags:
+        - Notifications
+      security:
+        - ApiKeyAuth: []
   /api/v1/payment-methods:
     get:
       operationId: PaymentMethods_listPaymentMethods
@@ -447,6 +575,19 @@ components:
         - monthly
         - yearly
       description: 請求サイクル
+    Models.BroadcastRequest:
+      type: object
+      required:
+        - title
+        - body
+      properties:
+        title:
+          type: string
+          description: 通知タイトル
+        body:
+          type: string
+          description: 通知本文
+      description: 一斉配信リクエスト
     Models.ConflictError:
       type: object
       required:
@@ -550,6 +691,17 @@ components:
       allOf:
         - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Forbidden エラー
+    Models.ListPushSubscriptionsResponse:
+      type: object
+      required:
+        - subscriptions
+      properties:
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Models.PushSubscriptionResponse'
+          description: 購読一覧
+      description: Push購読一覧レスポンス
     Models.ListSubscriptionsResponse:
       type: object
       required:
@@ -631,6 +783,45 @@ components:
           type: string
           description: 支払い方法名
       description: 支払い方法の簡易情報（サブスクに埋め込まれる）
+    Models.PushSubscriptionResponse:
+      type: object
+      required:
+        - id
+        - endpoint
+        - createdAt
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Models.uuid'
+          description: 購読ID
+        endpoint:
+          type: string
+          description: プッシュサービスのエンドポイントURL
+        createdAt:
+          type: string
+          format: date-time
+          description: 登録日時
+      description: Push購読レスポンス
+    Models.SubscribePushRequest:
+      type: object
+      required:
+        - endpoint
+        - p256dh
+        - auth
+      properties:
+        endpoint:
+          type: string
+          description: プッシュサービスのエンドポイントURL
+        p256dh:
+          type: string
+          description: 暗号化用公開鍵（Base64URL）
+        auth:
+          type: string
+          description: 認証シークレット（Base64URL）
+        userAgent:
+          type: string
+          description: ユーザーエージェント
+      description: Push購読登録リクエスト
     Models.SubscriptionListSummary:
       type: object
       required:
@@ -738,6 +929,15 @@ components:
       allOf:
         - $ref: '#/components/schemas/Models.ErrorResponse'
       description: Unauthorized エラー
+    Models.UnsubscribePushRequest:
+      type: object
+      required:
+        - endpoint
+      properties:
+        endpoint:
+          type: string
+          description: 解除するエンドポイントURL
+      description: Push購読解除リクエスト
     Models.UpdatePaymentMethodRequest:
       type: object
       properties:
@@ -855,6 +1055,10 @@ components:
       type: apiKey
       in: cookie
       name: subsq_token
+    ApiKeyAuth_:
+      type: apiKey
+      in: header
+      name: X-Admin-Token
 servers:
   - url: https://api.subsq-app.com
     description: Production server

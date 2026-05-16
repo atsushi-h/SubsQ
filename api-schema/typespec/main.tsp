@@ -5,9 +5,11 @@ import "./models/common.tsp";
 import "./models/user.tsp";
 import "./models/subscription.tsp";
 import "./models/payment-method.tsp";
+import "./models/notification.tsp";
 import "./routes/users.tsp";
 import "./routes/subscriptions.tsp";
 import "./routes/payment-methods.tsp";
+import "./routes/notifications.tsp";
 
 using TypeSpec.Http;
 
