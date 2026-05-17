@@ -13,6 +13,8 @@ import (
 	httpmiddleware "github.com/atsushi-h/subsq/backend/internal/adapter/http/middleware"
 	"github.com/atsushi-h/subsq/backend/internal/driver/factory"
 	httpfactory "github.com/atsushi-h/subsq/backend/internal/driver/factory/http"
+	driverwebpush "github.com/atsushi-h/subsq/backend/internal/driver/webpush"
+	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
 // Smoke test: nil pool を使っても配線がパニックせず、server が nil でないことを確認する。
@@ -22,16 +24,18 @@ func TestBuildServer_Wiring(t *testing.T) {
 	userRepoFactory := factory.NewUserRepoFactory(pool)
 	pmRepoFactory := factory.NewPaymentMethodRepoFactory(pool)
 	subRepoFactory := factory.NewSubscriptionRepoFactory(pool)
+	notificationRepoFactory := factory.NewNotificationRepoFactory(pool)
 
 	subOutputFactory := httpfactory.NewSubscriptionOutputFactory()
 	pmOutputFactory := httpfactory.NewPaymentMethodOutputFactory()
 	userOutputFactory := httpfactory.NewUserOutputFactory()
+	notificationOutputFactory := httpfactory.NewNotificationOutputFactory()
 
 	txManager := factory.NewTxManager(pool)
 	subInputFactory := factory.NewSubscriptionInputFactory(txManager)
 	pmInputFactory := factory.NewPaymentMethodInputFactory(txManager)
 	userInputFactory := factory.NewUserInputFactory()
-
+	notificationInputFactory := factory.NewNotificationInputFactory()
 	oauthConfig := &oauth2.Config{
 		ClientID:     "dummy-client-id",
 		ClientSecret: "dummy-client-secret",
@@ -46,8 +50,11 @@ func TestBuildServer_Wiring(t *testing.T) {
 	subController := httpcontroller.NewSubscriptionController(subInputFactory, subOutputFactory, subRepoFactory, pmRepoFactory)
 	pmController := httpcontroller.NewPaymentMethodController(pmInputFactory, pmOutputFactory, pmRepoFactory, subRepoFactory)
 	userController := httpcontroller.NewUserController(userInputFactory, userOutputFactory, userRepoFactory)
+	sender := driverwebpush.NewSender("", "", "")
+	senderFactory := func() port.WebPushSender { return sender }
+	notificationController := httpcontroller.NewNotificationController(notificationInputFactory, notificationOutputFactory, notificationRepoFactory, senderFactory)
 
-	server := httpcontroller.NewServer(subController, pmController, userController)
+	server := httpcontroller.NewServer(subController, pmController, userController, notificationController)
 	if server == nil {
 		t.Fatal("server is nil")
 	}

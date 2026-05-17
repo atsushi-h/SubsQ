@@ -23,3 +23,10 @@ func NewUserOutputFactory() func() *httppresenter.UserPresenter {
 		return httppresenter.NewUserPresenter()
 	}
 }
+
+// NewNotificationOutputFactory returns a factory for NotificationPresenter.
+func NewNotificationOutputFactory() func() *httppresenter.NotificationPresenter {
+	return func() *httppresenter.NotificationPresenter {
+		return httppresenter.NewNotificationPresenter()
+	}
+}

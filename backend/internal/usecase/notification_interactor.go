@@ -90,7 +90,7 @@ func (i *NotificationInteractor) sendAndCleanup(ctx context.Context, sub *domain
 		return fmt.Errorf("failed to send notification: %w", err)
 	}
 	if statusCode == 404 || statusCode == 410 {
-		_ = i.repo.DeleteByID(ctx, sub.ID)
+		_ = i.repo.DeleteByID(ctx, sub.ID) //nolint:errcheck // 購読無効化済みのため削除失敗は無視
 	}
 	return nil
 }

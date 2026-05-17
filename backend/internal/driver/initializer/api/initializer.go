@@ -2,6 +2,7 @@ package initializer
 
 import (
 	"context"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,6 +16,8 @@ import (
 	driverdb "github.com/atsushi-h/subsq/backend/internal/driver/db"
 	"github.com/atsushi-h/subsq/backend/internal/driver/factory"
 	httpfactory "github.com/atsushi-h/subsq/backend/internal/driver/factory/http"
+	driverwebpush "github.com/atsushi-h/subsq/backend/internal/driver/webpush"
+	"github.com/atsushi-h/subsq/backend/internal/port"
 )
 
 func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error) {
@@ -35,11 +38,13 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	userRepoFactory := factory.NewUserRepoFactory(pool)
 	pmRepoFactory := factory.NewPaymentMethodRepoFactory(pool)
 	subRepoFactory := factory.NewSubscriptionRepoFactory(pool)
+	notificationRepoFactory := factory.NewNotificationRepoFactory(pool)
 
 	// Output (presenter) factories
 	subOutputFactory := httpfactory.NewSubscriptionOutputFactory()
 	pmOutputFactory := httpfactory.NewPaymentMethodOutputFactory()
 	userOutputFactory := httpfactory.NewUserOutputFactory()
+	notificationOutputFactory := httpfactory.NewNotificationOutputFactory()
 
 	// Transaction manager
 	txManager := factory.NewTxManager(pool)
@@ -48,6 +53,7 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	subInputFactory := factory.NewSubscriptionInputFactory(txManager)
 	pmInputFactory := factory.NewPaymentMethodInputFactory(txManager)
 	userInputFactory := factory.NewUserInputFactory()
+	notificationInputFactory := factory.NewNotificationInputFactory()
 
 	// Auth (unchanged – not using output port pattern)
 	oauthConfig := &oauth2.Config{
@@ -65,8 +71,11 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	subController := httpcontroller.NewSubscriptionController(subInputFactory, subOutputFactory, subRepoFactory, pmRepoFactory)
 	pmController := httpcontroller.NewPaymentMethodController(pmInputFactory, pmOutputFactory, pmRepoFactory, subRepoFactory)
 	userController := httpcontroller.NewUserController(userInputFactory, userOutputFactory, userRepoFactory)
+	sender := driverwebpush.NewSender(cfg.VAPIDPublicKey, cfg.VAPIDPrivateKey, cfg.VAPIDSubject)
+	senderFactory := func() port.WebPushSender { return sender }
+	notificationController := httpcontroller.NewNotificationController(notificationInputFactory, notificationOutputFactory, notificationRepoFactory, senderFactory)
 
-	server := httpcontroller.NewServer(subController, pmController, userController)
+	server := httpcontroller.NewServer(subController, pmController, userController, notificationController)
 
 	// Echo
 	e := echo.New()
@@ -91,8 +100,19 @@ func BuildServer(ctx context.Context) (*echo.Echo, *config.Config, func(), error
 	auth.GET("/google/callback", authController.GoogleCallback)
 	auth.POST("/logout", authController.Logout)
 
-	// Protected routes via OpenAPI RegisterHandlers (JWT required for all)
-	protected := e.Group("", httpmiddleware.JWTAuth(cfg.JWTSecret))
+	// JWT と AdminAuth をパスで切り替える middleware
+	authMiddleware := func(next echo.HandlerFunc) echo.HandlerFunc {
+		jwtMw := httpmiddleware.JWTAuth(cfg.JWTSecret)
+		adminMw := httpmiddleware.AdminAuth(cfg.AdminAPIKey)
+		return func(c echo.Context) error {
+			if strings.HasPrefix(c.Request().URL.Path, "/api/v1/admin/") {
+				return adminMw(next)(c)
+			}
+			return jwtMw(next)(c)
+		}
+	}
+
+	protected := e.Group("", authMiddleware)
 	openapi.RegisterHandlers(protected, server)
 
 	return e, cfg, cleanup, nil

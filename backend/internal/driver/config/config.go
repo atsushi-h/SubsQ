@@ -23,6 +23,14 @@ type Config struct {
 	// Frontend
 	FrontendURL  string
 	CookieDomain string
+
+	// VAPID
+	VAPIDPublicKey  string
+	VAPIDPrivateKey string
+	VAPIDSubject    string
+
+	// Admin API
+	AdminAPIKey string
 }
 
 func Load() (*Config, error) {
@@ -69,6 +77,11 @@ func Load() (*Config, error) {
 
 	origins := parseAllowedOrigins(os.Getenv("CLIENT_ORIGIN"))
 
+	vapidPublicKey := os.Getenv("VAPID_PUBLIC_KEY")
+	vapidPrivateKey := os.Getenv("VAPID_PRIVATE_KEY")
+	vapidSubject := os.Getenv("VAPID_SUBJECT")
+	adminAPIKey := os.Getenv("ADMIN_API_KEY")
+
 	return &Config{
 		DatabaseURL:        dbURL,
 		ServerPort:         port,
@@ -79,6 +92,10 @@ func Load() (*Config, error) {
 		GoogleRedirectURL:  googleRedirectURL,
 		FrontendURL:        frontendURL,
 		CookieDomain:       cookieDomain,
+		VAPIDPublicKey:     vapidPublicKey,
+		VAPIDPrivateKey:    vapidPrivateKey,
+		VAPIDSubject:       vapidSubject,
+		AdminAPIKey:        adminAPIKey,
 	}, nil
 }
 

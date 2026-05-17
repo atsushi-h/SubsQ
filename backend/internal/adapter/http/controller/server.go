@@ -11,17 +11,19 @@ type Server struct {
 	subscription  *SubscriptionController
 	paymentMethod *PaymentMethodController
 	user          *UserController
+	notification  *NotificationController
 }
 
 func NewServer(
 	subscription *SubscriptionController,
 	paymentMethod *PaymentMethodController,
-	user *UserController,
+	user *UserController, notification *NotificationController,
 ) *Server {
 	return &Server{
 		subscription:  subscription,
 		paymentMethod: paymentMethod,
 		user:          user,
+		notification:  notification,
 	}
 }
 
@@ -89,4 +91,26 @@ func (s *Server) UsersUpdateCurrentUser(ctx echo.Context) error {
 
 func (s *Server) UsersDeleteCurrentUser(ctx echo.Context) error {
 	return s.user.DeleteCurrentUser(ctx)
+}
+
+// Notifications
+
+func (s *Server) NotificationsSubscribe(ctx echo.Context) error {
+	return s.notification.NotificationsSubscribe(ctx)
+}
+
+func (s *Server) NotificationsUnsubscribe(ctx echo.Context) error {
+	return s.notification.NotificationsUnsubscribe(ctx)
+}
+
+func (s *Server) NotificationsListMySubscriptions(ctx echo.Context) error {
+	return s.notification.NotificationsListMySubscriptions(ctx)
+}
+
+func (s *Server) NotificationsSendTest(ctx echo.Context) error {
+	return s.notification.NotificationsSendTest(ctx)
+}
+
+func (s *Server) AdminNotificationsBroadcast(ctx echo.Context) error {
+	return s.notification.AdminNotificationsBroadcast(ctx)
 }

@@ -34,3 +34,10 @@ func NewUserInputFactory() func(userRepo port.UserRepository, output port.UserOu
 		return usecase.NewUserInteractor(userRepo, output)
 	}
 }
+
+// NewNotificationInputFactory returns a factory for NotificationInteractor.
+func NewNotificationInputFactory() func(repo port.PushSubscriptionRepository, sender port.WebPushSender, output port.NotificationOutputPort) port.NotificationInputPort {
+	return func(repo port.PushSubscriptionRepository, sender port.WebPushSender, output port.NotificationOutputPort) port.NotificationInputPort {
+		return usecase.NewNotificationInteractor(repo, sender, output)
+	}
+}

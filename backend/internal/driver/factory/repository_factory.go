@@ -31,3 +31,11 @@ func NewSubscriptionRepoFactory(pool *pgxpool.Pool) func() port.SubscriptionRepo
 		return gatewaydb.NewSubscriptionRepository(q)
 	}
 }
+
+// NewPushSubscriptionRepoFactory returns a factory that creates PushSubscriptionRepository.
+func NewNotificationRepoFactory(pool *pgxpool.Pool) func() port.PushSubscriptionRepository {
+	q := generated.New(pool)
+	return func() port.PushSubscriptionRepository {
+		return gatewaydb.NewPushSubscriptionRepository(q)
+	}
+}

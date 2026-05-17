@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
+	ApiKeyAuthScopes  = "ApiKeyAuth.Scopes"
+	ApiKeyAuth_Scopes = "ApiKeyAuth_.Scopes"
 )
 
 // Defines values for ModelsBillingCycle.
@@ -40,6 +41,15 @@ type ModelsBadRequestError = ModelsErrorResponse
 
 // ModelsBillingCycle 請求サイクル
 type ModelsBillingCycle string
+
+// ModelsBroadcastRequest 一斉配信リクエスト
+type ModelsBroadcastRequest struct {
+	// Body 通知本文
+	Body string `json:"body"`
+
+	// Title 通知タイトル
+	Title string `json:"title"`
+}
 
 // ModelsConflictError RFC 7807 Problem Details エラーレスポンス
 type ModelsConflictError = ModelsErrorResponse
@@ -92,6 +102,12 @@ type ModelsErrorResponse struct {
 // ModelsForbiddenError RFC 7807 Problem Details エラーレスポンス
 type ModelsForbiddenError = ModelsErrorResponse
 
+// ModelsListPushSubscriptionsResponse Push購読一覧レスポンス
+type ModelsListPushSubscriptionsResponse struct {
+	// Subscriptions 購読一覧
+	Subscriptions []ModelsPushSubscriptionResponse `json:"subscriptions"`
+}
+
 // ModelsListSubscriptionsResponse サブスクリプション一覧レスポンス
 type ModelsListSubscriptionsResponse struct {
 	// Subscriptions サブスクリプション一覧
@@ -132,6 +148,33 @@ type ModelsPaymentMethodSummary struct {
 
 	// Name 支払い方法名
 	Name string `json:"name"`
+}
+
+// ModelsPushSubscriptionResponse Push購読レスポンス
+type ModelsPushSubscriptionResponse struct {
+	// CreatedAt 登録日時
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Endpoint プッシュサービスのエンドポイントURL
+	Endpoint string `json:"endpoint"`
+
+	// Id 購読ID
+	Id ModelsUuid `json:"id"`
+}
+
+// ModelsSubscribePushRequest Push購読登録リクエスト
+type ModelsSubscribePushRequest struct {
+	// Auth 認証シークレット（Base64URL）
+	Auth string `json:"auth"`
+
+	// Endpoint プッシュサービスのエンドポイントURL
+	Endpoint string `json:"endpoint"`
+
+	// P256dh 暗号化用公開鍵（Base64URL）
+	P256dh string `json:"p256dh"`
+
+	// UserAgent ユーザーエージェント
+	UserAgent *string `json:"userAgent,omitempty"`
 }
 
 // ModelsSubscriptionListSummary サブスクリプション一覧レスポンスのサマリー
@@ -193,6 +236,12 @@ type ModelsSubscriptionResponse struct {
 
 // ModelsUnauthorizedError RFC 7807 Problem Details エラーレスポンス
 type ModelsUnauthorizedError = ModelsErrorResponse
+
+// ModelsUnsubscribePushRequest Push購読解除リクエスト
+type ModelsUnsubscribePushRequest struct {
+	// Endpoint 解除するエンドポイントURL
+	Endpoint string `json:"endpoint"`
+}
 
 // ModelsUpdatePaymentMethodRequest 支払い方法更新リクエスト
 type ModelsUpdatePaymentMethodRequest struct {
@@ -270,6 +319,15 @@ type RoutesDeleteSubscriptionsRequest struct {
 	Ids []ModelsUuid `json:"ids"`
 }
 
+// AdminNotificationsBroadcastJSONRequestBody defines body for AdminNotificationsBroadcast for application/json ContentType.
+type AdminNotificationsBroadcastJSONRequestBody = ModelsBroadcastRequest
+
+// NotificationsUnsubscribeJSONRequestBody defines body for NotificationsUnsubscribe for application/json ContentType.
+type NotificationsUnsubscribeJSONRequestBody = ModelsUnsubscribePushRequest
+
+// NotificationsSubscribeJSONRequestBody defines body for NotificationsSubscribe for application/json ContentType.
+type NotificationsSubscribeJSONRequestBody = ModelsSubscribePushRequest
+
 // PaymentMethodsDeletePaymentMethodsJSONRequestBody defines body for PaymentMethodsDeletePaymentMethods for application/json ContentType.
 type PaymentMethodsDeletePaymentMethodsJSONRequestBody = RoutesDeletePaymentMethodsRequest
 
@@ -293,6 +351,21 @@ type UsersUpdateCurrentUserJSONRequestBody = ModelsUpdateUserRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Broadcast push notification to all users
+	// (POST /api/v1/admin/notifications/broadcast)
+	AdminNotificationsBroadcast(ctx echo.Context) error
+	// Unsubscribe from push notifications
+	// (DELETE /api/v1/notifications/subscriptions)
+	NotificationsUnsubscribe(ctx echo.Context) error
+	// Subscribe to push notifications
+	// (POST /api/v1/notifications/subscriptions)
+	NotificationsSubscribe(ctx echo.Context) error
+	// List my push subscriptions
+	// (GET /api/v1/notifications/subscriptions/me)
+	NotificationsListMySubscriptions(ctx echo.Context) error
+	// Send test notification
+	// (POST /api/v1/notifications/test)
+	NotificationsSendTest(ctx echo.Context) error
 	// Delete multiple payment methods
 	// (DELETE /api/v1/payment-methods)
 	PaymentMethodsDeletePaymentMethods(ctx echo.Context) error
@@ -343,6 +416,61 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// AdminNotificationsBroadcast converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminNotificationsBroadcast(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(ApiKeyAuth_Scopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminNotificationsBroadcast(ctx)
+	return err
+}
+
+// NotificationsUnsubscribe converts echo context to params.
+func (w *ServerInterfaceWrapper) NotificationsUnsubscribe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.NotificationsUnsubscribe(ctx)
+	return err
+}
+
+// NotificationsSubscribe converts echo context to params.
+func (w *ServerInterfaceWrapper) NotificationsSubscribe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.NotificationsSubscribe(ctx)
+	return err
+}
+
+// NotificationsListMySubscriptions converts echo context to params.
+func (w *ServerInterfaceWrapper) NotificationsListMySubscriptions(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.NotificationsListMySubscriptions(ctx)
+	return err
+}
+
+// NotificationsSendTest converts echo context to params.
+func (w *ServerInterfaceWrapper) NotificationsSendTest(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.NotificationsSendTest(ctx)
+	return err
 }
 
 // PaymentMethodsDeletePaymentMethods converts echo context to params.
@@ -580,6 +708,11 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/api/v1/admin/notifications/broadcast", wrapper.AdminNotificationsBroadcast)
+	router.DELETE(baseURL+"/api/v1/notifications/subscriptions", wrapper.NotificationsUnsubscribe)
+	router.POST(baseURL+"/api/v1/notifications/subscriptions", wrapper.NotificationsSubscribe)
+	router.GET(baseURL+"/api/v1/notifications/subscriptions/me", wrapper.NotificationsListMySubscriptions)
+	router.POST(baseURL+"/api/v1/notifications/test", wrapper.NotificationsSendTest)
 	router.DELETE(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsDeletePaymentMethods)
 	router.GET(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsListPaymentMethods)
 	router.POST(baseURL+"/api/v1/payment-methods", wrapper.PaymentMethodsCreatePaymentMethod)

@@ -38,7 +38,7 @@ func (s *Sender) Send(_ context.Context, endpoint, p256dh, auth string, payload 
 	if err != nil {
 		return 0, fmt.Errorf("failed to send web push: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // レスポンスボディのClose errorは無視
 
 	return resp.StatusCode, nil
 }
