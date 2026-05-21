@@ -29,10 +29,11 @@ func (i *NotificationInteractor) Subscribe(ctx context.Context, userID string, i
 		Auth:      input.Auth,
 		UserAgent: input.UserAgent,
 	}
-	if _, err := i.repo.Upsert(ctx, sub); err != nil {
+	saved, err := i.repo.Upsert(ctx, sub)
+	if err != nil {
 		return fmt.Errorf("failed to subscribe: %w", err)
 	}
-	return nil
+	return i.output.PresentSinglePushSubscription(ctx, saved)
 }
 
 func (i *NotificationInteractor) Unsubscribe(ctx context.Context, userID, endpoint string) error {

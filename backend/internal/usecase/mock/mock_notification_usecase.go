@@ -150,6 +150,20 @@ func (mr *MockNotificationOutputPortMockRecorder) PresentPushSubscriptions(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PresentPushSubscriptions", reflect.TypeOf((*MockNotificationOutputPort)(nil).PresentPushSubscriptions), ctx, subs)
 }
 
+// PresentSinglePushSubscription mocks base method.
+func (m *MockNotificationOutputPort) PresentSinglePushSubscription(ctx context.Context, sub *notification.PushSubscription) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PresentSinglePushSubscription", ctx, sub)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PresentSinglePushSubscription indicates an expected call of PresentSinglePushSubscription.
+func (mr *MockNotificationOutputPortMockRecorder) PresentSinglePushSubscription(ctx, sub any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PresentSinglePushSubscription", reflect.TypeOf((*MockNotificationOutputPort)(nil).PresentSinglePushSubscription), ctx, sub)
+}
+
 // MockPushSubscriptionRepository is a mock of PushSubscriptionRepository interface.
 type MockPushSubscriptionRepository struct {
 	ctrl     *gomock.Controller

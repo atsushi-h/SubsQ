@@ -59,7 +59,7 @@ func (c *NotificationController) NotificationsSubscribe(ctx echo.Context) error 
 	}); err != nil {
 		return handleError(ctx, err)
 	}
-	return ctx.JSON(http.StatusOK, p.ListResponse())
+	return ctx.JSON(http.StatusOK, p.SubscribeResponse())
 }
 
 // DELETE /api/v1/notifications/subscriptions

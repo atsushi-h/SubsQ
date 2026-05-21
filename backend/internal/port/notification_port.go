@@ -30,6 +30,7 @@ type NotificationInputPort interface {
 
 type NotificationOutputPort interface {
 	PresentPushSubscriptions(ctx context.Context, subs []*domain.PushSubscription) error
+	PresentSinglePushSubscription(ctx context.Context, sub *domain.PushSubscription) error
 }
 
 type PushSubscriptionRepository interface {

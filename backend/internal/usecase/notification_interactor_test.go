@@ -62,6 +62,9 @@ func TestNotificationInteractor_Subscribe(t *testing.T) {
 			out := mockusecase.NewMockNotificationOutputPort(ctrl)
 
 			repo.EXPECT().Upsert(gomock.Any(), gomock.Any()).Return(&domain.PushSubscription{}, tt.repoErr)
+			if tt.repoErr == nil {
+				out.EXPECT().PresentSinglePushSubscription(gomock.Any(), gomock.Any()).Return(nil)
+			}
 
 			interactor := newNotificationInteractor(ctrl, repo, sender, out)
 			err := interactor.Subscribe(context.Background(), tt.userID, tt.input)

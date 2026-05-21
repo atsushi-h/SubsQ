@@ -12,7 +12,8 @@ import (
 )
 
 type NotificationPresenter struct {
-	listResponse *openapi.ModelsListPushSubscriptionsResponse
+	listResponse      *openapi.ModelsListPushSubscriptionsResponse
+	subscribeResponse *openapi.ModelsPushSubscriptionResponse
 }
 
 var _ port.NotificationOutputPort = (*NotificationPresenter)(nil)
@@ -38,6 +39,19 @@ func (p *NotificationPresenter) PresentPushSubscriptions(_ context.Context, subs
 
 func (p *NotificationPresenter) ListResponse() *openapi.ModelsListPushSubscriptionsResponse {
 	return p.listResponse
+}
+
+func (p *NotificationPresenter) PresentSinglePushSubscription(_ context.Context, sub *domain.PushSubscription) error {
+	resp, err := toPushSubscriptionResponse(sub)
+	if err != nil {
+		return err
+	}
+	p.subscribeResponse = &resp
+	return nil
+}
+
+func (p *NotificationPresenter) SubscribeResponse() *openapi.ModelsPushSubscriptionResponse {
+	return p.subscribeResponse
 }
 
 func toPushSubscriptionResponse(sub *domain.PushSubscription) (openapi.ModelsPushSubscriptionResponse, error) {
