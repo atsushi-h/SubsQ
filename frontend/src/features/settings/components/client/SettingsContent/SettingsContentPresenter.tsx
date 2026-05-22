@@ -1,6 +1,7 @@
 'use client'
 
 import { AlertCircle } from 'lucide-react'
+import { NotificationSettings } from '@/features/notification/components/client/NotificationSettings'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 import {
   AlertDialog,
@@ -58,6 +59,12 @@ export function SettingsContentPresenter({
             <p className="text-sm text-zinc-700 dark:text-zinc-200">{userEmail}</p>
           </div>
         </div>
+
+        {/* 区切り線 */}
+        <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
+
+        {/* 通知セクション */}
+        <NotificationSettings />
 
         {/* 区切り線 */}
         <div className="h-px bg-zinc-200 dark:bg-zinc-800" />

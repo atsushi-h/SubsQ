@@ -1,7 +1,5 @@
-import { env } from '@/shared/lib/env'
-
-export const customFetch = async <T>(url: string, options: RequestInit): Promise<T> => {
-  const baseUrl = env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
+const customFetch = async <T>(url: string, options: RequestInit): Promise<T> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 
   const headers: Record<string, string> = {}
 
@@ -41,3 +39,5 @@ export const customFetch = async <T>(url: string, options: RequestInit): Promise
 
   return { data, status: res.status, headers: res.headers } as T
 }
+
+export { customFetch }
