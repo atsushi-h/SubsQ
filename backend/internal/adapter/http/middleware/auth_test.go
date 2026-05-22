@@ -82,7 +82,7 @@ func TestJWTAuth(t *testing.T) {
 
 			var gotUserID string
 			okHandler := func(c echo.Context) error {
-				gotUserID = c.Get(UserIDKey).(string)
+				gotUserID = c.Get(UserIDKey).(string) //nolint:errcheck // テストで型が保証されている
 				return c.String(http.StatusOK, "ok")
 			}
 

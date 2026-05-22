@@ -175,14 +175,14 @@ func TestNotificationInteractor_SendTest(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		userID      string
-		repoSubs    []*domain.PushSubscription
-		repoErr     error
-		sendStatus  int
-		sendErr     error
+		name         string
+		userID       string
+		repoSubs     []*domain.PushSubscription
+		repoErr      error
+		sendStatus   int
+		sendErr      error
 		expectDelete bool
-		wantError   error
+		wantError    error
 	}{
 		{
 			name:       "[Success] テスト通知を送信する",
@@ -276,9 +276,9 @@ func TestNotificationInteractor_Broadcast(t *testing.T) {
 		wantError    error
 	}{
 		{
-			name:     "[Success] 全購読者に通知を送信する",
-			input:    port.BroadcastInput{Title: "テスト", Body: "本文"},
-			repoSubs: []*domain.PushSubscription{sub1, sub2},
+			name:       "[Success] 全購読者に通知を送信する",
+			input:      port.BroadcastInput{Title: "テスト", Body: "本文"},
+			repoSubs:   []*domain.PushSubscription{sub1, sub2},
 			sendStatus: 201,
 		},
 		{
