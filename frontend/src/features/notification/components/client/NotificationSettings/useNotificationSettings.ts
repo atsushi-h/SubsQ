@@ -61,6 +61,11 @@ export function useNotificationSettings() {
         const perm = await Notification.requestPermission()
         setPermission(perm)
         if (perm !== 'granted') return
+        // 異なる VAPID キーで残った古いサブスクリプションをクリアしてから再登録
+        const existingSub = await getCurrentPushSubscription()
+        if (existingSub) {
+          await existingSub.unsubscribe()
+        }
         const browserSub = await subscribePush()
         const keys = getSubscriptionKeys(browserSub)
         await subscribeMutation.mutateAsync({
