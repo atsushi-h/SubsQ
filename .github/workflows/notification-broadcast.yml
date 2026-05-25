@@ -1,0 +1,67 @@
+name: Notification Broadcast
+run-name: Notification Broadcast (${{ inputs.environment }}) - ${{ inputs.title }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '配信先環境'
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prd
+      title:
+        description: '通知タイトル'
+        type: string
+        required: true
+        default: 通知テスト
+      body:
+        description: '通知本文'
+        type: string
+        required: true
+        default: GitHub Actions からのテスト通知です
+
+jobs:
+  broadcast:
+    name: Broadcast (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Validate secrets
+        run: |
+          if [ -z "$BACKEND_URL" ]; then
+            echo "::error::BACKEND_URL (vars.BACKEND_URL) is not set for ${{ inputs.environment }}"
+            exit 1
+          fi
+          if [ -z "$ADMIN_API_KEY" ]; then
+            echo "::error::ADMIN_API_KEY (secrets.ADMIN_API_KEY) is not set for ${{ inputs.environment }}"
+            exit 1
+          fi
+          echo "::notice::Sending broadcast to ${{ inputs.environment }}: ${{ inputs.title }}"
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+
+      - name: Send broadcast
+        run: |
+          curl -fsSL -X POST "$BACKEND_URL/api/v1/admin/notifications/broadcast" \
+            -H "X-Admin-Token: $ADMIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg t "$TITLE" --arg b "$BODY" '{title:$t,body:$b}')"
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+          TITLE: ${{ inputs.title }}
+          BODY: ${{ inputs.body }}
+
+      - name: Report success
+        if: success()
+        run: echo "::notice::Broadcast to ${{ inputs.environment }} completed successfully"
+
+      - name: Report failure
+        if: failure()
+        run: echo "::error::Broadcast to ${{ inputs.environment }} failed"
