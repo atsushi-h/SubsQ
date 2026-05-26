@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePushSubscriptionsQuery } from '@/features/notification/hooks/usePushSubscriptionsQuery'
 import { useSendTestNotificationMutation } from '@/features/notification/hooks/useSendTestNotificationMutation'
 import { useSubscribePushMutation } from '@/features/notification/hooks/useSubscribePushMutation'
@@ -45,7 +45,7 @@ export function useNotificationSettings() {
     })
   }, [isSupported, permission, subscriptionsData])
 
-  const handleToggle = useCallback(async () => {
+  const handleToggle = async () => {
     if (!isSupported) return
     setError(null)
     setIsToggling(true)
@@ -80,11 +80,11 @@ export function useNotificationSettings() {
     } finally {
       setIsToggling(false)
     }
-  }, [isSupported, isSubscribed, subscribeMutation, unsubscribeMutation])
+  }
 
-  const handleSendTest = useCallback(() => {
+  const handleSendTest = () => {
     sendTestMutation.mutate()
-  }, [sendTestMutation])
+  }
 
   return {
     isSupported,
