@@ -34,15 +34,24 @@ export function useNotificationSettings() {
 
   useEffect(() => {
     if (!isSupported) return
-    getCurrentPushSubscription().then((browserSub) => {
-      if (!browserSub) {
-        setIsSubscribed(false)
-        return
-      }
-      const backendSubs = subscriptionsData?.subscriptions ?? []
-      const registeredInBackend = backendSubs.some((s) => s.endpoint === browserSub.endpoint)
-      setIsSubscribed(permission === 'granted' && registeredInBackend)
-    })
+    let cancelled = false
+    getCurrentPushSubscription()
+      .then((browserSub) => {
+        if (cancelled) return
+        if (!browserSub) {
+          setIsSubscribed(false)
+          return
+        }
+        const backendSubs = subscriptionsData?.subscriptions ?? []
+        const registeredInBackend = backendSubs.some((s) => s.endpoint === browserSub.endpoint)
+        setIsSubscribed(permission === 'granted' && registeredInBackend)
+      })
+      .catch(() => {
+        if (!cancelled) setIsSubscribed(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [isSupported, permission, subscriptionsData])
 
   const handleToggle = async () => {
