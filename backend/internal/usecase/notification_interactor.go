@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	domain "github.com/atsushi-h/subsq/backend/internal/domain/notification"
@@ -60,12 +61,13 @@ func (i *NotificationInteractor) SendTest(ctx context.Context, userID string) er
 	if err != nil {
 		return err
 	}
+	var errs []error
 	for _, sub := range subs {
 		if err := i.sendAndCleanup(ctx, sub, payload); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 func (i *NotificationInteractor) Broadcast(ctx context.Context, input port.BroadcastInput) error {
@@ -77,12 +79,13 @@ func (i *NotificationInteractor) Broadcast(ctx context.Context, input port.Broad
 	if err != nil {
 		return err
 	}
+	var errs []error
 	for _, sub := range subs {
 		if err := i.sendAndCleanup(ctx, sub, payload); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 func (i *NotificationInteractor) sendAndCleanup(ctx context.Context, sub *domain.PushSubscription, payload []byte) error {
