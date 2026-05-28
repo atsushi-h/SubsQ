@@ -8,7 +8,7 @@
     "generate:ts": "./scripts/generate-ts.sh"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "2.32.0",
+    "@openapitools/openapi-generator-cli": "2.33.1",
     "@typespec/compiler": "1.12.0",
     "@typespec/http": "1.11.0",
     "@typespec/openapi3": "1.12.0"
