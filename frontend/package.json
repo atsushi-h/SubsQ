@@ -45,7 +45,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.15",
+    "@biomejs/biome": "2.4.16",
     "@faker-js/faker": "10.4.0",
     "@playwright/test": "1.60.0",
     "@tailwindcss/postcss": "4.2.4",
