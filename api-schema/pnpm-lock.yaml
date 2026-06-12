@@ -12,14 +12,14 @@ importers:
         specifier: 2.34.0
         version: 2.34.0
       '@typespec/compiler':
-        specifier: 1.12.0
-        version: 1.12.0(@types/node@20.19.37)
+        specifier: 1.13.0
+        version: 1.13.0(@types/node@20.19.37)
       '@typespec/http':
         specifier: 1.12.0
-        version: 1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))
+        version: 1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))
       '@typespec/openapi3':
         specifier: 1.12.0
-        version: 1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37)))(@typespec/openapi@1.9.0(@typespec/compiler@1.12.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))))
+        version: 1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37)))(@typespec/openapi@1.9.0(@typespec/compiler@1.13.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))))
 
 packages:
 
@@ -295,8 +295,8 @@ packages:
     peerDependencies:
       '@typespec/compiler': ^1.10.0
 
-  '@typespec/compiler@1.12.0':
-    resolution: {integrity: sha512-hKCkHEEDdCpXFyOU8ln+TzBBwonFMbkeUV0zIc+vBETyO8p/Upui3XvEyLOyB4CpKUReHzGeGm3gcFjNc73ygg==}
+  '@typespec/compiler@1.13.0':
+    resolution: {integrity: sha512-DonoHiyAMx0UjSmssqTrFtya+v97wny1aHcTLU5QF2wFzLATtcwUU9hbPC+eXhepuTunMOCHf8yk3pEsH6PZYA==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
@@ -1305,11 +1305,11 @@ snapshots:
 
   '@types/wrap-ansi@3.0.0': {}
 
-  '@typespec/asset-emitter@0.79.1(@typespec/compiler@1.12.0(@types/node@20.19.37))':
+  '@typespec/asset-emitter@0.79.1(@typespec/compiler@1.13.0(@types/node@20.19.37))':
     dependencies:
-      '@typespec/compiler': 1.12.0(@types/node@20.19.37)
+      '@typespec/compiler': 1.13.0(@types/node@20.19.37)
 
-  '@typespec/compiler@1.12.0(@types/node@20.19.37)':
+  '@typespec/compiler@1.13.0(@types/node@20.19.37)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@inquirer/prompts': 8.4.3(@types/node@20.19.37)
@@ -1330,25 +1330,25 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))':
+  '@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))':
     dependencies:
-      '@typespec/compiler': 1.12.0(@types/node@20.19.37)
+      '@typespec/compiler': 1.13.0(@types/node@20.19.37)
 
-  '@typespec/openapi3@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37)))(@typespec/openapi@1.9.0(@typespec/compiler@1.12.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))))':
+  '@typespec/openapi3@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37)))(@typespec/openapi@1.9.0(@typespec/compiler@1.13.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))))':
     dependencies:
       '@scalar/json-magic': 0.12.14
       '@scalar/openapi-parser': 0.25.12
       '@scalar/openapi-types': 0.7.0
-      '@typespec/asset-emitter': 0.79.1(@typespec/compiler@1.12.0(@types/node@20.19.37))
-      '@typespec/compiler': 1.12.0(@types/node@20.19.37)
-      '@typespec/http': 1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))
-      '@typespec/openapi': 1.9.0(@typespec/compiler@1.12.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37)))
+      '@typespec/asset-emitter': 0.79.1(@typespec/compiler@1.13.0(@types/node@20.19.37))
+      '@typespec/compiler': 1.13.0(@types/node@20.19.37)
+      '@typespec/http': 1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))
+      '@typespec/openapi': 1.9.0(@typespec/compiler@1.13.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37)))
       yaml: 2.9.0
 
-  '@typespec/openapi@1.9.0(@typespec/compiler@1.12.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37)))':
+  '@typespec/openapi@1.9.0(@typespec/compiler@1.13.0(@types/node@20.19.37))(@typespec/http@1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37)))':
     dependencies:
-      '@typespec/compiler': 1.12.0(@types/node@20.19.37)
-      '@typespec/http': 1.12.0(@typespec/compiler@1.12.0(@types/node@20.19.37))
+      '@typespec/compiler': 1.13.0(@types/node@20.19.37)
+      '@typespec/http': 1.12.0(@typespec/compiler@1.13.0(@types/node@20.19.37))
 
   agent-base@6.0.2:
     dependencies:
