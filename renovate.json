@@ -63,6 +63,7 @@
   "prHourlyLimit": 10,
   "automergeType": "pr",
   "automergeStrategy": "squash",
+  "platformAutomerge": true,
   "semanticCommitScope": "deps",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
