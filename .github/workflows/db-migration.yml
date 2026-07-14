@@ -50,7 +50,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Install golang-migrate
-        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1
 
       - name: Validate DATABASE_URL
         run: |
