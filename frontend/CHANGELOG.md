@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.5.0...frontend-v1.5.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* **frontend:** restore babel-plugin-react-compiler dependency ([69ae47b](https://github.com/atsushi-h/SubsQ/commit/69ae47ba32e2b8d29e6cbb07721162fa250703e1))
+
 ## [1.5.0](https://github.com/atsushi-h/SubsQ/compare/frontend-v1.4.0...frontend-v1.5.0) (2026-03-24)
 
 
